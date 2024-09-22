@@ -1,13 +1,16 @@
-# c_template_application
-A template for all of my c projects.
+# MinTxEngine
+A Mini Transaction Engine similar to the one found in the internals of MySQL. Supported by WALe and Bufferpool libraries.
 
 ## Setup instructions
+**Install dependencies :**
+ * [WALe](https://github.com/RohanVDvivedi/WALe)
+ * [Bufferpool](https://github.com/RohanVDvivedi/Bufferpool)
 
 **Download source code :**
- * `git clone https://github.com/RohanVDvivedi/c_template_application.git`
+ * `git clone https://github.com/RohanVDvivedi/MinTxEngine.git`
 
 **Build from source :**
- * `cd c_template_application`
+ * `cd MinTxEngine`
  * `make clean all`
 
 **Install from the build :**
@@ -15,10 +18,10 @@ A template for all of my c projects.
  * ***Once you have installed from source, you may discard the build by*** `make clean`
 
 ## Using The library
- * add `-lcapp` linker flag, while compiling your application
+ * add `-lmintxengine` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
-   * `#include<capp.h>`
-   * `#include<print_temp.h>`
+   * `#include<.h>`
+   * `#include<.h>`
 
 ## Instructions for uninstalling library
 
