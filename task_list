@@ -1,0 +1,47 @@
+Tasks necessary to develop MinTxEngine
+ * to be build using Bufferpool and WALe
+ * each page stores pageLSN (last LSN that modified tha page), writer_min_tx_id (mini transaction id of the writer that has presistently write locked the page) and checksum
+ * each writer gets a min_tx_id which is already equal to the its first WALe log
+ * deadlock prevenion strategy -> only a new transaction can wait on an old one, this is identified with its min_tx_id
+ * we store the dirty page table, a page table storing the page_ids of all dirty pages and their corresponding dirtied_by_lsn -> the first LSN that made it dirty
+   * inserted when a WALe log for the page is written and removed by the bufferpool call back
+ * we also strore the list of all currently active mini transactions
+ * a page is persistently write locked only if it has a valid writer_min_tx_id and that writer_min_tx_id corresponds to an active mini transaction
+ * we also maintain a flushed LSN, only pages whose pageLSN is greater than or equal to this value can be flushed to the disk, by the Bufferpool
+   * if pageLSN is 0, then this means this pages is not being WAL logged and is non persistent, so it can be flushed to disk
+ * similarly if a writer_min_tx_id is 0, then this means the page is not persistently write locked
+ * checkpointing is done by writing the mini transaction table and dirty page table to the WALe as a check point record
+ * only 1 Bufferpool file is maintained
+ * possibly numerous WALe files are maintained, old ones are discarded
+   * a WALe file can be discarded if it is prior to any LSN in dirty page table, min_tx_ids, latest checkpoint LSN and trnsaction_id min -> minimum higher level transaction id -> provided as call back
+ * there has to be a module to allocate and deallocate pages
+   * pages are maintained as bitmap
+   * there N bits can fit in a allocation bitmap page, then it stores is valid bit for that many pages after that
+   * i.e. so our extent size is N+1, where every % N+1-th page is an allocation bitmap page -> 0 being free and 1 being valid
+   * thses bit maps are protected by the corresponding page locks
+   * bitmap pages can not be persistently locked
+   * to allocate
+     * scan all allocation bitmap pages, find is_valid = 0 page id,
+     * write log record suggesting a the allocation for this page id
+     * grab write lock on the actual page, write writer_min_tx_id
+     * set the is_valid bit in the allocation bitmap for page_id
+     * mark both the pages as dirty in dirty page table and also through the call back of Bufferpool
+     * release lock on allocation bitmap page, return the allocated page with write lock to the user
+   * to free
+     * if a the page is not locked, grab write lock on it
+     * if it is already write locked nothing ot be done, if it is read locked attempt to upgrade the lock -> upgrading the write lock may result in abort so handle that
+     * find the corresponding is_valid bitmap page for this page_id
+     * flip the is_valid bit to 0
+     * update the page with write writer_min_tx_id
+     * update the pageLSn of the allocation bitmap page
+     * mark both the pages as dirty in dirty page table and also through the call back of Bufferpool
+     * release lock on both the pages
+   * note here pageLSN is updated on the allocation bitmap page and writer_min_tx_id is written on the actual page (marking its lock by the current mini transaction)
+ * check pointing occurs every T minutes
+   * there has to be a check pointing reader/writer lock
+   * taken by every one in shared mode and the checkpointer as exclusive mode
+   * a checkpoint log record is written
+   * discard any WALe files whose log records are not visible/required by anyone
+   * truncate the Bufferpool file if the last extent is all is_valid = 0 bits
+ * add a disk pager module that is allocation module plus Bufferpool + No logging page modification methods + a truncate functionality
+   * to be used by transaction and lock table, i.e. non persistent storage of the database for higher level fuinctions
