@@ -43,5 +43,6 @@ Tasks necessary to develop MinTxEngine
    * a checkpoint log record is written
    * discard any WALe files whose log records are not visible/required by anyone
    * truncate the Bufferpool file if the last extent is all is_valid = 0 bits
+ * atlast there is a recovery function that must be called as the first line of your application, it recovers from crash
  * add a disk pager module that is allocation module plus Bufferpool + No logging page modification methods + a truncate functionality
    * to be used by transaction and lock table, i.e. non persistent storage of the database for higher level fuinctions
