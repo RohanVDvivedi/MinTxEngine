@@ -46,3 +46,11 @@ Tasks necessary to develop MinTxEngine
  * atlast there is a recovery function that must be called as the first line of your application, it recovers from crash
  * add a disk pager module that is allocation module plus Bufferpool + No logging page modification methods + a truncate functionality
    * to be used by transaction and lock table, i.e. non persistent storage of the database for higher level fuinctions
+ * the module also keeps track of how many pages the user is allowed to hold latches on
+   * minitransactions come with a request on how many pages they will hold latches on simultaneously
+   * minitransactions can only reduce this number, once they are allowed to start their minitransaction
+   * minitransactions that attempt to go beyond this number will get aborted immediately
+   * all aborted minitransactions will only be allowed to hold 1 page latch, i.e. their number will be dropped, and they would have to perform all undos using only 1 buffer
+   * when ever a minitransactions drops its page frame requiremnts this number will be added to the available space, alowing other requesters to start
+ * how to avoid dead lock after getting a writer lock after modifying a page -> needs to be thought of
+   * latches will never create deadlock, this has to be ensured by TupleIndexer and the user
