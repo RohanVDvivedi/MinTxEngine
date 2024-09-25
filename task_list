@@ -52,15 +52,18 @@ Tasks necessary to develop MinTxEngine
    * minitransactions that attempt to go beyond this number will get aborted immediately
    * all aborted minitransactions will only be allowed to hold 1 page latch, i.e. their number will be dropped, and they would have to perform all undos using only 1 buffer
    * when ever a minitransactions drops its page frame requiremnts this number will be added to the available space, alowing other requesters to start
+   * an API will be provided to register if you are in the declining phase of your lock acquisition, when you do this, your allowance of the page requirement will first decrement to your current page latches count, and then from then on, it will decrease by 1 every time you release a page latch
  * how to avoid dead lock after getting a writer lock after modifying a page
-   * latches will never create deadlock, this has to be ensured by TupleIndexer and the user
-   * make only 1 pass from root to leaf allowed, if you modify something, at the leaf you commit the change 
-   * the end log of the mini transaction must store what modification was made, like a insert, delete or an update
-   * since after you modify some pages, you will hold persistent write latched on the page, you can dead lock if you reenter, so reentering a datastructure is forbidden, take care of this wile desigining your tuple indexer functions and you mini transactions
+   * latches will never create deadlock, while accessing 1 data structure of a tupleIndexer, this has to be ensured by TupleIndexer and the user
+   * make only 1 pass from root to leaf allowed, if you modify something, at the leaf you commit the corresponding mini transaction
+   * the end log of the mini transaction must store what modification was made, like a insert, delete or an update on that data structure
+   * since after you modify some pages, you will hold persistent write latched on the page, you can dead lock if you reenter, so reentering a datastructure is forbidden, take care of this while desigining your tuple indexer functions and you mini transactions
    * you may reenter if you are sure that there would not be anyone between you and the page you want to lock, i.e. there is noone holding latches or persistent write locks on pages between you and the page you want to lock next
-     * like on a delete iterator you may walk down again from the unmodified page to delete something in the bottom again
+     * like on a delete iterator you may walk down bplus_tree again from the unmodified page to delete something in the bottom again
+       * NOTE the above operation can create dead locks, but can be mitigated if you never use unstacked iterators, i.e. never traverse using the link pointers of the leaf pgaes of the bplus_tree
      * but similarly you can not restart a leaf only write iterator after a modification, because there can be another reader of writer between your persitent lock and a latch
-   * you can and are allowed to wait on a persistently write locked page, since these assumtions guarantee that you will never deadlock, but with a timeout, upon a timeout you abort
+   * you can and are allowed to wait on a persistently write locked page, since these assumptions guarantee that you will almost never deadlock, but with a timeout, upon a timeout you abort
+     * this timeout must be atmost 20 write-io operations on the disk that you are using
    * moral do not walk down the tree again if you think there can be anyone between you and the page you want to lock and do operate on only 1 minitransaction at a time, if you are running multiple minitransactions then ensure that the datastructure that they work on are in the same relative order, i.e. common data structures to both the minitransactions are accesses in the same order
      * for instance always insert to heap tables before the indexes, and while vaccumming always delete from indexes before heap tables, these 2 operations if clubbed in 2 different minitransaction, then they must not be concurrently called by any of the higher level transactions.
-   * persistent write locks are not provided to come back again, they are provided so that you can release your write latches, and the bufferpool can attempt to flush these pages to disk, makeing room for your new pages to be brought in from the disk; without persistent write locks, if you release latches on pages early, the you will allow other mini-transactions to do dirty reads, and then if you abort, you will cause cascading aborts, hence persistent write locks are needes, but with a caution of their usage
+   * persistent write locks are not provided to come back again, they are provided so that you can release your write latches, and the bufferpool can attempt to flush these pages to disk, making room for your new pages to be brought in from the disk; without persistent write locks, if you release latches on pages early, the you will allow other mini-transactions to do dirty reads, and then if you abort, you will cause cascading aborts, hence persistent write locks are needed, but with a caution of their usage
