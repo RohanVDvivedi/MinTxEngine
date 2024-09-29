@@ -77,3 +77,5 @@ Tasks necessary to develop MinTxEngine
    * it will be re-allocated again with a temp flag set to 0
    * such a page will not follow the aries protocol to get flushed only after its corresponding WAL record is flushed. It can always be flushed to disk
    * same locing rules with persistent write locks and latches still apply to these pages, it isjust that the pageLSN will remain 0
+   * generally these pages should be allocated and deallocated in the smae minitransaction, otherwise the outer higher level transactions would have to take care of freeing up these pages by walking up the log records of its own minitransactions, which is tough to implement.
+   * this feature can be used to build transaction local data structures for joins, and sorting
