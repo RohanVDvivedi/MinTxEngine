@@ -67,3 +67,13 @@ Tasks necessary to develop MinTxEngine
    * moral do not walk down the tree again if you think there can be anyone between you and the page you want to lock and do operate on only 1 minitransaction at a time, if you are running multiple minitransactions then ensure that the datastructure that they work on are in the same relative order, i.e. common data structures to both the minitransactions are accesses in the same order
      * for instance always insert to heap tables before the indexes, and while vaccumming always delete from indexes before heap tables, these 2 operations if clubbed in 2 different minitransaction, then they must not be concurrently called by any of the higher level transactions.
    * persistent write locks are not provided to come back again, they are provided so that you can release your write latches, and the bufferpool can attempt to flush these pages to disk, making room for your new pages to be brought in from the disk; without persistent write locks, if you release latches on pages early, the you will allow other mini-transactions to do dirty reads, and then if you abort, you will cause cascading aborts, hence persistent write locks are needed, but with a caution of their usage
+ * for every mini transaction you need to release all latches on all pages you hold latches on to commit
+ * on an abort, after it is notified to you must release all latches, and then call rollback_mini_transaction to undo all the changes
+   * you may also anonymously call rollback_mini_transaction, this will notifiy all the threads working for that mini transaction and once they are done we perform the rollback
+ * you may also call acquire_new_page_with_writer_lock with a temporary flag held, in such a case a new page will be provided to you
+   * for this page only the allocation and deallocation log records will be written to the WALe
+   * its pageLSN will be 0, through out its life time , the pageLSN of its is_valid bitmap page will remain non-zero
+   * even after a free its pageLSN will be 0
+   * it will be re-allocated again with a temp flag set to 0
+   * such a page will not follow the aries protocol to get flushed only after its corresponding WAL record is flushed. It can always be flushed to disk
+   * same locing rules with persistent write locks and latches still apply to these pages, it isjust that the pageLSN will remain 0
