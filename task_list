@@ -72,10 +72,11 @@ Tasks necessary to develop MinTxEngine
    * you may also anonymously call rollback_mini_transaction, this will notifiy all the threads working for that mini transaction and once they are done we perform the rollback
  * you may also call acquire_new_page_with_writer_lock with a temporary flag held, in such a case a new page will be provided to you
    * for this page only the allocation and deallocation log records will be written to the WALe
-   * its pageLSN will be 0, through out its life time , the pageLSN of its is_valid bitmap page will remain non-zero
+   * its pageLSN will be 0 (or some special value like 1 (I do not prefer 0 becuase the empty page being used for first time will also have 0 pageLSN)), through out its life time , the pageLSN of its is_valid bitmap page will remain non-zero
    * even after a free its pageLSN will be 0
-   * it will be re-allocated again with a temp flag set to 0
-   * such a page will not follow the aries protocol to get flushed only after its corresponding WAL record is flushed. It can always be flushed to disk
-   * same locing rules with persistent write locks and latches still apply to these pages, it isjust that the pageLSN will remain 0
-   * generally these pages should be allocated and deallocated in the smae minitransaction, otherwise the outer higher level transactions would have to take care of freeing up these pages by walking up the log records of its own minitransactions, which is tough to implement.
+   * such a page will not follow the aries protocol to get flushed only after its corresponding WAL record is flushed. It can always be flushed to disk, i.e. its pageLSN with a special value will be of no use here, except for identifying that is it is a temporary page
+   * same locking rules with persistent write locks and latches still apply to these pages, it is just that the pageLSN will remain 0 (or the special value)
+   * these pages must be allocated and then deallocated in the same minitransaction and must not be read directly by other mini transactions, otherwise the outer higher level transactions would have to take care of freeing up these pages by walking up the log records of its own minitransactions, which is tough to implement. NOT JUST THAT, since these pages are not WAL logged, if a temporary page is left allocated by tx1 (which is committed) and then tx2 updates the same temporary pages, now if the tx2 aborts since these pages are not WAL logged the data structures represented by the temporary pages will never reach a consistent state, as we do not have information to perfectly undo changes done by tx2.
+     * i.e. temporary pages must not span usage/updates across multiple mini transactions, they must be allocated and deallocated in the same minitransaction.
    * this feature can be used to build transaction local data structures for joins, and sorting
+   * a regular WAL logged page can never be made temporary in the middle of a mini transaction, a regular is allocated as a regular page and deallocated as a regualr page. A temporary page is created b allocation and writing pageLSN to 0/1 special value AND then finally gets deallocated as one. they can not convert internally
