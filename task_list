@@ -13,10 +13,11 @@ PICKED
    * mini_tx_id -> LSN when it started if reader, LSN when it made its first change if a writer
    * is_writer -> boolean suggesting if it wrote any thing
    * state -> IN_PROGRESS, ABORTING, COMMITTED, ABORTED
-      IN_PROGRESS -> COMMITTED
+      IN_PROGRESS   -> COMMITTED
          |
          \/
-      UNDOING     -> ABORTED
+  UNDOING_FOR_ABORT -> ABORTED
+   * abort_error -> the error that caused abort, non zero if UNDOING_FOR_ABORT and ABORTED, 0 other wise
    * last_lsn -> last log sequence number that made changes to the data base, used to link WAL log records in reverse order
    * latches_held
    * write_locks_held
