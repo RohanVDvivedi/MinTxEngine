@@ -1,3 +1,42 @@
+PICKED
+ * make repository ready, remove template redundant code
+ * add logic to read and calculate and write/verify check_sum on pa page
+ * add logic to read and write pageLSN on the page
+ * add logic to read and write writerLSN on the page
+ * add logic to get page_contents from frame, and get_frame_from page_contents, adding substracting an offset from pointer
+ * build a globally accessible data structure that contains
+   * dirty_page_table -> hash_table of page_id and dirty_from_LSN
+   * mini_tx_table -> mini_tx_id -> mini_tx structure
+   * global_mini_tx_lock -> to be used as singlular global lock for WALe and Bufferpool
+ * define mini_tx structure
+   * mini_tx_id -> LSN when it started if reader, LSN when it made its first change if a writer
+   * is_writer -> boolean suggesting if it wrote any thing
+   * state -> IN_PROGRESS, ABORTING, COMMITTED, ABORTED
+      IN_PROGRESS -> COMMITTED
+         |
+         \/
+      ABORTING    -> ABORTED
+   * latches_held
+   * write_locks_held
+   * condition_variable -> for every one to wait on for abort and committed, mini_tx structure is freed and removed from only after there are no waiters
+   * waiters count -> number of transactions waiting for this transaction to be ABORTED or COMMITTED so that they can proceed with the taking the latch or write_lock
+ * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
+   * add function to get mini_tx structure that has a write lock on a particular page
+ * define structures for all log records as supported by tuple store
+   * make a file for each of them containing functions like
+    * execute_operation_on_page // executes the operation on page. creates a wal log for it and writes it
+                                // fails if the frame is not write latched
+                                // waits for short durations if page is write-locked by IN_PROGRESS or ABORTING mini tx
+                                // fails if the operation itself fails
+                                // exits immediatley if out of memory
+    * undo_wal_log_on_page // undos a wal log record, fails if wrong type
+    * redo_wal_log_on_page // undos a wal log record, fails if wrong type
+    * operations allocate_page_with_write_lock, free_page,     init_page,       append,        insert,           update, discard, discard_all, discard_trailing_tomb_stones, swap, update_in_place, clone, run_page_compaction
+    * undo   ops free_page,                     allocate page, full_page_write, discard last,  discard at index, update, insert,  full_page_write, append NULLs at th end,   swap, update_in_place, clone, None
+ * abort handler function to be implemeted, that is called on all aborting transactions
+ * for all usecases tx to be replaced with transactions
+
+
 Tasks necessary to develop MinTxEngine
  * to be build using Bufferpool and WALe
  * each page stores pageLSN (last LSN that modified tha page), writer_min_tx_id (mini transaction id of the writer that has presistently write locked the page) and checksum
