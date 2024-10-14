@@ -123,3 +123,4 @@ Tasks necessary to develop MinTxEngine
 
 TEMPORARY PAGES
  * this feature will not be supported by MinTXEngine as we will not be able to undo their changes if the same page is priorly used as regular page then reused as temporary page and then if we abort, we will never know how to reach the prior state, as its intermediate transitions are not logged.
+ * separate development will be required/done for a module that solves this issue
