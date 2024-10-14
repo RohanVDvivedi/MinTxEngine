@@ -40,6 +40,10 @@ PICKED
     * redo_wal_log_on_page // redo a wal log record, fails if wrong type
     * operations allocate_page_with_write_lock, free_page,     init_page,       append,        insert,           update, discard, discard_all, discard_trailing_tomb_stones, swap, update_in_place, clone, run_page_compaction
     * undo   ops free_page,                     allocate page, full_page_write, discard last,  discard at index, update, insert,  full_page_write, append NULLs at th end,   swap, update_in_place, clone, None
+ * still need to figure out what to do on allocate and free page calls
+ * there is no meaning/value of a page contents if and only if the latest modification to a page is free page and mini transaction that called it is committed
+   * a free page call on a mini transaction not committed can still abort, and may require to be undo forcing us to put valid old contents on the page
+ * for temporary pages we will have no handling in the MinTXEngine, you only need to modify but not log any calls except its allocate and free calls
  * abort handler function to be implemeted, that is called on all aborting transactions
  * for all usecases tx to be replaced with transactions
 
