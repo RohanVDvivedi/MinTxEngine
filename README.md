@@ -5,6 +5,10 @@ A Mini Transaction Engine similar to the one found in the internals of MySQL. Su
 **Install dependencies :**
  * [WALe](https://github.com/RohanVDvivedi/WALe)
  * [Bufferpool](https://github.com/RohanVDvivedi/Bufferpool)
+ * [BlockIO](https://github.com/RohanVDvivedi/BlockIO)
+ * [SerializableInteger](https://github.com/RohanVDvivedi/SerializableInteger)
+ * [ReaderWriterLock](https://github.com/RohanVDvivedi/ReaderWriterLock)
+ * [Cutlery](https://github.com/RohanVDvivedi/Cutlery)
 
 **Download source code :**
  * `git clone https://github.com/RohanVDvivedi/MinTxEngine.git`
@@ -18,10 +22,9 @@ A Mini Transaction Engine similar to the one found in the internals of MySQL. Su
  * ***Once you have installed from source, you may discard the build by*** `make clean`
 
 ## Using The library
- * add `-lmintxengine` linker flag, while compiling your application
+ * add `-lmintxengine -lwale -lbufferpool -lrwlock -lserint -lcutlery -lpthread` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
-   * `#include<.h>`
-   * `#include<.h>`
+   * `#include<mini_transaction_engine.h>`
 
 ## Instructions for uninstalling library
 
