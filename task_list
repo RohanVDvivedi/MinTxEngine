@@ -8,6 +8,7 @@ PICKED
    * dirty_page_table -> hash_table of page_id and dirty_from_LSN
    * mini_tx_table -> mini_tx_id -> mini_tx structure
    * global_mini_tx_lock -> to be used as singlular global lock for WALe and Bufferpool
+   * checkpointer_lock -> a shared/exclusive lock, taken by all threads in shared mode and by checkpointer in exclusive mode
  * define mini_tx structure
    * mini_tx_id -> LSN when it started if reader, LSN when it made its first change if a writer
    * is_writer -> boolean suggesting if it wrote any thing
@@ -19,10 +20,12 @@ PICKED
    * last_lsn -> last log sequence number that made changes to the data base, used to link WAL log records in reverse order
    * latches_held
    * write_locks_held
-   * condition_variable -> for every one to wait on for abort and committed, mini_tx structure is freed and removed from only after there are no waiters
+   * condition_variable -> for every one to wait on for aborted and committed state of a particular mini transaction, mini_tx structure is freed and removed from only after there are no waiters
    * waiters count -> number of transactions waiting for this transaction to be ABORTED or COMMITTED so that they can proceed with the taking the latch or write_lock
  * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
    * add function to get mini_tx structure that has a write lock on a particular page
+ * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
+   * when ever a write lock in released ensure that the check sum matches the data, if not, update check sum and make it dirty in bufferpool
  * define structures for all log records as supported by tuple store
    * make a file for each of them containing functions like
     * execute_operation_on_page // executes the operation on page. creates a wal log for it and writes it
@@ -42,7 +45,7 @@ PICKED
 
 
 Tasks necessary to develop MinTxEngine
- * to be build using Bufferpool and WALe
+ * to be build using Bufferpool, WALe and TupleStore
  * each page stores pageLSN (last LSN that modified tha page), writer_min_tx_id (mini transaction id of the writer that has presistently write locked the page) and checksum
  * each writer gets a min_tx_id which is already equal to the its first WALe log
  * deadlock prevenion strategy -> only a new transaction can wait on an old one, this is identified with its min_tx_id
