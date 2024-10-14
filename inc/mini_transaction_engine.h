@@ -3,19 +3,29 @@
 
 #include<hashmap.h>
 #include<linkedlist.h>
+#include<arraylist.h>
 
 #include<rwlock.h>
+
+typedef struct dirty_page_table_entry dirty_page_table_entry;
+struct dirty_page_table_entry
+{
+	uint64_t page_id; // page_id of the page that is dirty
+	uint256 recLSN; // the oldest LSN that made this page dirty, also called recoveryLSN -> you need to start redoing from this LSN to reach latest state of this page
+};
 
 typedef struct mini_transaction_engine mini_transaction_engine;
 struct mini_transaction_engine
 {
-	// global lock for the bufferpool_p and wale_p
+	// global lock for the bufferpool_p and wales
 	// also for mini_transaction table
 	pthread_mutex_t global_lock;
 
 	// below are the two main objects that this mini transaction interactes with
 	bufferpool* bufferpool_p;
-	wale* wale_p;
+
+	// we need more wale objects we only add log record to the latest one
+	arraylist wales;
 
 	// below three are the parts of mini_transaction table
 	hashmap writer_mini_transactions; // mini_transaction_id != 0, state = IN_PROGRESS or UNDOING_FOR_ABORT else if state = ABORTED or COMMITTED then waiters_count > 0
