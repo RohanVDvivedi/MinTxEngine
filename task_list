@@ -4,11 +4,6 @@ PICKED
  * add logic to read and write pageLSN on the page
  * add logic to read and write writerLSN on the page
  * add logic to get page_contents from frame, and get_frame_from page_contents, adding substracting an offset from pointer
- * build a globally accessible data structure that contains
-   * dirty_page_table -> hash_table of page_id and dirty_from_LSN
-   * mini_tx_table -> mini_tx_id -> mini_tx structure
-   * global_mini_tx_lock -> to be used as singlular global lock for WALe and Bufferpool
-   * checkpointer_lock -> a shared/exclusive lock, taken by all threads in shared mode and by checkpointer in exclusive mode
  * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
    * add function to get mini_tx structure that has a write lock on a particular page
  * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
