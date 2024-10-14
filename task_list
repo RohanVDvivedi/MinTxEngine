@@ -1,11 +1,11 @@
 PICKED
- * make repository ready, remove template redundant code
+ * define structs to represent the log records as structs containing both undo and redo records
  * add logic to read and calculate and write/verify check_sum on pa page
  * add logic to read and write pageLSN on the page
  * add logic to read and write writerLSN on the page
  * add logic to get page_contents from frame, and get_frame_from page_contents, adding substracting an offset from pointer
  * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
-   * add function to get mini_tx structure that has a write lock on a particular page
+ * add function to get mini_tx structure that has a write lock on a particular page
  * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
    * when ever a write lock in released ensure that the check sum matches the data, if not, update check sum and make it dirty in bufferpool
  * define structures for all log records as supported by tuple store
