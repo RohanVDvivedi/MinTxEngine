@@ -22,9 +22,11 @@ struct mini_transaction_engine
 	pthread_mutex_t global_lock;
 
 	// below are the two main objects that this mini transaction interactes with
+	block_file* bufferpool_block_file;
 	bufferpool* bufferpool_p;
 
-	// we need more wale objects we only add log record to the latest one
+	// we need more wale objects we only add log record to the latest one, all prior wales are read only
+	arraylist wale_block_files;
 	arraylist wales;
 
 	// below three are the parts of mini_transaction table
