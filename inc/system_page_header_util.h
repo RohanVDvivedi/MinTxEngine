@@ -7,7 +7,7 @@
 
 /*
 	system header consists of three things
-	checksum - 32 bits/ 4 bytes wide on all pages
+	checksum - 32 bits/ 4 bytes wide on all pages, checksum of all the bytes on the page, except the first 4 bytes, which is the checksum itself
 	pageLSN - as wide as log sequence number width on all pages, it is the last LSN that modified the page
 	        - the page can be flushed to disk only if flushedLSN (of the system) >= pageLSN (of the page)
 	writerLSN - as wide as log sequence number width on all data pages, it is the first LSN of the mini transaction that modified the page
