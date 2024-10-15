@@ -2,6 +2,7 @@
 #define LOG_RECORD_PAGE_INIT_H
 
 // log record struct for PAGE_INIT
+// -> undo by copy pasting the old_page_contents
 typedef struct page_init_log_record page_init_log_record;
 struct page_init_log_record
 {
