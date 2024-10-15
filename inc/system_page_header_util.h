@@ -46,6 +46,8 @@ int set_writerLSN_for_page(void* page, uint256 writerLSN, const mini_transaction
 // else it contains 4 byte checksum, pageLSN and writerLSN
 uint32_t get_system_header_size_for_page(uint64_t page_id, const mini_transaction_engine_stats* stats);
 
+uint32_t get_page_content_size_for_data_pages(const mini_transaction_engine_stats* stats);
+
 // adds system header size for the page to the page
 void* get_page_contents_for_page(void* page, uint64_t page_id, const mini_transaction_engine_stats* stats);
 void* get_page_for_page_contents(void* page_contents, uint64_t page_id, const mini_transaction_engine_stats* stats);
