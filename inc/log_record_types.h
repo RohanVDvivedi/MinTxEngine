@@ -1,5 +1,5 @@
-#ifndef WALE_LOG_RECORD_TYPES_H
-#define WALE_LOG_RECORD_TYPES_H
+#ifndef LOG_RECORD_TYPES_H
+#define LOG_RECORD_TYPES_H
 
 typedef enum log_record_type log_record_type;
 enum log_record_type
