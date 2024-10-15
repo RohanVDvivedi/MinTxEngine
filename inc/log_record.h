@@ -1,6 +1,12 @@
 #ifndef LOG_RECORD_TYPES_H
 #define LOG_RECORD_TYPES_H
 
+#include<stdint.h>
+
+#include<mini_transaction_engine_stats.h>
+
+#include<tuple.h>
+
 typedef enum log_record_type log_record_type;
 enum log_record_type
 {
