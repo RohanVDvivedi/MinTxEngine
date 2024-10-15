@@ -1,5 +1,5 @@
-#ifndef WALE_ALLOCATION_LOG_RECORD_H
-#define WALE_ALLOCATION_LOG_RECORD_H
+#ifndef LOG_RECORD_ALLOCATION_H
+#define LOG_RECORD_ALLOCATION_H
 
 // log record struct for PAGE_ALLOCATION and PAGE_DEALLOCATION
 typedef struct allocation_log_record allocation_log_record;
