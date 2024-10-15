@@ -56,6 +56,10 @@ struct mini_transaction_engine
 
 	linked_list free_dirty_pages_list; // list of free dirty pages, new dirty pages are assigned from this lists
 
+	// new threads attempting to start a new mini transaction execution wait here until a slot is available
+	// a signal will be called everytime an insert is performed on free_mini_transactions_list
+	pthread_mutex_t conditional_to_wait_for_execution_slot;
+
 	// manger_lock is to be held in shared mode for all the accesses by the user
 	// it must be held in exclusive mode for truncating WALe and Bufferpool files, check pointing etc
 	rwlock manager_lock;
@@ -65,5 +69,7 @@ struct mini_transaction_engine
 
 	mini_transaction_engine_stats stats;
 };
+
+// on malloc failures we do an exit(-1), no exceptions unless we could handle it
 
 #endif
