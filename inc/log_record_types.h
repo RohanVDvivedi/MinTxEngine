@@ -25,6 +25,9 @@ enum log_record_type
 
 	FULL_PAGE_WRITE = 13,
 	// this log record is first written for any page type, the first time it becomes dirty after a checkpoint
+
+	COMPENSATION_LOG = 14,
+	// this is the log record type to be used it points to any of the above log types and performs their undo on tha page
 };
 
 #endif
