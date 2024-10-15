@@ -36,6 +36,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(3));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "palr_def", 0, lrtd.max_log_record_size, 3);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -53,6 +55,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(6));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "pilr_def", 0, lrtd.max_log_record_size, 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -79,6 +83,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(5));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "talr_def", 0, lrtd.max_log_record_size, 5);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -102,6 +108,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(6));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "tilr_def", 0, lrtd.max_log_record_size, 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -128,6 +136,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(7));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "tulr_def", 0, lrtd.max_log_record_size, 7);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -157,6 +167,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(6));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "tdlr_def", 0, lrtd.max_log_record_size, 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -183,6 +195,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(5));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "tdalr_def", 0, lrtd.max_log_record_size, 5);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -206,6 +220,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(5));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "tdttlr_def", 0, lrtd.max_log_record_size, 5);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -229,6 +245,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(6));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "tslr_def", 0, lrtd.max_log_record_size, 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -255,6 +273,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(8));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "tueiplr_def", 0, lrtd.max_log_record_size, 8);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -287,6 +307,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(6));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "pclr_def", 0, lrtd.max_log_record_size, 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -313,6 +335,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(5));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "fpwlr_def", 0, lrtd.max_log_record_size, 5);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -336,6 +360,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(4));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "clr_def", 0, lrtd.max_log_record_size, 4);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -356,6 +382,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(2));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "amtlr_def", 0, lrtd.max_log_record_size, 2);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -370,6 +398,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(3));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "cmtlr_def", 0, lrtd.max_log_record_size, 3);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
