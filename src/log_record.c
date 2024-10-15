@@ -1,5 +1,7 @@
 #include<log_record.h>
 
+#include<system_page_header_util.h>
+
 #include<stdlib.h>
 #include<string.h>
 
@@ -27,7 +29,7 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 	lrtd.LSN_type = define_large_uint_non_nullable_type("LSN", stats->log_sequence_number_width);
 	lrtd.page_index_type = define_uint_non_nullable_type("page_index", bytes_for_page_index(stats->page_size));
 	lrtd.tuple_positional_accessor_type = get_variable_element_count_array_type("tuple_positional_accessor_type", stats->page_size, &(lrtd.page_index_type));
-	lrtd.page_content_in_bytes_type = get_fixed_length_blob_type("page_contents", stats->page_size - 4 - (2 * stats->log_sequence_number_width), 0);
+	lrtd.page_content_in_bytes_type = get_fixed_length_blob_type("page_contents", get_page_content_size_for_data_pages(stats), 0);
 	lrtd.data_in_bytes_type = get_variable_length_blob_type("data", stats->page_size);
 	lrtd.size_def_in_bytes_type = get_variable_length_blob_type("size_def", 13);
 	lrtd.type_info_in_bytes_type = get_variable_length_blob_type("type_info", stats->page_size);
