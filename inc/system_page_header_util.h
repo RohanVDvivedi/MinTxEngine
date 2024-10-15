@@ -3,6 +3,8 @@
 
 #include<large_uints.h>
 
+#include<mini_transaction_engine_stats.h>
+
 /*
 	system header consists of three things
 	checksum - 32 bits/ 4 bytes wide on all pages
@@ -25,12 +27,12 @@ int set_pageLSN_for_page(void* page, uint256 LSN, const mini_transaction_engine_
 
 int is_free_space_mapper_page(uint64_t page_id, const mini_transaction_engine_stats* stats);
 
-uint32_t is_valid_bits_count_on_free_space_mapper_page(const mini_transaction_engine_stats* stats);
+uint64_t is_valid_bits_count_on_free_space_mapper_page(const mini_transaction_engine_stats* stats);
 
 // get page_id and bit_index for the is_valid bit of the page
 // the result are invalid if the page itself is a free_space_mapper_page
-uint64_t get_is_valid_bit_page_id_for_page(uint64_t page_id, const mini_transaction_engine_stats* stats)
-uint64_t get_is_valid_bit_position_for_page(uint64_t page_id, const mini_transaction_engine_stats* stats)
+uint64_t get_is_valid_bit_page_id_for_page(uint64_t page_id, const mini_transaction_engine_stats* stats);
+uint64_t get_is_valid_bit_position_for_page(uint64_t page_id, const mini_transaction_engine_stats* stats);
 
 // logically !is_free_space_mapper_page(), free space mapper page does not have writerLSN
 int has_writerLSN_on_page(uint64_t page_id, const mini_transaction_engine_stats* stats);
@@ -38,11 +40,11 @@ int has_writerLSN_on_page(uint64_t page_id, const mini_transaction_engine_stats*
 // get/set writerLSN on to the page, this is the first LSN of the mini transaction that lastly modified the page
 // i.e. writerLSN is the id of the mini_transaction that made latest modification to this page, we must wait for that mini transaction to complete, before accessing this page
 uint256 get_writerLSN_for_page(const void* page, const mini_transaction_engine_stats* stats);
-int set_writerLSN_for_page(const void* page, uint256 writerLSN, const mini_transaction_engine_stats* stats);
+int set_writerLSN_for_page(void* page, uint256 writerLSN, const mini_transaction_engine_stats* stats);
 
 // if it is a free_space_mapper page, then it contains 4 byte check_sum, and pageLSN
 // else it contains 4 byte checksum, pageLSN and writerLSN
-uint32_t get_system_header_size_for_page(uint64_t page_id, const mini_transaction_engine_stats* stats)
+uint32_t get_system_header_size_for_page(uint64_t page_id, const mini_transaction_engine_stats* stats);
 
 // adds system header size for the page to the page
 void* get_page_contents_for_page(void* page, uint64_t page_id, const mini_transaction_engine_stats* stats);
