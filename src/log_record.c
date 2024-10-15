@@ -21,8 +21,7 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 {
 	log_record_tuple_defs lrtd = {};
 
-	lrtd.max_log_record_size = stats->page_size * 5;
-	//lsn_width * 2 + page_id_width + page_size + 4 + 13;
+	lrtd.max_log_record_size = stats->page_size * 6; // TODO :: to be configured
 
 	// first initialize the dtis required
 	lrtd.page_id_type = define_uint_non_nullable_type("page_id", stats->page_id_width);
