@@ -11,7 +11,7 @@ struct tuple_insert_log_record
 	tuple_size_def size_def;
 
 	const void* new_tuple;
-	uint32_t new_tuple_index;
+	uint32_t insert_index;
 };
 
 #endif
