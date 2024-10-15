@@ -516,7 +516,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.tdlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.tdlr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
-			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(3), log_record_contents);
+			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(3), log_record_contents);
 			deserialize_tuple_size_def(&(lr.tdlr.size_def), size_def.blob_value, size_def.blob_size);
 
 			lr.tdlr.discard_index = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(4), log_record_contents).uint_value;
@@ -533,18 +533,49 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 		{
 			log_record lr;
 			lr.type = TUPLE_DISCARD_ALL;
+
+			lr.tdalr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.tdalr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tdalr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(2), log_record_contents).uint_value;
+
+			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(3), log_record_contents);
+			deserialize_tuple_size_def(&(lr.tdalr.size_def), size_def.blob_value, size_def.blob_size);
+
+			lr.tdalr.old_page_contents = get_value_from_element_from_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(4), log_record_contents).blob_value;
+
 			return lr;
 		}
 		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
 		{
 			log_record lr;
 			lr.type = TUPLE_DISCARD_TRAILING_TOMB_STONES;
+
+			lr.tdttlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.tdttlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tdttlr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(2), log_record_contents).uint_value;
+
+			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(3), log_record_contents);
+			deserialize_tuple_size_def(&(lr.tdttlr.size_def), size_def.blob_value, size_def.blob_size);
+
+			lr.tdttlr.discarded_trailing_tomb_stones_count = get_value_from_element_from_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(4), log_record_contents).uint_value;
+
 			return lr;
 		}
 		case TUPLE_SWAP :
 		{
 			log_record lr;
 			lr.type = TUPLE_SWAP;
+
+			lr.tslr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.tslr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tslr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(2), log_record_contents).uint_value;
+
+			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(3), log_record_contents);
+			deserialize_tuple_size_def(&(lr.tslr.size_def), size_def.blob_value, size_def.blob_size);
+
+			lr.tslr.swap_index1 = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(4), log_record_contents).uint_value;
+			lr.tslr.swap_index2 = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(5), log_record_contents).uint_value;
+
 			return lr;
 		}
 		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
