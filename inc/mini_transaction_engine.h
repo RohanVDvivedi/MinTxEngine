@@ -14,6 +14,18 @@ struct dirty_page_table_entry
 	uint256 recLSN; // the oldest LSN that made this page dirty, also called recoveryLSN -> you need to start redoing from this LSN to reach latest state of this page
 };
 
+typedef struct mini_transaction_engine_stats mini_transaction_engine_stats;
+struct mini_transaction_engine_stats
+{
+	uint32_t log_sequence_number_width; // required to store log_sequence_number
+
+	uint32_t page_id_width; // bytes required to store page_id
+
+	uint32_t tuple_count_width; // bytes_required to store of tuple_count and tuple_index-es
+
+	uint32_t page_size; // size of page in bytes
+};
+
 typedef struct mini_transaction_engine mini_transaction_engine;
 struct mini_transaction_engine
 {
@@ -21,11 +33,15 @@ struct mini_transaction_engine
 	// also for mini_transaction table
 	pthread_mutex_t global_lock;
 
-	// below are the two main objects that this mini transaction interactes with
+	// below are the two main objects that this mini transaction interactes with bufferpool_p and wale_p
 	block_file* bufferpool_block_file;
 	bufferpool* bufferpool_p;
 
-	// we need more wale objects we only add log record to the latest one, all prior wales are read only
+	// the writwable wale
+	block_file* wale_block_file;
+	wale* wale_p;
+
+	// we need more wale objects we only add log record to the latest one (above), all prior wales are read only
 	arraylist wale_block_files;
 	arraylist wales;
 
@@ -46,6 +62,8 @@ struct mini_transaction_engine
 
 	// as the name suggests check pointing is done every this many milliseconds
 	uint64_t checkpointing_period_in_miliseconds;
+
+	mini_transaction_engine_stats stats;
 };
 
 #endif
