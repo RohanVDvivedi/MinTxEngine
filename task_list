@@ -11,6 +11,7 @@ PICKED
    * redo_log_record
    * undo_and_put_compensation_log_record
  * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
+ * put a FULL_PAGE_WRITE record first for the first modification of the page after checkpoint
  * add function to get mini_tx structure that has a write lock on a particular page
  * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
    * when ever a write lock in released ensure that the check sum matches the data, if not, update check sum and make it dirty in bufferpool
