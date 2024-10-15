@@ -92,8 +92,8 @@ struct tuple_insert_log_record
 	uint64_t page_id;
 	tuple_size_def size_def;
 
-	const void* new_tuple;
 	uint32_t insert_index;
+	const void* new_tuple;
 };
 
 // log record struct for TUPLE_UPDATE
@@ -107,9 +107,7 @@ struct tuple_update_log_record
 	tuple_size_def size_def;
 
 	uint32_t update_index;
-
 	const void* old_tuple;
-
 	const void* new_tuple;
 };
 
@@ -123,8 +121,8 @@ struct tuple_discard_log_record
 	uint64_t page_id;
 	tuple_size_def size_def;
 
-	const void* old_tuple;
 	uint32_t discard_index;
+	const void* old_tuple;
 };
 
 // log record struct for TUPLE_DISCARD_ALL
@@ -284,7 +282,7 @@ struct log_record_tuple_defs
 	data_type_info page_id_type; // type for page_id
 	data_type_info LSN_type; // type for log sequence number
 	data_type_info data_in_bytes_type; // BLOB type atmost as big as max_size = page_size, for tuples and elements
-	data_type_info size_info_in_bytes_type; // BLOB type atmost as big as 13 bytes -> dictated by tuplestore
+	data_type_info size_def_in_bytes_type; // BLOB type atmost as big as 13 bytes -> dictated by tuplestore
 	data_type_info type_info_in_bytes_type; // for data_type_info of type_info for tuple types atmost page size bytes
 
 	// first byte of the log record decides its type
