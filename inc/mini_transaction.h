@@ -35,6 +35,7 @@ struct mini_transaction
 
 	// -----------------
 	// nodes for intrusive structures that this mini transaction resides in, are below
+	llnode enode;
 };
 
 #endif

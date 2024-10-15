@@ -7,24 +7,9 @@
 
 #include<rwlock.h>
 
-typedef struct dirty_page_table_entry dirty_page_table_entry;
-struct dirty_page_table_entry
-{
-	uint64_t page_id; // page_id of the page that is dirty
-	uint256 recLSN; // the oldest LSN that made this page dirty, also called recoveryLSN -> you need to start redoing from this LSN to reach latest state of this page
-};
-
-typedef struct mini_transaction_engine_stats mini_transaction_engine_stats;
-struct mini_transaction_engine_stats
-{
-	uint32_t log_sequence_number_width; // required to store log_sequence_number
-
-	uint32_t page_id_width; // bytes required to store page_id
-
-	uint32_t tuple_count_width; // bytes_required to store of tuple_count and tuple_index-es
-
-	uint32_t page_size; // size of page in bytes
-};
+#include<mini_transaction_engine_stats.h>
+#include<mini_transaction.h>
+#include<dirty_page_table_entry.h>
 
 typedef struct mini_transaction_engine mini_transaction_engine;
 struct mini_transaction_engine
