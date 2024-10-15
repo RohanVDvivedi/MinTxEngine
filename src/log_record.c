@@ -426,13 +426,13 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			log_record lr;
 			lr.type = PAGE_INIT;
 
-			lr.pilr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.pilr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
-			lr.pilr.page_id = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(2), log_record_contents).uint_value;
-			lr.pilr.old_page_contents = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(3), log_record_contents).blob_value;
-			lr.pilr.new_page_header_size = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(4), log_record_contents).uint_value;
+			lr.pilr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.pilr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.pilr.page_id = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(2), log_record_contents).uint_value;
+			lr.pilr.old_page_contents = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(3), log_record_contents).blob_value;
+			lr.pilr.new_page_header_size = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(4), log_record_contents).uint_value;
 
-			user_value new_size_def = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(5), log_record_contents);
+			user_value new_size_def = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(5), log_record_contents);
 			deserialize_tuple_size_def(&(lr.pilr.new_size_def), new_size_def.blob_value, new_size_def.blob_size);
 
 			return lr;
@@ -441,24 +441,92 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 		{
 			log_record lr;
 			lr.type = TUPLE_APPEND;
+
+			lr.talr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.talr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.talr.page_id = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(2), log_record_contents).uint_value;
+
+			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(3), log_record_contents);
+			deserialize_tuple_size_def(&(lr.talr.size_def), size_def.blob_value, size_def.blob_size);
+
+			user_value new_tuple = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(4), log_record_contents);
+			if(is_user_value_NULL(&new_tuple))
+				lr.talr.new_tuple = NULL;
+			else
+				lr.talr.new_tuple = new_tuple.blob_value;
+
 			return lr;
 		}
 		case TUPLE_INSERT :
 		{
 			log_record lr;
 			lr.type = TUPLE_INSERT;
+
+			lr.tilr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.tilr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tilr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(2), log_record_contents).uint_value;
+
+			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(3), log_record_contents);
+			deserialize_tuple_size_def(&(lr.tilr.size_def), size_def.blob_value, size_def.blob_size);
+
+			lr.tilr.insert_index = get_value_from_element_from_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(4), log_record_contents).uint_value;
+
+			user_value new_tuple = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(5), log_record_contents);
+			if(is_user_value_NULL(&new_tuple))
+				lr.talr.new_tuple = NULL;
+			else
+				lr.talr.new_tuple = new_tuple.blob_value;
+
 			return lr;
 		}
 		case TUPLE_UPDATE :
 		{
 			log_record lr;
 			lr.type = TUPLE_UPDATE;
+
+			lr.tulr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.tulr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tulr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(2), log_record_contents).uint_value;
+
+			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(3), log_record_contents);
+			deserialize_tuple_size_def(&(lr.tulr.size_def), size_def.blob_value, size_def.blob_size);
+
+			lr.tulr.update_index = get_value_from_element_from_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(4), log_record_contents).uint_value;
+
+			user_value old_tuple = get_value_from_element_from_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(5), log_record_contents);
+			if(is_user_value_NULL(&old_tuple))
+				lr.tulr.old_tuple = NULL;
+			else
+				lr.tulr.old_tuple = old_tuple.blob_value;
+
+			user_value new_tuple = get_value_from_element_from_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(6), log_record_contents);
+			if(is_user_value_NULL(&new_tuple))
+				lr.tulr.new_tuple = NULL;
+			else
+				lr.tulr.new_tuple = new_tuple.blob_value;
+
 			return lr;
 		}
 		case TUPLE_DISCARD :
 		{
 			log_record lr;
 			lr.type = TUPLE_DISCARD;
+
+			lr.tdlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.tdlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tdlr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(2), log_record_contents).uint_value;
+
+			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(3), log_record_contents);
+			deserialize_tuple_size_def(&(lr.tdlr.size_def), size_def.blob_value, size_def.blob_size);
+
+			lr.tdlr.discard_index = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(4), log_record_contents).uint_value;
+
+			user_value old_tuple = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(5), log_record_contents);
+			if(is_user_value_NULL(&old_tuple))
+				lr.tdlr.old_tuple = NULL;
+			else
+				lr.tdlr.old_tuple = old_tuple.blob_value;
+
 			return lr;
 		}
 		case TUPLE_DISCARD_ALL :
