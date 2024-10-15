@@ -175,10 +175,10 @@ struct tuple_update_element_in_place_log_record
 	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
-	tuple_def tpl_def; // to be destroyed if parsed
+	tuple_def tpl_def; // to be destroyed if parsed, i.e. if serialized_log_record != NULL
 
 	uint32_t tuple_index;
-	positional_accessor element_index; // to be destroyed if parsed
+	positional_accessor element_index; // to be destroyed if parsed, i.e. if serialized_log_record != NULL
 
 	const void* old_element;
 
