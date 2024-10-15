@@ -1,5 +1,4 @@
 PICKED
- * define structs to represent the log records as structs containing both undo and redo records
  * add logic to read and calculate and write/verify check_sum on pa page
  * add logic to read and write pageLSN on the page
  * add logic to read and write writerLSN on the page
