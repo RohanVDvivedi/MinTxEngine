@@ -1,8 +1,25 @@
 #include<system_page_header_util.h>
 
-uint32_t recalculate_page_checksum(void* page, const mini_transaction_engine_stats* stats);
+static uint32_t calculate_checksum(const void* data, uint32_t data_size)
+{
+	uint32_t result = 0;
+	for(uint32_t i = 0; i < data_size; i++)
+		result += ((const char*)data)[i];
+	return result;
+}
 
-int validate_page_checksum(const void* page, const mini_transaction_engine_stats* stats);
+uint32_t recalculate_page_checksum(void* page, const mini_transaction_engine_stats* stats)
+{
+	uint32_t checksum = calculate_checksum(page + 4, stats->page_size - 4);
+	serialize_uint32(page, 4, checksum);
+	return checksum;
+}
+
+int validate_page_checksum(const void* page, const mini_transaction_engine_stats* stats)
+{
+	uint32_t checksum = calculate_checksum(page + 4, stats->page_size - 4);
+	return checksum == deserialize_uint32(page, 4);
+}
 
 uint256 get_pageLSN_for_page(const void* page, const mini_transaction_engine_stats* stats)
 {
