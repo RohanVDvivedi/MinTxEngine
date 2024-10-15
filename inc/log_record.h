@@ -227,5 +227,32 @@ struct complete_mini_tx_log_record
 	uint32_t info_size;
 };
 
+typedef struct log_record log_record;
+struct log_record
+{
+	log_record_type type;
+
+	union
+	{
+		page_allocation_log_record palr;
+		page_init_log_record pilr;
+		tuple_append_log_record talr;
+		tuple_insert_log_record tilr;
+		tuple_update_log_record tulr;
+		tuple_discard_log_record tdlr;
+		tuple_discard_all_log_record tdalr;
+		tuple_discard_trailing_tombstones_log_record tdttlr;
+		tuple_swap_log_record tslr;
+		tuple_update_element_in_place_log_record tueiplr;
+		page_clone_log_record pclr;
+		full_page_write_log_record fpwlr;
+		compensation_log_record clr;
+		abort_mini_tx_log_record amtlr;
+		complete_mini_tx_log_record cmtlr;
+	};
+
+	const void* serialized_log_record;
+	// this memory if not null should be freed when this object is no longer in use
+};
 
 #endif

@@ -66,8 +66,6 @@ uint256 get_writerLSN_for_page(const void* page, const mini_transaction_engine_s
 
 int set_writerLSN_for_page(void* page, uint256 writerLSN, const mini_transaction_engine_stats* stats)
 {
-	if(is_free_space_mapper_page(page_id, stats))
-		return 0;
 	serialize_uint256(page + 4 + stats->log_sequence_number_width, stats->log_sequence_number_width, writerLSN);
 	return 1;
 }
