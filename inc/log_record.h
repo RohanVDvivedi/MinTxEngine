@@ -182,9 +182,8 @@ struct tuple_update_element_in_place_log_record
 	uint32_t tuple_index;
 	positional_accessor element_index; // to be destroyed if parsed, i.e. if serialized_log_record != NULL
 
-	const void* old_element;
-
-	const void* new_element;
+	user_value old_element;
+	user_value new_element;
 };
 
 // log record struct for PAGE_CLONE

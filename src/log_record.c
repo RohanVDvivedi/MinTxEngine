@@ -631,17 +631,29 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			for(uint32_t i = 0; i < lr.tueiplr.element_index.positions_length; i++)
 				lr.tueiplr.element_index.positions[i] = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(5, i), log_record_contents).uint_value;
 
+			data_type_info* ele_def = get_type_info_for_element_from_tuple_def(&(lr.tueiplr.tpl_def), lr.tueiplr.element_index);
+
 			user_value old_element = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(6), log_record_contents);
 			if(is_user_value_NULL(&old_element))
-				lr.tueiplr.old_element = NULL;
+				lr.tueiplr.old_element = (*NULL_USER_VALUE);
+			else if(ele_def->type == BIT_FIELD)
+			{
+				lr.tueiplr.old_element = get_user_value_for_type_info(UINT_NULLABLE[8], old_element.blob_value);
+				lr.tueiplr.old_element.bit_field_value = lr.tueiplr.old_element.uint_value;
+			}
 			else
-				lr.tueiplr.old_element = old_element.blob_value;
+				lr.tueiplr.old_element = get_user_value_for_type_info(ele_def, old_element.blob_value);
 
 			user_value new_element = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(7), log_record_contents);
 			if(is_user_value_NULL(&new_element))
-				lr.tueiplr.new_element = NULL;
+				lr.tueiplr.new_element = (*NULL_USER_VALUE);
+			else if(ele_def->type == BIT_FIELD)
+			{
+				lr.tueiplr.new_element = get_user_value_for_type_info(UINT_NULLABLE[8], new_element.blob_value);
+				lr.tueiplr.new_element.bit_field_value = lr.tueiplr.new_element.uint_value;
+			}
 			else
-				lr.tueiplr.new_element = new_element.blob_value;
+				lr.tueiplr.new_element = get_user_value_for_type_info(ele_def, new_element.blob_value);
 
 			return lr;
 		}
