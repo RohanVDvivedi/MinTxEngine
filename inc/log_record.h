@@ -10,6 +10,8 @@
 typedef enum log_record_type log_record_type;
 enum log_record_type
 {
+	UNIDENTIFIED = 0, // this log record can not be parsed or serialized with functions in this header and source file
+
 	PAGE_ALLOCATION = 1,
 	PAGE_DEALLOCATION = 2,
 
@@ -311,5 +313,9 @@ struct log_record_tuple_defs
 // we do not have a means to destroy what it initialized so a ctrl+c is what we need
 // i.e. it leaks one time minimal memory, only a fool would call this function in a loop
 log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_engine_stats* stats);
+
+log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size);
+
+const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const log_record* lr);
 
 #endif
