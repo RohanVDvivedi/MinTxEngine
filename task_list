@@ -1,5 +1,5 @@
 PICKED
- * pass user values in update element in place in tuple, and try to find out a way to serialize that instead
+ * pass user values in update element in place in tuple for attributes old_element and new_element, and try to find out a way to serialize that as is, if not a BIT_FIELD except serialize as UINT_NON_NULLABLE[8]
  * serialize_log_record
  * test building all 16 types of log records serializing them, then deserializing them and then printing to ensure that they are identical
  * build a log_record soruce file init goes
