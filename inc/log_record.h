@@ -316,6 +316,6 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 
 log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size);
 
-const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const log_record* lr);
+const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const log_record* lr, uint32_t* result_size);
 
 #endif

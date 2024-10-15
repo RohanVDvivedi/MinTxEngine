@@ -734,5 +734,5 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 	}
 }
 
-const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const log_record* lr);
+const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const log_record* lr, uint32_t* result_size);
 
