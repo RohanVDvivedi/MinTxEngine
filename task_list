@@ -1,6 +1,4 @@
 PICKED
- * add static log sequence number dti and page_id dti and positional_accessor dti to a tuple def struct
-  * build a tuple def struct that can hold all tuple defs and dtis
  * parse_log_record
  * serialize_log_record
  * build a log_record soruce file init goes
