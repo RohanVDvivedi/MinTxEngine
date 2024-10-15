@@ -1,5 +1,5 @@
 PICKED
- * parse_log_record
+ * pass user values in update element in place in tuple, and try to find out a way to serialize that instead
  * serialize_log_record
  * test building all 16 types of log records serializing them, then deserializing them and then printing to ensure that they are identical
  * build a log_record soruce file init goes
