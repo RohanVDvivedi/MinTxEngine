@@ -1,6 +1,7 @@
 PICKED
  * parse_log_record
  * serialize_log_record
+ * test building all 16 types of log records serializing them, then deserializing them and then printing to ensure that they are identical
  * build a log_record soruce file init goes
    * build a tuple_definitions struct consisting of all tuple_defs and dtis for the log record types
    * a single struct consisting of log_record_type enum and the union of log records, and a log_sequence_number of the record
