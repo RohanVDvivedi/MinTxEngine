@@ -631,7 +631,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			for(uint32_t i = 0; i < lr.tueiplr.element_index.positions_length; i++)
 				lr.tueiplr.element_index.positions[i] = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(5, i), log_record_contents).uint_value;
 
-			data_type_info* ele_def = get_type_info_for_element_from_tuple_def(&(lr.tueiplr.tpl_def), lr.tueiplr.element_index);
+			const data_type_info* ele_def = get_type_info_for_element_from_tuple_def(&(lr.tueiplr.tpl_def), lr.tueiplr.element_index);
 
 			user_value old_element = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(6), log_record_contents);
 			if(is_user_value_NULL(&old_element))
