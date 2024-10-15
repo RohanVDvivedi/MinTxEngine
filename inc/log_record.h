@@ -178,7 +178,7 @@ struct tuple_update_element_in_place_log_record
 	tuple_def tpl_def; // to be destroyed if parsed
 
 	uint32_t tuple_index;
-	positional_accessor element_index;
+	positional_accessor element_index; // to be destroyed if parsed
 
 	const void* old_element;
 
