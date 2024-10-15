@@ -47,6 +47,7 @@ enum log_record_type
 typedef struct page_allocation_log_record page_allocation_log_record;
 struct page_allocation_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 };
@@ -56,6 +57,7 @@ struct page_allocation_log_record
 typedef struct page_init_log_record page_init_log_record;
 struct page_init_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 
@@ -72,6 +74,7 @@ struct page_init_log_record
 typedef struct tuple_append_log_record tuple_append_log_record;
 struct tuple_append_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 	tuple_size_def size_def;
@@ -84,6 +87,7 @@ struct tuple_append_log_record
 typedef struct tuple_insert_log_record tuple_insert_log_record;
 struct tuple_insert_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 	tuple_size_def size_def;
@@ -97,6 +101,7 @@ struct tuple_insert_log_record
 typedef struct tuple_update_log_record tuple_update_log_record;
 struct tuple_update_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 	tuple_size_def size_def;
@@ -113,6 +118,7 @@ struct tuple_update_log_record
 typedef struct tuple_discard_log_record tuple_discard_log_record;
 struct tuple_discard_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 	tuple_size_def size_def;
@@ -126,6 +132,7 @@ struct tuple_discard_log_record
 typedef struct tuple_discard_all_log_record tuple_discard_all_log_record;
 struct tuple_discard_all_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 	tuple_size_def size_def;
@@ -139,6 +146,7 @@ struct tuple_discard_all_log_record
 typedef struct tuple_discard_trailing_tombstones_log_record tuple_discard_trailing_tombstones_log_record;
 struct tuple_discard_trailing_tombstones_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 	tuple_size_def size_def;
@@ -152,6 +160,7 @@ struct tuple_discard_trailing_tombstones_log_record
 typedef struct tuple_swap_log_record tuple_swap_log_record;
 struct tuple_swap_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 	tuple_size_def size_def;
@@ -165,6 +174,7 @@ struct tuple_swap_log_record
 typedef struct tuple_update_element_in_place_log_record tuple_update_element_in_place_log_record;
 struct tuple_update_element_in_place_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 	tuple_def tpl_def; // to be destroyed if parsed
@@ -181,6 +191,7 @@ struct tuple_update_element_in_place_log_record
 typedef struct page_clone_log_record page_clone_log_record;
 struct page_clone_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 	tuple_size_def size_def;
@@ -197,6 +208,7 @@ struct page_clone_log_record
 typedef struct full_page_write_log_record full_page_write_log_record;
 struct full_page_write_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 	tuple_size_def size_def;
@@ -209,6 +221,7 @@ struct full_page_write_log_record
 typedef struct compensation_log_record compensation_log_record;
 struct compensation_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transactionss
 
 	uint256 undo_of; // this log record is undo log record of
@@ -220,6 +233,7 @@ struct compensation_log_record
 typedef struct abort_mini_tx_log_record abort_mini_tx_log_record;
 struct abort_mini_tx_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transactionss
 };
 
@@ -227,6 +241,7 @@ struct abort_mini_tx_log_record
 typedef struct complete_mini_tx_log_record complete_mini_tx_log_record;
 struct complete_mini_tx_log_record
 {
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transactionss
 
 	const void* info; // must not be more than 1 page in size
