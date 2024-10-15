@@ -7,6 +7,7 @@ struct page_clone_log_record
 {
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
+	tuple_size_def size_def;
 
 	// prior_page_contents as is
 	const void* old_page_contents;
