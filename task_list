@@ -1,6 +1,15 @@
 PICKED
  * implement system header util functions
  * add static log sequence number dti and page_id dti and positional_accessor dti to stats struct
+ * build a log_record soruce file init goes
+   * build a tuple_definitions struct consisting of all tuple_defs and dtis for the log record types
+   * a single struct consisting of log_record_type enum and the union of log records, and a log_sequence_number of the record
+   * parse_log_record
+   * serialize_log_record
+   * execute_and_put_log_record
+   * can_redo_log_record -> returns true only if the page.pageLSN < log.LSN
+   * redo_log_record
+   * undo_and_put_compensation_log_record
  * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
  * add function to get mini_tx structure that has a write lock on a particular page
  * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
