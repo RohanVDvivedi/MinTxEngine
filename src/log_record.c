@@ -3,6 +3,18 @@
 #include<stdlib.h>
 #include<string.h>
 
+static uint32_t bytes_for_page_index(uint32_t page_size)
+{
+	if(page_size < (UINT32_C(1) < 8))
+		return 1;
+	else if(page_size < (UINT32_C(1) < 16))
+		return 2;
+	else if(page_size < (UINT32_C(1) < 24))
+		return 3;
+	else
+		return 4;
+}
+
 log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_engine_stats* stats)
 {
 	log_record_tuple_defs lrtd = {};
@@ -13,6 +25,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 	// first initialize the dtis required
 	lrtd.page_id_type = define_uint_non_nullable_type("page_id", stats->page_id_width);
 	lrtd.LSN_type = define_large_uint_non_nullable_type("LSN", stats->log_sequence_number_width);
+	lrtd.page_index_type = define_uint_non_nullable_type("page_index", bytes_for_page_index(stats->page_size));
+	lrtd.tuple_positional_accessor_type = get_variable_element_count_array_type("tuple_positional_accessor_type", stats->page_size, &(lrtd.page_index_type));
 	lrtd.data_in_bytes_type = get_variable_length_blob_type("data", stats->page_size);
 	lrtd.size_def_in_bytes_type = get_variable_length_blob_type("size_def", 13);
 	lrtd.type_info_in_bytes_type = get_variable_length_blob_type("type_info", stats->page_size);
@@ -51,7 +65,7 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 		dti->containees[3].type_info = &(lrtd.data_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "new_page_header_size");
-		dti->containees[4].type_info = UINT_NON_NULLABLE[4];
+		dti->containees[4].type_info = &(lrtd.page_index_type);
 
 		strcpy(dti->containees[5].field_name, "new_size_def");
 		dti->containees[5].type_info = &(lrtd.size_def_in_bytes_type);
@@ -100,7 +114,7 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 		dti->containees[3].type_info = &(lrtd.size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "insert_index");
-		dti->containees[4].type_info = UINT_NON_NULLABLE[4];
+		dti->containees[4].type_info = &(lrtd.page_index_type);
 
 		strcpy(dti->containees[5].field_name, "new_tuple");
 		dti->containees[5].type_info = &(lrtd.data_in_bytes_type);
@@ -126,7 +140,7 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 		dti->containees[3].type_info = &(lrtd.size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "update_index");
-		dti->containees[4].type_info = UINT_NON_NULLABLE[4];
+		dti->containees[4].type_info = &(lrtd.page_index_type);
 
 		strcpy(dti->containees[5].field_name, "old_tuple");
 		dti->containees[5].type_info = &(lrtd.data_in_bytes_type);
@@ -155,7 +169,7 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 		dti->containees[3].type_info = &(lrtd.size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "discard_index");
-		dti->containees[4].type_info = UINT_NON_NULLABLE[4];
+		dti->containees[4].type_info = &(lrtd.page_index_type);
 
 		strcpy(dti->containees[5].field_name, "old_tuple");
 		dti->containees[5].type_info = &(lrtd.data_in_bytes_type);
@@ -204,7 +218,7 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 		dti->containees[3].type_info = &(lrtd.size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "discarded_trailing_tombstones_count");
-		dti->containees[4].type_info = UINT_NON_NULLABLE[4];
+		dti->containees[4].type_info = &(lrtd.page_index_type);
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd.tdttlr_def), dti);
@@ -227,10 +241,10 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 		dti->containees[3].type_info = &(lrtd.size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "swap_index1");
-		dti->containees[4].type_info = UINT_NON_NULLABLE[4];
+		dti->containees[4].type_info = &(lrtd.page_index_type);
 
 		strcpy(dti->containees[5].field_name, "swap_index2");
-		dti->containees[5].type_info = UINT_NON_NULLABLE[4];
+		dti->containees[5].type_info = &(lrtd.page_index_type);
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd.tslr_def), dti);
@@ -253,10 +267,10 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 		dti->containees[3].type_info = &(lrtd.type_info_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "tuple_index");
-		dti->containees[4].type_info = UINT_NON_NULLABLE[4];
+		dti->containees[4].type_info = &(lrtd.page_index_type);
 
 		strcpy(dti->containees[5].field_name, "element_index");
-		dti->containees[5].type_info = NULL; // TODO : add positional accessor as type
+		dti->containees[5].type_info = &(lrtd.tuple_positional_accessor_type);
 
 		strcpy(dti->containees[6].field_name, "old_element");
 		dti->containees[6].type_info = &(lrtd.data_in_bytes_type);
