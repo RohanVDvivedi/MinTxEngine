@@ -1,5 +1,4 @@
 PICKED
- * review system header util functions
  * add static log sequence number dti and page_id dti and positional_accessor dti to stats struct
  * build a log_record soruce file init goes
    * build a tuple_definitions struct consisting of all tuple_defs and dtis for the log record types
