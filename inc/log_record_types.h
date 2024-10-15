@@ -1,8 +1,8 @@
 #ifndef WALE_LOG_RECORD_TYPES_H
 #define WALE_LOG_RECORD_TYPES_H
 
-typedef enum wale_log_record_type wale_log_record_type;
-enum wale_log_record_type
+typedef enum log_record_type log_record_type;
+enum log_record_type
 {
 	PAGE_ALLOCATION = 1,
 	PAGE_DEALLOCATION = 2,
