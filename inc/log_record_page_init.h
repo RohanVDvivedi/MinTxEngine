@@ -10,7 +10,7 @@ struct page_init_log_record
 
 	// prior_page_contents as is
 	const void* old_page_contents;
-s
+
 	// input params for page init
 	uint32_t new_page_header_size;
 	tuple_size_def new_size_def;
