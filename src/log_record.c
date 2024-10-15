@@ -471,11 +471,11 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 
 			lr.tilr.insert_index = get_value_from_element_from_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(4), log_record_contents).uint_value;
 
-			user_value new_tuple = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(5), log_record_contents);
+			user_value new_tuple = get_value_from_element_from_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(5), log_record_contents);
 			if(is_user_value_NULL(&new_tuple))
-				lr.talr.new_tuple = NULL;
+				lr.tilr.new_tuple = NULL;
 			else
-				lr.talr.new_tuple = new_tuple.blob_value;
+				lr.tilr.new_tuple = new_tuple.blob_value;
 
 			return lr;
 		}
@@ -676,8 +676,8 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			log_record lr;
 			lr.type = COMPLETE_MINI_TX;
 
-			lr.amtlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.amtlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.cmtlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.cmtlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 
 			user_value info = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(2), log_record_contents);
 			if(is_user_value_NULL(&info))
