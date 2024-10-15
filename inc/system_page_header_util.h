@@ -23,7 +23,7 @@ int validate_page_checksum(const void* page, const mini_transaction_engine_stats
 
 // get/set pageLSN on to the page, this is the last LSN that modified the page, present on all pages
 uint256 get_pageLSN_for_page(const void* page, const mini_transaction_engine_stats* stats);
-int set_pageLSN_for_page(void* page, uint256 LSN, const mini_transaction_engine_stats* stats);
+int set_pageLSN_for_page(void* page, uint256 pageLSN, const mini_transaction_engine_stats* stats);
 
 int is_free_space_mapper_page(uint64_t page_id, const mini_transaction_engine_stats* stats);
 

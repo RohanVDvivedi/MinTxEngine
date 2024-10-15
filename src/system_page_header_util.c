@@ -26,15 +26,15 @@ uint256 get_pageLSN_for_page(const void* page, const mini_transaction_engine_sta
 	return deserialize_uint256(page + 4, stats->log_sequence_number_width);
 }
 
-int set_pageLSN_for_page(void* page, uint256 LSN, const mini_transaction_engine_stats* stats)
+int set_pageLSN_for_page(void* page, uint256 pageLSN, const mini_transaction_engine_stats* stats)
 {
-	serialize_uint256(page + 4, stats->log_sequence_number_width, LSN);
+	serialize_uint256(page + 4, stats->log_sequence_number_width, pageLSN);
 	return 1;
 }
 
 uint64_t is_valid_bits_count_on_free_space_mapper_page(const mini_transaction_engine_stats* stats)
 {
-	return (stats->page_size - 4 - stats->log_sequence_number_width) * UINT64_C(8);
+	return ((uint64_t)(stats->page_size - 4 - stats->log_sequence_number_width)) * UINT64_C(8);
 }
 
 #define PAGE_POS_MULTIPLIER(stats) (is_valid_bits_count_on_free_space_mapper_page(stats) + UINT64_C(1))
@@ -66,6 +66,8 @@ uint256 get_writerLSN_for_page(const void* page, const mini_transaction_engine_s
 
 int set_writerLSN_for_page(void* page, uint256 writerLSN, const mini_transaction_engine_stats* stats)
 {
+	if(is_free_space_mapper_page(page_id, stats))
+		return 0;
 	serialize_uint256(page + 4 + stats->log_sequence_number_width, stats->log_sequence_number_width, writerLSN);
 	return 1;
 }
@@ -75,7 +77,7 @@ uint32_t get_system_header_size_for_page(uint64_t page_id, const mini_transactio
 	if(is_free_space_mapper_page(page_id, stats))
 		return 4 + stats->log_sequence_number_width;
 	else
-		return 4 + 2 * stats->log_sequence_number_width;
+		return 4 + (2 * stats->log_sequence_number_width);
 }
 
 void* get_page_contents_for_page(void* page, uint64_t page_id, const mini_transaction_engine_stats* stats)
@@ -85,5 +87,5 @@ void* get_page_contents_for_page(void* page, uint64_t page_id, const mini_transa
 
 void* get_page_for_page_contents(void* page_contents, uint64_t page_id, const mini_transaction_engine_stats* stats)
 {
-	return page_contents + get_system_header_size_for_page(page_id, stats);
+	return page_contents - get_system_header_size_for_page(page_id, stats);
 }
