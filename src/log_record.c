@@ -385,3 +385,115 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 	return lrtd;
 }
 
+log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size)
+{
+	if(serialized_log_record_size <= 1 || serialized_log_record_size > lrtd_p->max_log_record_size)
+		return (log_record){};
+
+	unsigned char log_record_type = ((const unsigned char*)serialized_log_record)[0];
+	const void* log_record_contents = serialized_log_record + 1;
+
+	switch(log_record_type)
+	{
+		default : return (log_record){};
+		case PAGE_ALLOCATION :
+		{
+			log_record lr;
+			lr.type = PAGE_ALLOCATION;
+			return lr;
+		}
+		case PAGE_DEALLOCATION :
+		{
+			log_record lr;
+			lr.type = PAGE_DEALLOCATION;
+			return lr;
+		}
+		case PAGE_INIT :
+		{
+			log_record lr;
+			lr.type = PAGE_INIT;
+			return lr;
+		}
+		case TUPLE_APPEND :
+		{
+			log_record lr;
+			lr.type = TUPLE_APPEND;
+			return lr;
+		}
+		case TUPLE_INSERT :
+		{
+			log_record lr;
+			lr.type = TUPLE_INSERT;
+			return lr;
+		}
+		case TUPLE_UPDATE :
+		{
+			log_record lr;
+			lr.type = TUPLE_UPDATE;
+			return lr;
+		}
+		case TUPLE_DISCARD :
+		{
+			log_record lr;
+			lr.type = TUPLE_DISCARD;
+			return lr;
+		}
+		case TUPLE_DISCARD_ALL :
+		{
+			log_record lr;
+			lr.type = TUPLE_DISCARD_ALL;
+			return lr;
+		}
+		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+		{
+			log_record lr;
+			lr.type = TUPLE_DISCARD_TRAILING_TOMB_STONES;
+			return lr;
+		}
+		case TUPLE_SWAP :
+		{
+			log_record lr;
+			lr.type = TUPLE_SWAP;
+			return lr;
+		}
+		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+		{
+			log_record lr;
+			lr.type = TUPLE_UPDATE_ELEMENT_IN_PLACE;
+			return lr;
+		}
+		case PAGE_CLONE :
+		{
+			log_record lr;
+			lr.type = PAGE_CLONE;
+			return lr;
+		}
+		case FULL_PAGE_WRITE :
+		{
+			log_record lr;
+			lr.type = FULL_PAGE_WRITE;
+			return lr;
+		}
+		case COMPENSATION_LOG :
+		{
+			log_record lr;
+			lr.type = COMPENSATION_LOG;
+			return lr;
+		}
+		case ABORT_MINI_TX :
+		{
+			log_record lr;
+			lr.type = ABORT_MINI_TX;
+			return lr;
+		}
+		case COMPLETE_MINI_TX :
+		{
+			log_record lr;
+			lr.type = COMPLETE_MINI_TX;
+			return lr;
+		}
+	}
+}
+
+const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const log_record* lr);
+
