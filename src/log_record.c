@@ -582,36 +582,87 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 		{
 			log_record lr;
 			lr.type = TUPLE_UPDATE_ELEMENT_IN_PLACE;
+
+			lr.tueiplr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.tueiplr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tueiplr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(2), log_record_contents).uint_value;
+
+			// TODO :: complet the parsing
+
 			return lr;
 		}
 		case PAGE_CLONE :
 		{
 			log_record lr;
 			lr.type = PAGE_CLONE;
+
+			lr.pclr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.pclr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.pclr.page_id = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(2), log_record_contents).uint_value;
+
+			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(3), log_record_contents);
+			deserialize_tuple_size_def(&(lr.pclr.size_def), size_def.blob_value, size_def.blob_size);
+
+			lr.pclr.old_page_contents = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(4), log_record_contents).blob_value;
+			lr.pclr.new_page_contents = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(5), log_record_contents).blob_value;
+
 			return lr;
 		}
 		case FULL_PAGE_WRITE :
 		{
 			log_record lr;
 			lr.type = FULL_PAGE_WRITE;
+
+			lr.fpwlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.fpwlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.fpwlr.page_id = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(2), log_record_contents).uint_value;
+
+			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(3), log_record_contents);
+			deserialize_tuple_size_def(&(lr.fpwlr.size_def), size_def.blob_value, size_def.blob_size);
+
+			lr.fpwlr.page_contents = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(4), log_record_contents).blob_value;
+
 			return lr;
 		}
 		case COMPENSATION_LOG :
 		{
 			log_record lr;
 			lr.type = COMPENSATION_LOG;
+
+			lr.clr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->clr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.clr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->clr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.clr.undo_of = get_value_from_element_from_tuple(&(lrtd_p->clr_def), STATIC_POSITION(2), log_record_contents).large_uint_value;
+			lr.clr.next_log_record_to_undo = get_value_from_element_from_tuple(&(lrtd_p->clr_def), STATIC_POSITION(3), log_record_contents).large_uint_value;
+
 			return lr;
 		}
 		case ABORT_MINI_TX :
 		{
 			log_record lr;
 			lr.type = ABORT_MINI_TX;
+
+			lr.amtlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.amtlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+
 			return lr;
 		}
 		case COMPLETE_MINI_TX :
 		{
 			log_record lr;
 			lr.type = COMPLETE_MINI_TX;
+
+			lr.amtlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.amtlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+
+			user_value info = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(2), log_record_contents);
+			if(is_user_value_NULL(&info))
+				lr.cmtlr.info = NULL;
+			else
+			{
+				lr.cmtlr.info = info.blob_value;
+				lr.cmtlr.info_size = info.blob_size;
+			}
+
 			return lr;
 		}
 	}
