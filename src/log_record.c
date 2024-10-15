@@ -587,7 +587,32 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.tueiplr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.tueiplr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
-			// TODO :: complet the parsing
+			user_value tpl_def = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(3), log_record_contents);
+			int allocation_error = 0;
+			data_type_info* dti = deserialize_type_info(tpl_def.blob_value, tpl_def.blob_size, &allocation_error);
+			if(dti == NULL)
+				exit(-1);
+			if(!initialize_tuple_def(&(lr.tueiplr.tpl_def), dti))
+				exit(-1);
+
+			lr.tueiplr.tuple_index = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(4), log_record_contents).uint_value;
+
+			lr.tueiplr.element_index.positions_length = get_element_count_for_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(5), log_record_contents);
+			lr.tueiplr.element_index.positions = malloc(sizeof(uint32_t) * lr.tueiplr.element_index.positions_length);
+			for(uint32_t i = 0; i < lr.tueiplr.element_index.positions_length; i++)
+				lr.tueiplr.element_index.positions[i] = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(5, i), log_record_contents).uint_value;
+
+			user_value old_element = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(6), log_record_contents);
+			if(is_user_value_NULL(&old_element))
+				lr.tueiplr.old_element = NULL;
+			else
+				lr.tueiplr.old_element = old_element.blob_value;
+
+			user_value new_element = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(7), log_record_contents);
+			if(is_user_value_NULL(&new_element))
+				lr.tueiplr.new_element = NULL;
+			else
+				lr.tueiplr.new_element = new_element.blob_value;
 
 			return lr;
 		}
