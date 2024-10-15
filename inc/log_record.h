@@ -161,7 +161,7 @@ struct tuple_update_element_in_place_log_record
 {
 	uint256 prev_log_record; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
-	tuple_def tpl_def;
+	tuple_def tpl_def; // to be destroyed if parsed
 
 	uint32_t tuple_index;
 	positional_accessor element_index;
@@ -254,5 +254,41 @@ struct log_record
 	const void* serialized_log_record;
 	// this memory if not null should be freed when this object is no longer in use
 };
+
+typedef struct log_record_tuple_defs log_record_tuple_defs;
+struct log_record_tuple_defs
+{
+	uint32_t max_log_record_size;
+
+	data_type_info page_id_type; // type for page_id
+	data_type_info LSN_type; // type for log sequence number
+	data_type_info data_in_bytes_type; // BLOB type atmost as big as max_size = page_size, for tuples and elements
+	data_type_info size_info_in_bytes_type; // BLOB type atmost as big as 13 bytes -> dictated by tuplestore
+	data_type_info type_info_in_bytes_type; // for data_type_info of type_info for tuple types atmost page size bytes
+
+	// first byte of the log record decides its type
+
+	tuple_def palr_def;
+	tuple_def pilr_def;
+	tuple_def talr_def;
+	tuple_def tilr_def;
+	tuple_def tulr_def;
+	tuple_def tdlr_def;
+	tuple_def tdalr_def;
+	tuple_def tdttlr_def;
+	tuple_def tslr_def;
+	tuple_def tueiplr_def;
+	tuple_def pclr_def;
+	tuple_def fpwlr_def;
+	tuple_def clr_def;
+	tuple_def amtlr_def;
+	tuple_def cmtlr_def;
+};
+
+// this function is crucial insucceeding the creation of mini_transaction_engine
+// it won't fail, it any malloc calls fail, we do an exit(-1)
+// we do not have a means to destroy what it initialized so a ctrl+c is what we need
+// i.e. it leaks one time minimal memory, only a fool would call this function in a loop
+log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_engine_stats* stats);
 
 #endif
