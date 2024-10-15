@@ -1,8 +1,5 @@
 PICKED
- * add logic to read and calculate and write/verify check_sum on page
- * add logic to read and write pageLSN on the page
- * add logic to read and write writerLSN on the page
- * add logic to get page_contents from frame, and get_frame_from page_contents, adding substracting an offset from pointer
+ * implement system header util functions
  * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
  * add function to get mini_tx structure that has a write lock on a particular page
  * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
