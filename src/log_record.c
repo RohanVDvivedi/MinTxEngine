@@ -295,8 +295,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 		strcpy(dti->containees[2].field_name, "page_id");
 		dti->containees[2].type_info = &(lrtd.page_id_type);
 
-		strcpy(dti->containees[3].field_name, "tpl_def");
-		dti->containees[3].type_info = &(lrtd.type_info_in_bytes_type);
+		strcpy(dti->containees[3].field_name, "size_def");
+		dti->containees[3].type_info = &(lrtd.size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "old_page_contents");
 		dti->containees[4].type_info = &(lrtd.data_in_bytes_type);
@@ -321,8 +321,8 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 		strcpy(dti->containees[2].field_name, "page_id");
 		dti->containees[2].type_info = &(lrtd.page_id_type);
 
-		strcpy(dti->containees[3].field_name, "tpl_def");
-		dti->containees[3].type_info = &(lrtd.type_info_in_bytes_type);
+		strcpy(dti->containees[3].field_name, "size_def");
+		dti->containees[3].type_info = &(lrtd.size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "page_contents");
 		dti->containees[4].type_info = &(lrtd.data_in_bytes_type);
