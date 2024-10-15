@@ -15,20 +15,6 @@ PICKED
  * add function to get mini_tx structure that has a write lock on a particular page
  * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
    * when ever a write lock in released ensure that the check sum matches the data, if not, update check sum and make it dirty in bufferpool
- * define structures for all log records as supported by tuple store
-   * make a file for each of them containing functions like
-    * execute_operation_on_page // executes the operation on page. creates a wal log for it and writes it
-                                // fails if the frame is not write latched
-                                // waits for short durations if page is write-locked by IN_PROGRESS or ABORTING mini tx
-                                // fails if the operation itself fails
-                                // exits immediately if out of memory
-                                // returns a WAL log record
-    * undo_operation_on_page // undos a wal log record, fails if wrong type
-                             // generates an undo log record
-                             // this must be possible unless you do something wrong
-    * redo_wal_log_on_page // redo a wal log record, fails if wrong type
-    * operations allocate_page_with_write_lock, free_page,     init_page,       append,        insert,           update, discard, discard_all, discard_trailing_tomb_stones, swap, update_in_place, clone, run_page_compaction
-    * undo   ops free_page,                     allocate page, full_page_write, discard last,  discard at index, update, insert,  full_page_write, append NULLs at th end,   swap, update_in_place, clone, None
  * there is no meaning/value of a page contents if and only if the latest modification to a page is free page and mini transaction that called it is committed
    * a free page call on a mini transaction not committed can still abort, and may require to be undo forcing us to put valid old contents on the page
    * A solution ot this is that we only mark the page as allocated/free in the bitmap and make no chnages on the page contents for allocation and freeing, this will also save us crucial space on the WAL
