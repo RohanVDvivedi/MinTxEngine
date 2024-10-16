@@ -1021,6 +1021,39 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 			(*result_size) = get_tuple_size(&(lrtd_p->tdttlr_def), result + 1) + 1;
 			return result;
 		}
+		case TUPLE_SWAP :
+		{
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tslr_def));
+
+			void* result = malloc(capacity);
+			if(result == NULL)
+				goto ERROR;
+
+			((unsigned char*)result)[0] = TUPLE_SWAP;
+
+			if(!set_element_in_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tslr.mini_transaction_id}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tslr.prev_log_record}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->tslr.page_id}, UINT32_MAX))
+				goto ERROR;
+
+			user_value size_def = {.blob_value = (uint8_t [13]){}};
+			size_def.blob_size = serialize_tuple_size_def(&(lr->tslr.size_def), (void*)(size_def.blob_value));
+			if(!set_element_in_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(3), result + 1, &size_def, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(4), result + 1, &(user_value){.uint_value = lr->tslr.swap_index1}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(5), result + 1, &(user_value){.uint_value = lr->tslr.swap_index2}, UINT32_MAX))
+				goto ERROR;
+
+			(*result_size) = get_tuple_size(&(lrtd_p->tslr_def), result + 1) + 1;
+			return result;
+		}
 	}
 
 	ERROR :;
