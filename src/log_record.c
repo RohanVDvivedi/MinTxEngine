@@ -791,7 +791,7 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 		}
 		case PAGE_INIT :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pilr_def)) + get_page_content_size_for_page(lr->pilr.page_id, stats) + 13;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pilr_def)) + (4 + get_page_content_size_for_page(lr->pilr.page_id, stats)) + 16;
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -824,9 +824,9 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 		}
 		case TUPLE_APPEND :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->talr_def)) + 13;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->talr_def)) + 16;
 			if(lr->talr.new_tuple != NULL)
-				capacity += get_tuple_size_using_tuple_size_def(&(lr->talr.size_def), lr->talr.new_tuple);
+				capacity += (4 + get_tuple_size_using_tuple_size_def(&(lr->talr.size_def), lr->talr.new_tuple));
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -864,9 +864,9 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 		}
 		case TUPLE_INSERT :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tilr_def)) + 13;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tilr_def)) + 16;
 			if(lr->tilr.new_tuple != NULL)
-				capacity += get_tuple_size_using_tuple_size_def(&(lr->tilr.size_def), lr->tilr.new_tuple);
+				capacity += (4 + get_tuple_size_using_tuple_size_def(&(lr->tilr.size_def), lr->tilr.new_tuple));
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -907,11 +907,11 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 		}
 		case TUPLE_UPDATE :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tulr_def)) + 13;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tulr_def)) + 16;
 			if(lr->tulr.old_tuple != NULL)
-				capacity += get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.old_tuple);
+				capacity += (4 + get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.old_tuple));
 			if(lr->tulr.new_tuple != NULL)
-				capacity += get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.new_tuple);
+				capacity += (4 + get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.new_tuple));
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -963,9 +963,9 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 		}
 		case TUPLE_DISCARD :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdlr_def)) + 13;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdlr_def)) + 16;
 			if(lr->tdlr.old_tuple != NULL)
-				capacity += get_tuple_size_using_tuple_size_def(&(lr->tdlr.size_def), lr->tdlr.old_tuple);
+				capacity += (4 + get_tuple_size_using_tuple_size_def(&(lr->tdlr.size_def), lr->tdlr.old_tuple));
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1006,7 +1006,7 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 		}
 		case TUPLE_DISCARD_ALL :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdalr_def)) + 13 + get_page_content_size_for_page(lr->tdalr.page_id, stats);
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdalr_def)) + 16 + (4 + get_page_content_size_for_page(lr->tdalr.page_id, stats));
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1036,7 +1036,7 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 		}
 		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdttlr_def)) + 13;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdttlr_def)) + 16;
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1066,7 +1066,7 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 		}
 		case TUPLE_SWAP :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tslr_def)) + 13;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tslr_def)) + 16;
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1123,7 +1123,7 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 		}
 		case PAGE_CLONE :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pclr_def)) + 13 + get_page_content_size_for_page(lr->pclr.page_id, stats) + get_page_content_size_for_page(lr->pclr.page_id, stats);
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pclr_def)) + 16 + 2 * (4 + get_page_content_size_for_page(lr->pclr.page_id, stats));
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1156,7 +1156,7 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 		}
 		case FULL_PAGE_WRITE :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->fpwlr_def)) + 13 + get_page_content_size_for_page(lr->fpwlr.page_id, stats);
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->fpwlr_def)) + 16 + (4 + get_page_content_size_for_page(lr->fpwlr.page_id, stats));
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1232,7 +1232,7 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->cmtlr_def));
 			if(lr->cmtlr.info != NULL)
-				capacity += lr->cmtlr.info_size;
+				capacity += (4 + lr->cmtlr.info_size);
 
 			void* result = malloc(capacity);
 			if(result == NULL)
