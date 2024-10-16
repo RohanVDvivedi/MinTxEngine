@@ -52,6 +52,13 @@ int main()
 	initialize_log_record_tuple_defs(&lrtd, &stats);
 	printf("\n\n");
 
+	char old_page_contents[100];
+	for(int i = 0; i < 100; i++)
+		old_page_contents[i] = i;
+	char new_page_contents[100];
+	for(int i = 0; i < 100; i++)
+		new_page_contents[i] = i + 50;
+
 	{
 		log_record a = {
 			.type = PAGE_ALLOCATION,
@@ -84,6 +91,387 @@ int main()
 				.mini_transaction_id = get_uint256(113),
 				.prev_log_record = get_uint256(943),
 				.page_id = 533,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = PAGE_INIT,
+			.pilr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.page_id = 533,
+				.old_page_contents = old_page_contents,
+				.new_page_header_size = 3,
+				.new_size_def = tpl_def.size_def,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = TUPLE_APPEND,
+			.talr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.page_id = 533,
+				.size_def = tpl_def.size_def,
+				.new_tuple = new_tuple,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = TUPLE_INSERT,
+			.tilr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.page_id = 533,
+				.size_def = tpl_def.size_def,
+				.insert_index = 44,
+				.new_tuple = new_tuple,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = TUPLE_UPDATE,
+			.tulr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.page_id = 533,
+				.size_def = tpl_def.size_def,
+				.update_index = 44,
+				.old_tuple = old_tuple,
+				.new_tuple = new_tuple,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = TUPLE_DISCARD,
+			.tdlr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.page_id = 533,
+				.size_def = tpl_def.size_def,
+				.discard_index = 44,
+				.old_tuple = old_tuple,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = TUPLE_DISCARD_ALL,
+			.tdalr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.page_id = 533,
+				.size_def = tpl_def.size_def,
+				.old_page_contents = old_page_contents,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = TUPLE_DISCARD_TRAILING_TOMB_STONES,
+			.tdttlr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.page_id = 533,
+				.size_def = tpl_def.size_def,
+				.discarded_trailing_tomb_stones_count = 44,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = TUPLE_SWAP,
+			.tslr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.page_id = 533,
+				.size_def = tpl_def.size_def,
+				.swap_index1 = 44,
+				.swap_index2 = 45,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+/*	{
+		log_record a = {
+			.type = TUPLE_SWAP,
+			.tslr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.page_id = 533,
+				.size_def = tpl_def.size_def,
+				.swap_index1 = 44,
+				.swap_index2 = 45,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");*/
+
+	{
+		log_record a = {
+			.type = PAGE_CLONE,
+			.pclr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.page_id = 533,
+				.size_def = tpl_def.size_def,
+				.old_page_contents = old_page_contents,
+				.new_page_contents = new_page_contents,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = FULL_PAGE_WRITE,
+			.fpwlr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.page_id = 533,
+				.size_def = tpl_def.size_def,
+				.page_contents = old_page_contents,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = COMPENSATION_LOG,
+			.clr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.undo_of = get_uint256(143),
+				.next_log_record_to_undo = get_uint256(692),
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = ABORT_MINI_TX,
+			.amtlr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = COMPLETE_MINI_TX,
+			.cmtlr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.info = (uint8_t [3]){1,2,3},
+				.info_size = 3,
 			}
 		};
 
