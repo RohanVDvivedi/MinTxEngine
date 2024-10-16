@@ -5,5 +5,28 @@
 int main()
 {
 	// construct a sample tuple_def
-	
+	data_type_info s3 = get_variable_length_string_type("", 100);
+	data_type_info* tuple_type_info = alloca(sizeof_tuple_data_type_info(3));
+	initialize_tuple_data_type_info(tuple_type_info, "tuple_type1", 1, 1024, 3);
+	tuple_type_info->containees[0].type_info = UINT_NON_NULLABLE[3];
+	tuple_type_info->containees[1].type_info = BIT_FIELD_NON_NULLABLE[5];
+	tuple_type_info->containees[2].type_info = &s3;
+	tuple_def tpl_def;
+	if(!initialize_tuple_def(&tpl_def, tuple_type_info))
+	{
+		printf("failed finalizing tuple definition\n");
+		exit(-1);
+	}
+
+	char old_tuple[1024];
+	init_tuple(&tpl_def, old_tuple);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(0), old_tuple, &((user_value){.uint_value = 12}), UINT32_MAX);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(1), old_tuple, &((user_value){.bit_field_value = 0x15}), UINT32_MAX);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(2), old_tuple, &((user_value){.string_value = "hello", .string_size = strlen("hello")}), UINT32_MAX);
+
+	char new_tuple[1024];
+	init_tuple(&tpl_def, new_tuple);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(0), old_tuple, &((user_value){.uint_value = 124}), UINT32_MAX);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(1), old_tuple, &((user_value){.bit_field_value = 0x0a}), UINT32_MAX);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(2), old_tuple, &((user_value){.string_value = "world", .string_size = strlen("world")}), UINT32_MAX);
 }
