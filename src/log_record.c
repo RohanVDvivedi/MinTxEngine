@@ -1099,7 +1099,12 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 		}
 		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tueiplr_def)); // TODO : configure this
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tueiplr_def)) + (4 + get_byte_count_for_serialized_type_info(lr->tueiplr.tpl_def.type_info));
+			capacity += (4 + 4 * lr->tueiplr.element_index.positions_length);
+			if(!is_user_value_NULL(&(lr->tueiplr.old_element)))
+				capacity += (4 + stats->page_size);
+			if(!is_user_value_NULL(&(lr->tueiplr.new_element)))
+				capacity += (4 + stats->page_size);
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1116,7 +1121,95 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 			if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->tueiplr.page_id}, UINT32_MAX))
 				goto ERROR;
 
-			// TODO : complete implementation
+			{
+				user_value tpl_def = {.blob_value = malloc(get_byte_count_for_serialized_type_info(lr->tueiplr.tpl_def.type_info))};
+				tpl_def.blob_size = serialize_type_info(lr->tueiplr.tpl_def.type_info, (void*)(tpl_def.blob_value));
+				if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(3), result + 1, &tpl_def, UINT32_MAX))
+				{
+					free((void*)(tpl_def.blob_value));
+					goto ERROR;
+				}
+				free((void*)(tpl_def.blob_value));
+			}
+
+			if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(4), result + 1, &(user_value){.uint_value = lr->tueiplr.tuple_index}, UINT32_MAX))
+				goto ERROR;
+
+			{
+				if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(5), result + 1, EMPTY_USER_VALUE, UINT32_MAX))
+					goto ERROR;
+				if(!expand_element_count_for_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(5), result + 1, 0, lr->tueiplr.element_index.positions_length, UINT32_MAX))
+					goto ERROR;
+				for(uint32_t i = 0; i < lr->tueiplr.element_index.positions_length; i++)
+					if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(5, i), result + 1, &(user_value){.uint_value = lr->tueiplr.element_index.positions[i]}, UINT32_MAX))
+						goto ERROR;
+			}
+
+			const data_type_info* ele_def = get_type_info_for_element_from_tuple_def(&(lr->tueiplr.tpl_def), lr->tueiplr.element_index);
+
+			{
+				if(is_user_value_NULL(&(lr->tueiplr.old_element)))
+				{
+					if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(6), result + 1, NULL_USER_VALUE, UINT32_MAX))
+						goto ERROR;
+				}
+				else if(ele_def->type == BIT_FIELD)
+				{
+					user_value e = {.blob_value = (uint8_t [8]){}, .blob_size = 8};
+					if(!set_user_value_for_type_info(UINT_NULLABLE[8], (void*)(e.blob_value), 0, UINT32_MAX, &(user_value){.uint_value = lr->tueiplr.old_element.bit_field_value}))
+						goto ERROR;
+					if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(6), result + 1, &e, UINT32_MAX))
+						goto ERROR;
+				}
+				else
+				{
+					user_value e = {.blob_value = malloc(stats->page_size)};
+					if(!set_user_value_for_type_info(ele_def, (void*)(e.blob_value), 0, UINT32_MAX, &(lr->tueiplr.old_element)))
+					{
+						free((void*)(e.blob_value));
+						goto ERROR;
+					}
+					e.blob_size = get_size_for_type_info(ele_def, e.blob_value);
+					if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(6), result + 1, &e, UINT32_MAX))
+					{
+						free((void*)(e.blob_value));
+						goto ERROR;
+					}
+					free((void*)(e.blob_value));
+				}
+			}
+
+			{
+				if(is_user_value_NULL(&(lr->tueiplr.new_element)))
+				{
+					if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(7), result + 1, NULL_USER_VALUE, UINT32_MAX))
+						goto ERROR;
+				}
+				else if(ele_def->type == BIT_FIELD)
+				{
+					user_value e = {.blob_value = (uint8_t [8]){}, .blob_size = 8};
+					if(!set_user_value_for_type_info(UINT_NULLABLE[8], (void*)(e.blob_value), 0, UINT32_MAX, &(user_value){.uint_value = lr->tueiplr.new_element.bit_field_value}))
+						goto ERROR;
+					if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(7), result + 1, &e, UINT32_MAX))
+						goto ERROR;
+				}
+				else
+				{
+					user_value e = {.blob_value = malloc(stats->page_size)};
+					if(!set_user_value_for_type_info(ele_def, (void*)(e.blob_value), 0, UINT32_MAX, &(lr->tueiplr.new_element)))
+					{
+						free((void*)(e.blob_value));
+						goto ERROR;
+					}
+					e.blob_size = get_size_for_type_info(ele_def, e.blob_value);
+					if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(7), result + 1, &e, UINT32_MAX))
+					{
+						free((void*)(e.blob_value));
+						goto ERROR;
+					}
+					free((void*)(e.blob_value));
+				}
+			}
 
 			(*result_size) = get_tuple_size(&(lrtd_p->tueiplr_def), result + 1) + 1;
 			return result;
