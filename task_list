@@ -1,20 +1,24 @@
 PICKED
  * destroy function to destroy parsed log record
- * build functions for
-   * execute_and_put_log_record
-   * can_redo_log_record -> returns true only if the page.pageLSN < log.LSN
-   * redo_log_record
-   * undo_and_put_compensation_log_record
- * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
- * put a FULL_PAGE_WRITE record first for the first modification of the page after checkpoint
- * add function to get mini_tx structure that has a write lock on a particular page
- * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
+ * check to ensure that log record structs are sufficient to redo, undo changes on the pagess
+
+ * implement initialization functions for mini transaction engine
+   * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
+ * implement function to get a new mini_transaction structure wait if none is available
+ * implement wale related functions to modify the page and generate log record outside and then log the change to the most recent writable wale object
+ * implement bufferpool related functions
+   * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
    * when ever a write lock in released ensure that the check sum matches the data, if not, update check sum and make it dirty in bufferpool
- * there is no meaning/value of a page contents if and only if the latest modification to a page is free page and mini transaction that called it is committed
-   * a free page call on a mini transaction not committed can still abort, and may require to be undo forcing us to put valid old contents on the page
-   * A solution ot this is that we only mark the page as allocated/free in the bitmap and make no chnages on the page contents for allocation and freeing, this will also save us crucial space on the WAL
- * abort handler function to be implemeted, that is called on all aborting transactions
- * for all usecases tx to be replaced with transactions
+ * implement both bufferpool and wale related functions
+   * acquire new page with write lock
+   * free page, and release lock pages with freeing them
+ * implement abort handling function
+   * fails if the transaction is already committed or in undoing fo abort state
+   * marks the mini transaction aborted if not already marked
+   * starts undoing the changes
+     * abort handler function to be implemeted, that is called on all aborting transactions
+ * implement recovery function that gets called every time you initialize the mon transaction engine
+ * put a FULL_PAGE_WRITE record for the first modification of the page after checkpoint, instead of a regular record
 
 
 Tasks necessary to develop MinTxEngine
@@ -94,3 +98,10 @@ Tasks necessary to develop MinTxEngine
 TEMPORARY PAGES
  * this feature will not be supported by MinTXEngine as we will not be able to undo their changes if the same page is priorly used as regular page then reused as temporary page and then if we abort, we will never know how to reach the prior state, as its intermediate transitions are not logged.
  * separate development will be required/done for a module that solves this issue
+
+
+FUTURE POSSIBILITY
+ * look for possibility of putting the page contents onto the log record on deallocation, check if this could help in any cases
+ * there is no meaning/value of a page contents if and only if the latest modification to a page is free page and mini transaction that called it is committed
+   * a free page call on a mini transaction not committed can still abort, and may require to be undo forcing us to put valid old contents on the page
+   * A solution ot this is that we only mark the page as allocated/free in the bitmap and make no chnages on the page contents for allocation and freeing, this will also save us crucial space on the WAL
