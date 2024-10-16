@@ -1,4 +1,5 @@
 PICKED
+ * destroy function to destroy parsed log record
  * build functions for
    * execute_and_put_log_record
    * can_redo_log_record -> returns true only if the page.pageLSN < log.LSN
