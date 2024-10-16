@@ -733,5 +733,147 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 	}
 }
 
-const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const log_record* lr, uint32_t* result_size);
+const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const log_record* lr, uint32_t* result_size)
+{
+	void* result = NULL;
+	(*result_size) = 0;
+
+	switch(lr->type)
+	{
+		default :
+		{
+			(*result_size) = 0;
+			return NULL;
+		}
+		case PAGE_ALLOCATION :
+		{
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->palr_def));
+
+			void* result = malloc(capacity);
+			if(result == NULL)
+				goto ERROR;
+
+			((unsigned char*)result)[0] = PAGE_ALLOCATION;
+
+			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->palr.mini_transaction_id}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->palr.prev_log_record}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->palr.page_id}, UINT32_MAX))
+				goto ERROR;
+
+			(*result_size) = get_tuple_size(&(lrtd_p->palr_def), result + 1) + 1;
+			return result;
+		}
+		case PAGE_DEALLOCATION :
+		{
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->palr_def));
+
+			void* result = malloc(capacity);
+			if(result == NULL)
+				goto ERROR;
+
+			((unsigned char*)result)[0] = PAGE_DEALLOCATION;
+
+			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->palr.mini_transaction_id}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->palr.prev_log_record}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->palr.page_id}, UINT32_MAX))
+				goto ERROR;
+
+			(*result_size) = get_tuple_size(&(lrtd_p->palr_def), result + 1) + 1;
+			return result;
+		}
+		case TUPLE_APPEND :
+		{
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->talr_def));
+
+			void* result = malloc(capacity);
+			if(result == NULL)
+				goto ERROR;
+
+			((unsigned char*)result)[0] = TUPLE_APPEND;
+
+			if(!set_element_in_tuple(&(lrtd_p->talr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->talr.mini_transaction_id}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->talr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->talr.prev_log_record}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->talr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->talr.page_id}, UINT32_MAX))
+				goto ERROR;
+
+			user_value size_def = {.blob_value = (uint8_t [13]){}};
+			size_def.blob_size = serialize_tuple_size_def(&(lr->talr.size_def), (void*)(size_def.blob_value));
+			if(!set_element_in_tuple(&(lrtd_p->talr_def), STATIC_POSITION(3), result + 1, &size_def, UINT32_MAX))
+				goto ERROR;
+
+			if(lr->talr.new_tuple == NULL)
+			{
+				if(!set_element_in_tuple(&(lrtd_p->talr_def), STATIC_POSITION(4), result + 1, NULL_USER_VALUE, UINT32_MAX))
+					goto ERROR;
+			}
+			else
+			{
+				if(!set_element_in_tuple(&(lrtd_p->talr_def), STATIC_POSITION(4), result + 1, &(user_value){.blob_value = lr->talr.new_tuple, .blob_size = get_tuple_size_using_tuple_size_def(&(lr->talr.size_def), lr->talr.new_tuple)}, UINT32_MAX))
+					goto ERROR;
+			}
+
+			(*result_size) = get_tuple_size(&(lrtd_p->talr_def), result + 1) + 1;
+			return result;
+		}
+		case TUPLE_INSERT :
+		{
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tilr_def));
+
+			void* result = malloc(capacity);
+			if(result == NULL)
+				goto ERROR;
+
+			((unsigned char*)result)[0] = TUPLE_APPEND;
+
+			if(!set_element_in_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tilr.mini_transaction_id}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tilr.prev_log_record}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->tilr.page_id}, UINT32_MAX))
+				goto ERROR;
+
+			user_value size_def = {.blob_value = (uint8_t [13]){}};
+			size_def.blob_size = serialize_tuple_size_def(&(lr->tilr.size_def), (void*)(size_def.blob_value));
+			if(!set_element_in_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(3), result + 1, &size_def, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(4), result + 1, &(user_value){.uint_value = lr->tilr.insert_index}, UINT32_MAX))
+				goto ERROR;
+
+			if(lr->tilr.new_tuple == NULL)
+			{
+				if(!set_element_in_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(5), result + 1, NULL_USER_VALUE, UINT32_MAX))
+					goto ERROR;
+			}
+			else
+			{
+				if(!set_element_in_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(5), result + 1, &(user_value){.blob_value = lr->tilr.new_tuple, .blob_size = get_tuple_size_using_tuple_size_def(&(lr->tilr.size_def), lr->tilr.new_tuple)}, UINT32_MAX))
+					goto ERROR;
+			}
+
+			(*result_size) = get_tuple_size(&(lrtd_p->tilr_def), result + 1) + 1;
+			return result;
+		}
+	}
+
+	ERROR :;
+	free(result);
+	result = NULL;
+	(*result_size) = 0;
+	return NULL;
+}
 
