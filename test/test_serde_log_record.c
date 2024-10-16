@@ -55,7 +55,7 @@ int main()
 		log_record a = {
 			.type = PAGE_ALLOCATION,
 			.palr = {
-				.mini_transaction_id s= get_uint256(113),
+				.mini_transaction_id = get_uint256(113),
 				.prev_log_record = get_uint256(943),
 				.page_id = 533,
 			}
