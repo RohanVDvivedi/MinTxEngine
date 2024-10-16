@@ -1,5 +1,5 @@
 PICKED
- * serialize_log_record
+ * implement print statement for log record for debugging
  * test building all 16 types of log records serializing them, then deserializing them and then printing to ensure that they are identical
  * build a log_record soruce file init goes
    * build a tuple_definitions struct consisting of all tuple_defs and dtis for the log record types
