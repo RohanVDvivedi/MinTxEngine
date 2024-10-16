@@ -2,6 +2,9 @@
 
 #include<tuple.h>
 
+#include<stdlib.h>
+#include<string.h>
+
 int main()
 {
 	// construct a sample tuple_def
@@ -24,9 +27,19 @@ int main()
 	set_element_in_tuple(&tpl_def, STATIC_POSITION(1), old_tuple, &((user_value){.bit_field_value = 0x15}), UINT32_MAX);
 	set_element_in_tuple(&tpl_def, STATIC_POSITION(2), old_tuple, &((user_value){.string_value = "hello", .string_size = strlen("hello")}), UINT32_MAX);
 
+	printf("old_tuple : ");
+	for(uint32_t i = 0; i < get_tuple_size(&tpl_def, old_tuple); i++)
+		printf("%02hhx, ", old_tuple[i]);
+	printf("\n");
+
 	char new_tuple[1024];
 	init_tuple(&tpl_def, new_tuple);
 	set_element_in_tuple(&tpl_def, STATIC_POSITION(0), new_tuple, &((user_value){.uint_value = 124}), UINT32_MAX);
 	set_element_in_tuple(&tpl_def, STATIC_POSITION(1), new_tuple, &((user_value){.bit_field_value = 0x0a}), UINT32_MAX);
 	set_element_in_tuple(&tpl_def, STATIC_POSITION(2), new_tuple, &((user_value){.string_value = "world", .string_size = strlen("world")}), UINT32_MAX);
+
+	printf("new_tuple : ");
+	for(uint32_t i = 0; i < get_tuple_size(&tpl_def, new_tuple); i++)
+		printf("%02hhx, ", new_tuple[i]);
+	printf("\n");
 }
