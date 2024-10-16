@@ -775,6 +775,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 
 			((unsigned char*)result)[0] = PAGE_ALLOCATION;
 
+			init_tuple(&(lrtd_p->palr_def), result + 1);
+
 			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->palr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
@@ -797,6 +799,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 
 			((unsigned char*)result)[0] = PAGE_DEALLOCATION;
 
+			init_tuple(&(lrtd_p->palr_def), result + 1);
+
 			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->palr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
@@ -818,6 +822,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 				goto ERROR;
 
 			((unsigned char*)result)[0] = PAGE_INIT;
+
+			init_tuple(&(lrtd_p->pilr_def), result + 1);
 
 			if(!set_element_in_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->pilr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
@@ -853,6 +859,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 				goto ERROR;
 
 			((unsigned char*)result)[0] = TUPLE_APPEND;
+
+			init_tuple(&(lrtd_p->talr_def), result + 1);
 
 			if(!set_element_in_tuple(&(lrtd_p->talr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->talr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
@@ -893,6 +901,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 				goto ERROR;
 
 			((unsigned char*)result)[0] = TUPLE_INSERT;
+
+			init_tuple(&(lrtd_p->tilr_def), result + 1);
 
 			if(!set_element_in_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tilr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
@@ -938,6 +948,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 				goto ERROR;
 
 			((unsigned char*)result)[0] = TUPLE_UPDATE;
+
+			init_tuple(&(lrtd_p->tulr_def), result + 1);
 
 			if(!set_element_in_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tulr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
@@ -993,6 +1005,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 
 			((unsigned char*)result)[0] = TUPLE_DISCARD;
 
+			init_tuple(&(lrtd_p->tdlr_def), result + 1);
+
 			if(!set_element_in_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tdlr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
@@ -1034,6 +1048,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 
 			((unsigned char*)result)[0] = TUPLE_DISCARD_ALL;
 
+			init_tuple(&(lrtd_p->tdalr_def), result + 1);
+
 			if(!set_element_in_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tdalr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
@@ -1064,6 +1080,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 
 			((unsigned char*)result)[0] = TUPLE_DISCARD_TRAILING_TOMB_STONES;
 
+			init_tuple(&(lrtd_p->tdttlr_def), result + 1);
+
 			if(!set_element_in_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tdttlr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
@@ -1093,6 +1111,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 				goto ERROR;
 
 			((unsigned char*)result)[0] = TUPLE_SWAP;
+
+			init_tuple(&(lrtd_p->tslr_def), result + 1);
 
 			if(!set_element_in_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tslr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
@@ -1131,6 +1151,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 				goto ERROR;
 
 			((unsigned char*)result)[0] = TUPLE_UPDATE_ELEMENT_IN_PLACE;
+
+			init_tuple(&(lrtd_p->tueiplr_def), result + 1);
 
 			if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tueiplr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
@@ -1244,6 +1266,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 
 			((unsigned char*)result)[0] = PAGE_CLONE;
 
+			init_tuple(&(lrtd_p->pclr_def), result + 1);
+
 			if(!set_element_in_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->pclr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
@@ -1277,6 +1301,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 
 			((unsigned char*)result)[0] = FULL_PAGE_WRITE;
 
+			init_tuple(&(lrtd_p->fpwlr_def), result + 1);
+
 			if(!set_element_in_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->fpwlr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
@@ -1307,6 +1333,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 
 			((unsigned char*)result)[0] = COMPENSATION_LOG;
 
+			init_tuple(&(lrtd_p->clr_def), result + 1);
+
 			if(!set_element_in_tuple(&(lrtd_p->clr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->clr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
@@ -1332,6 +1360,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 
 			((unsigned char*)result)[0] = ABORT_MINI_TX;
 
+			init_tuple(&(lrtd_p->amtlr_def), result + 1);
+
 			if(!set_element_in_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->amtlr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
@@ -1352,6 +1382,8 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 				goto ERROR;
 
 			((unsigned char*)result)[0] = COMPLETE_MINI_TX;
+
+			init_tuple(&(lrtd_p->cmtlr_def), result + 1);
 
 			if(!set_element_in_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->cmtlr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
