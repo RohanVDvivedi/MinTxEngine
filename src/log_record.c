@@ -1487,7 +1487,12 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 			printf("mini_transaction_id : "); print_uint256(lr->tueiplr.mini_transaction_id); printf("\n");
 			printf("prev_log_record : "); print_uint256(lr->tueiplr.prev_log_record); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->tueiplr.page_id);
-			// TODO
+			printf("tpl_def : "); print_tuple_def(&(lr->tueiplr.tpl_def)); printf("\n");
+			printf("tuple_index : %"PRIu32"\n", lr->tueiplr.tuple_index);
+			printf("element_index : {"); for(uint32_t i = 0; i < lr->tueiplr.element_index.positions_length; i++) printf("%"PRIu32", ", lr->tueiplr.element_index.positions[i]); printf("}\n");
+			const data_type_info* ele_def = get_type_info_for_element_from_tuple_def(&(lr->tueiplr.tpl_def), lr->tueiplr.element_index);
+			printf("old_element : "); print_user_value(&(lr->tueiplr.old_element), ele_def); printf("\n");
+			printf("new_element : "); print_user_value(&(lr->tueiplr.new_element), ele_def); printf("\n");
 			return;
 		}
 		case PAGE_CLONE :
