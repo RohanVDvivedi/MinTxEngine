@@ -48,7 +48,8 @@ int main()
 		.page_id_width = 2,
 		.page_size = 100,
 	};
-	const log_record_tuple_defs lrtd = initialize_log_record_tuple_defs(&stats);
+	log_record_tuple_defs lrtd;
+	initialize_log_record_tuple_defs(&lrtd, &stats);
 	printf("\n\n");
 
 	{
