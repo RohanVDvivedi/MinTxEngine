@@ -44,7 +44,7 @@ enum log_record_type
 	// informational suggesting no more log records will be or should be generated for this mini transaction
 };
 
-extern const char log_record_type_struings[17][64];
+extern const char log_record_type_strings[17][64];
 
 // log record struct for PAGE_ALLOCATION and PAGE_DEALLOCATION
 // -> undo by deallocation and allocation respectively
@@ -319,6 +319,6 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 
 const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size);
 
-void print_log_record(const log_record* lr);
+void print_log_record(const log_record* lr, const mini_transaction_engine_stats* stats);
 
 #endif

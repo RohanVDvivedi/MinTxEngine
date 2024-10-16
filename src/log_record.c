@@ -5,7 +5,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-const char log_record_type_struings[17][64] = {
+const char log_record_type_strings[17][64] = {
 	"UNIDENTIFIED",
 	"PAGE_ALLOCATION",
 	"PAGE_DEALLOCATION",
@@ -1382,8 +1382,154 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 	return NULL;
 }
 
-void print_log_record(const log_record* lr)
+static void print_blob(const void* data, uint32_t data_size)
 {
+	for(uint32_t i = 0; i < data_size; i++)
+		printf("%02x, ", ((unsigned char*)data)[i]);
+}
 
+void print_log_record(const log_record* lr, const mini_transaction_engine_stats* stats)
+{
+	printf("type : %s\n", log_record_type_strings[lr->type]);
+
+	switch(lr->type)
+	{
+		default :
+			return;
+		case PAGE_ALLOCATION :
+		case PAGE_DEALLOCATION :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->palr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->palr.prev_log_record); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->palr.page_id);
+			return;
+		}
+		case PAGE_INIT :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->pilr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->pilr.prev_log_record); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->pilr.page_id);
+			printf("old_page_contents : "); print_blob(lr->pilr.old_page_contents, get_page_content_size_for_page(lr->pilr.page_id, stats)); printf("\n");
+			printf("new_page_header_size : %"PRIu32"\n", lr->pilr.new_page_header_size);
+			printf("new_size_def : \n"); print_tuple_size_def(&(lr->pilr.new_size_def)); printf("\n");
+			return;
+		}
+		case TUPLE_APPEND :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->talr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->talr.prev_log_record); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->talr.page_id);
+			printf("size_def : \n"); print_tuple_size_def(&(lr->talr.size_def)); printf("\n");
+			printf("new_tuple : "); print_blob(lr->talr.new_tuple, get_tuple_size_using_tuple_size_def(&(lr->talr.size_def), lr->talr.new_tuple)); printf("\n");
+			return;
+		}
+		case TUPLE_INSERT :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->tilr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tilr.prev_log_record); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->tilr.page_id);
+			printf("size_def : \n"); print_tuple_size_def(&(lr->tilr.size_def)); printf("\n");
+			printf("insert_index : %"PRIu32"\n", lr->tilr.insert_index);
+			printf("new_tuple : "); print_blob(lr->tilr.new_tuple, get_tuple_size_using_tuple_size_def(&(lr->tilr.size_def), lr->tilr.new_tuple)); printf("\n");
+			return;
+		}
+		case TUPLE_UPDATE :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->tulr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tulr.prev_log_record); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->tulr.page_id);
+			printf("size_def : \n"); print_tuple_size_def(&(lr->tulr.size_def)); printf("\n");
+			printf("update_index : %"PRIu32"\n", lr->tulr.update_index);
+			printf("old_tuple : "); print_blob(lr->tulr.old_tuple, get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.old_tuple)); printf("\n");
+			printf("new_tuple : "); print_blob(lr->tulr.new_tuple, get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.new_tuple)); printf("\n");
+			return;
+		}
+		case TUPLE_DISCARD :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->tdlr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tdlr.prev_log_record); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->tdlr.page_id);
+			printf("size_def : \n"); print_tuple_size_def(&(lr->tdlr.size_def)); printf("\n");
+			printf("discard_index : %"PRIu32"\n", lr->tdlr.discard_index);
+			printf("old_tuple : "); print_blob(lr->tdlr.old_tuple, get_tuple_size_using_tuple_size_def(&(lr->tdlr.size_def), lr->tdlr.old_tuple)); printf("\n");
+			return;
+		}
+		case TUPLE_DISCARD_ALL :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->tdalr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tdalr.prev_log_record); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->tdalr.page_id);
+			printf("size_def : \n"); print_tuple_size_def(&(lr->tdalr.size_def)); printf("\n");
+			printf("old_page_contents : "); print_blob(lr->tdalr.old_page_contents, get_page_content_size_for_page(lr->tdalr.page_id, stats)); printf("\n");
+			return;
+		}
+		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->tdttlr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tdttlr.prev_log_record); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->tdttlr.page_id);
+			printf("size_def : \n"); print_tuple_size_def(&(lr->tdttlr.size_def)); printf("\n");
+			printf("discarded_trailing_tomb_stones_count : %"PRIu32"\n", lr->tdttlr.discarded_trailing_tomb_stones_count);
+			return;
+		}
+		case TUPLE_SWAP :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->tslr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tslr.prev_log_record); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->tslr.page_id);
+			printf("size_def : \n"); print_tuple_size_def(&(lr->tslr.size_def)); printf("\n");
+			printf("swap_index1 : %"PRIu32"\n", lr->tslr.swap_index1);
+			printf("swap_index2 : %"PRIu32"\n", lr->tslr.swap_index2);
+			return;
+		}
+		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->tueiplr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tueiplr.prev_log_record); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->tueiplr.page_id);
+			// TODO
+			return;
+		}
+		case PAGE_CLONE :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->pclr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->pclr.prev_log_record); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->pclr.page_id);
+			printf("size_def : \n"); print_tuple_size_def(&(lr->pclr.size_def)); printf("\n");
+			printf("old_page_contents : "); print_blob(lr->pclr.old_page_contents, get_page_content_size_for_page(lr->pclr.page_id, stats)); printf("\n");
+			printf("new_page_contents : "); print_blob(lr->pclr.new_page_contents, get_page_content_size_for_page(lr->pclr.page_id, stats)); printf("\n");
+			return;
+		}
+		case FULL_PAGE_WRITE :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->fpwlr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->fpwlr.prev_log_record); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->fpwlr.page_id);
+			printf("size_def : \n"); print_tuple_size_def(&(lr->fpwlr.size_def)); printf("\n");
+			printf("page_contents : "); print_blob(lr->fpwlr.page_contents, get_page_content_size_for_page(lr->fpwlr.page_id, stats)); printf("\n");
+			return;
+		}
+		case COMPENSATION_LOG :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->clr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->clr.prev_log_record); printf("\n");
+			printf("undo_of : "); print_uint256(lr->clr.undo_of); printf("\n");
+			printf("next_log_record_to_undo : "); print_uint256(lr->clr.next_log_record_to_undo); printf("\n");
+			return;
+		}
+		case ABORT_MINI_TX :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->amtlr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->amtlr.prev_log_record); printf("\n");
+			return;
+		}
+		case COMPLETE_MINI_TX :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->cmtlr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->cmtlr.prev_log_record); printf("\n");
+			printf("info : "); print_blob(lr->cmtlr.info, lr->cmtlr.info_size); printf("\n");
+			return;
+		}
+	}
 }
 
