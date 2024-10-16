@@ -1,9 +1,5 @@
 PICKED
- * implement print statement for log record for debugging
- * test building all 16 types of log records serializing them, then deserializing them and then printing to ensure that they are identical
- * build a log_record soruce file init goes
-   * build a tuple_definitions struct consisting of all tuple_defs and dtis for the log record types
-   * a single struct consisting of log_record_type enum and the union of log records, and a log_sequence_number of the record
+ * build functions for
    * execute_and_put_log_record
    * can_redo_log_record -> returns true only if the page.pageLSN < log.LSN
    * redo_log_record
