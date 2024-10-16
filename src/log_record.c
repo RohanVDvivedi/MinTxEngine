@@ -811,7 +811,7 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 			if(!set_element_in_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(3), result + 1, &(user_value){.blob_value = lr->pilr.old_page_contents, .blob_size = get_page_content_size_for_page(lr->pilr.page_id, stats)}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(4), result + 1, &(user_value){.uint_value = lr->pilr.new_page_header_size}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(4), result + 1, &(user_value){.uint_value = lr->pilr.new_page_header_size}, UINT32_MAX))
 				goto ERROR;
 
 			user_value new_size_def = {.blob_value = (uint8_t [13]){}};
@@ -1241,7 +1241,7 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 			}
 			else
 			{
-				if(!set_element_in_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(2), result + 1, &(user_value){.blob_value = lr->cmtlr.info, .blob_size = lr->cmtlr.info_size}, UINT32_MAX))
+				if(!set_element_in_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(2), result + 1, &(user_value){.blob_value = lr->cmtlr.info, .blob_size = lr->cmtlr.info_size}, UINT32_MAX))
 					goto ERROR;
 			}
 
