@@ -28,7 +28,6 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 	lrtd.LSN_type = define_large_uint_non_nullable_type("LSN", stats->log_sequence_number_width);
 	lrtd.page_index_type = define_uint_non_nullable_type("page_index", bytes_for_page_index(stats->page_size));
 	lrtd.tuple_positional_accessor_type = get_variable_element_count_array_type("tuple_positional_accessor_type", stats->page_size, &(lrtd.page_index_type));
-	lrtd.page_content_in_bytes_type = get_fixed_length_blob_type("page_contents", get_page_content_size_for_data_pages(stats), 0);
 	lrtd.data_in_bytes_type = get_variable_length_blob_type("data", stats->page_size);
 	lrtd.size_def_in_bytes_type = get_variable_length_blob_type("size_def", 13);
 	lrtd.type_info_in_bytes_type = get_variable_length_blob_type("type_info", stats->page_size);
@@ -68,7 +67,7 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 		dti->containees[2].type_info = &(lrtd.page_id_type);
 
 		strcpy(dti->containees[3].field_name, "old_page_contents");
-		dti->containees[3].type_info = &(lrtd.page_content_in_bytes_type);
+		dti->containees[3].type_info = &(lrtd.data_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "new_page_header_size");
 		dti->containees[4].type_info = &(lrtd.page_index_type);
@@ -211,7 +210,7 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 		dti->containees[3].type_info = &(lrtd.size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "old_page_contents");
-		dti->containees[4].type_info = &(lrtd.page_content_in_bytes_type);
+		dti->containees[4].type_info = &(lrtd.data_in_bytes_type);
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd.tdalr_def), dti);
@@ -323,10 +322,10 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 		dti->containees[3].type_info = &(lrtd.size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "old_page_contents");
-		dti->containees[4].type_info = &(lrtd.page_content_in_bytes_type);
+		dti->containees[4].type_info = &(lrtd.data_in_bytes_type);
 
 		strcpy(dti->containees[5].field_name, "new_page_contents");
-		dti->containees[5].type_info = &(lrtd.page_content_in_bytes_type);
+		dti->containees[5].type_info = &(lrtd.data_in_bytes_type);
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd.pclr_def), dti);
@@ -351,7 +350,7 @@ log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_en
 		dti->containees[3].type_info = &(lrtd.size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "page_contents");
-		dti->containees[4].type_info = &(lrtd.page_content_in_bytes_type);
+		dti->containees[4].type_info = &(lrtd.data_in_bytes_type);
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd.fpwlr_def), dti);
