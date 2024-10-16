@@ -1,2 +1,1 @@
-gcc ./test.c -o test.out -lcapp
-./test.out
+gcc ./test_serde_log_record.c -o testlr.out -lmintxengine -ltuplestore -lwale -lbufferpool -lrwlock -lserint -lcutlery -lpthread
