@@ -46,7 +46,6 @@ int main()
 	mini_transaction_engine_stats stats = {
 		.log_sequence_number_width = 2,
 		.page_id_width = 2,
-		.tuple_count_width = 2,
 		.page_size = 100,
 	};
 
@@ -54,8 +53,9 @@ int main()
 		log_record a = {
 			.type = PAGE_ALLOCATION,
 			.palr = {
-				.mini
 			}
-		}
+		};
 	}
+
+	return 0;
 }
