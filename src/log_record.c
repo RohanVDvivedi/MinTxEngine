@@ -1199,6 +1199,25 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 			(*result_size) = get_tuple_size(&(lrtd_p->clr_def), result + 1) + 1;
 			return result;
 		}
+		case ABORT_MINI_TX :
+		{
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->amtlr_def));
+
+			void* result = malloc(capacity);
+			if(result == NULL)
+				goto ERROR;
+
+			((unsigned char*)result)[0] = ABORT_MINI_TX;
+
+			if(!set_element_in_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->amtlr.mini_transaction_id}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->amtlr.prev_log_record}, UINT32_MAX))
+				goto ERROR;
+
+			(*result_size) = get_tuple_size(&(lrtd_p->amtlr_def), result + 1) + 1;
+			return result;
+		}
 	}
 
 	ERROR :;
