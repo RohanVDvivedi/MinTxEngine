@@ -8,8 +8,6 @@ struct mini_transaction_engine_stats
 
 	uint32_t page_id_width; // bytes required to store page_id
 
-	uint32_t tuple_count_width; // bytes_required to store of tuple_count and tuple_index-es
-
 	uint32_t page_size; // size of page in bytes
 };
 
