@@ -55,14 +55,14 @@ int main()
 		log_record a = {
 			.type = PAGE_ALLOCATION,
 			.palr = {
-				.mini_transaction_id = get_uint256(113),
+				.mini_transaction_id s= get_uint256(113),
 				.prev_log_record = get_uint256(943),
 				.page_id = 533,
 			}
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialized_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
 
 		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -87,7 +87,7 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialized_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
 
 		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
 

@@ -753,7 +753,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 	}
 }
 
-const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size)
+const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size)
 {
 	void* result = NULL;
 	(*result_size) = 0;
