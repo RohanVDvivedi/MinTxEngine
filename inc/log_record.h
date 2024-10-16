@@ -313,7 +313,7 @@ struct log_record_tuple_defs
 // it won't fail, it any malloc calls fail, we do an exit(-1)
 // we do not have a means to destroy what it initialized so a ctrl+c is what we need
 // i.e. it leaks one time minimal memory, only a fool would call this function in a loop
-log_record_tuple_defs initialize_log_record_tuple_defs(const mini_transaction_engine_stats* stats);
+void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_transaction_engine_stats* stats);
 
 log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size);
 
