@@ -913,7 +913,48 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const log
 			}
 			else
 			{
-				if(!set_element_in_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(6), result + 1, &(user_value){.blob_value = lr->tilr.new_tuple, .blob_size = get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.new_tuple)}, UINT32_MAX))
+				if(!set_element_in_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(6), result + 1, &(user_value){.blob_value = lr->tulr.new_tuple, .blob_size = get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.new_tuple)}, UINT32_MAX))
+					goto ERROR;
+			}
+
+			(*result_size) = get_tuple_size(&(lrtd_p->tulr_def), result + 1) + 1;
+			return result;
+		}
+		case TUPLE_DISCARD :
+		{
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdlr_def));
+
+			void* result = malloc(capacity);
+			if(result == NULL)
+				goto ERROR;
+
+			((unsigned char*)result)[0] = TUPLE_DISCARD;
+
+			if(!set_element_in_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tdlr.mini_transaction_id}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tdlr.prev_log_record}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->tdlr.page_id}, UINT32_MAX))
+				goto ERROR;
+
+			user_value size_def = {.blob_value = (uint8_t [13]){}};
+			size_def.blob_size = serialize_tuple_size_def(&(lr->tdlr.size_def), (void*)(size_def.blob_value));
+			if(!set_element_in_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(3), result + 1, &size_def, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(4), result + 1, &(user_value){.uint_value = lr->tdlr.discard_index}, UINT32_MAX))
+				goto ERROR;
+
+			if(lr->tdlr.old_tuple == NULL)
+			{
+				if(!set_element_in_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(5), result + 1, NULL_USER_VALUE, UINT32_MAX))
+					goto ERROR;
+			}
+			else
+			{
+				if(!set_element_in_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(5), result + 1, &(user_value){.blob_value = lr->tdlr.old_tuple, .blob_size = get_tuple_size_using_tuple_size_def(&(lr->tdlr.size_def), lr->tdlr.old_tuple)}, UINT32_MAX))
 					goto ERROR;
 			}
 
