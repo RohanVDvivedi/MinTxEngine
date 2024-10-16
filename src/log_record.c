@@ -5,6 +5,26 @@
 #include<stdlib.h>
 #include<string.h>
 
+const char log_record_type_struings[17][64] = {
+	"UNIDENTIFIED",
+	"PAGE_ALLOCATION",
+	"PAGE_DEALLOCATION",
+	"PAGE_INIT",
+	"TUPLE_APPEND",
+	"TUPLE_INSERT",
+	"TUPLE_UPDATE",
+	"TUPLE_DISCARD",
+	"TUPLE_DISCARD_ALL",
+	"TUPLE_DISCARD_TRAILING_TOMB_STONES",
+	"TUPLE_SWAP",
+	"TUPLE_UPDATE_ELEMENT_IN_PLACE",
+	"PAGE_CLONE",
+	"FULL_PAGE_WRITE",
+	"COMPENSATION_LOG",
+	"ABORT_MINI_TX",
+	"COMPLETE_MINI_TX"
+};
+
 static uint32_t bytes_for_page_index(uint32_t page_size)
 {
 	if(page_size < (UINT32_C(1) < 8))
@@ -1360,5 +1380,10 @@ const void* serialized_log_record(const log_record_tuple_defs* lrtd_p, const min
 	result = NULL;
 	(*result_size) = 0;
 	return NULL;
+}
+
+void print_log_record(const log_record* lr)
+{
+
 }
 
