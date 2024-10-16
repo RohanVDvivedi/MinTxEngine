@@ -83,6 +83,11 @@ uint32_t get_page_content_size_for_data_pages(const mini_transaction_engine_stat
 	return stats->page_size - (4 + (2 * stats->log_sequence_number_width));
 }
 
+uint32_t get_page_content_size_for_free_space_mapper_pages(const mini_transaction_engine_stats* stats)
+{
+	return stats->page_size - (4 + (1 * stats->log_sequence_number_width));
+}
+
 void* get_page_contents_for_page(void* page, uint64_t page_id, const mini_transaction_engine_stats* stats)
 {
 	return page + get_system_header_size_for_page(page_id, stats);
