@@ -42,4 +42,20 @@ int main()
 	for(uint32_t i = 0; i < get_tuple_size(&tpl_def, new_tuple); i++)
 		printf("%02hhx, ", new_tuple[i]);
 	printf("\n");
+
+	mini_transaction_engine_stats stats = {
+		.log_sequence_number_width = 2,
+		.page_id_width = 2,
+		.tuple_count_width = 2,
+		.page_size = 100,
+	};
+
+	{
+		log_record a = {
+			.type = PAGE_ALLOCATION,
+			.palr = {
+				.mini
+			}
+		}
+	}
 }
