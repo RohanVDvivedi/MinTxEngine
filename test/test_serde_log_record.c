@@ -331,34 +331,6 @@ int main()
 	}
 	printf("\n\n");
 
-/*	{
-		log_record a = {
-			.type = TUPLE_SWAP,
-			.tslr = {
-				.mini_transaction_id = get_uint256(113),
-				.prev_log_record = get_uint256(943),
-				.page_id = 533,
-				.size_def = tpl_def.size_def,
-				.swap_index1 = 44,
-				.swap_index2 = 45,
-			}
-		};
-
-		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
-
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
-
-		printf("size = %"PRIu32"\n", serialized_size);
-
-		printf("a :: \n");
-		print_log_record(&a, &stats);
-		printf("\nb :: \n");
-		print_log_record(&b, &stats);
-		printf("\n");
-	}
-	printf("\n\n");*/
-
 	{
 		log_record a = {
 			.type = PAGE_CLONE,
@@ -472,6 +444,36 @@ int main()
 				.prev_log_record = get_uint256(943),
 				.info = (uint8_t [3]){1,2,3},
 				.info_size = 3,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = TUPLE_UPDATE_ELEMENT_IN_PLACE,
+			.tueiplr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.page_id = 533,
+				.tpl_def = tpl_def,
+				.tuple_index = 44,
+				.element_index = STATIC_POSITION(0),
+				.old_element = (user_value){.uint_value = 35},
+				.new_element = (user_value){.uint_value = 36},
 			}
 		};
 
