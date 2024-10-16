@@ -43,12 +43,12 @@ int main()
 		printf("%02hhx, ", new_tuple[i]);
 	printf("\n");
 
-	mini_transaction_engine_stats stats = {
+	const mini_transaction_engine_stats stats = {
 		.log_sequence_number_width = 2,
 		.page_id_width = 2,
 		.page_size = 100,
 	};
-	log_record_tuple_defs lrtd = initialize_log_record_tuple_defs(&stats);
+	const log_record_tuple_defs lrtd = initialize_log_record_tuple_defs(&stats);
 	printf("\n\n");
 
 	{
