@@ -78,6 +78,11 @@ uint32_t get_system_header_size_for_page(uint64_t page_id, const mini_transactio
 		return 4 + (2 * stats->log_sequence_number_width);
 }
 
+uint32_t get_page_content_size_for_page(uint64_t page_id, const mini_transaction_engine_stats* stats)
+{
+	return stats->page_size - get_system_header_size_for_page(page_id, stats);
+}
+
 uint32_t get_page_content_size_for_data_pages(const mini_transaction_engine_stats* stats)
 {
 	return stats->page_size - (4 + (2 * stats->log_sequence_number_width));

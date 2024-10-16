@@ -45,6 +45,7 @@ int set_writerLSN_for_page(void* page, uint256 writerLSN, const mini_transaction
 // if it is a free_space_mapper page, then it contains 4 byte check_sum, and pageLSN
 // else it contains 4 byte checksum, pageLSN and writerLSN
 uint32_t get_system_header_size_for_page(uint64_t page_id, const mini_transaction_engine_stats* stats);
+uint32_t get_page_content_size_for_page(uint64_t page_id, const mini_transaction_engine_stats* stats);
 
 uint32_t get_page_content_size_for_data_pages(const mini_transaction_engine_stats* stats);
 uint32_t get_page_content_size_for_free_space_mapper_pages(const mini_transaction_engine_stats* stats);
