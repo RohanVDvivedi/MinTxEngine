@@ -26,7 +26,7 @@ int main()
 
 	char new_tuple[1024];
 	init_tuple(&tpl_def, new_tuple);
-	set_element_in_tuple(&tpl_def, STATIC_POSITION(0), old_tuple, &((user_value){.uint_value = 124}), UINT32_MAX);
-	set_element_in_tuple(&tpl_def, STATIC_POSITION(1), old_tuple, &((user_value){.bit_field_value = 0x0a}), UINT32_MAX);
-	set_element_in_tuple(&tpl_def, STATIC_POSITION(2), old_tuple, &((user_value){.string_value = "world", .string_size = strlen("world")}), UINT32_MAX);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(0), new_tuple, &((user_value){.uint_value = 124}), UINT32_MAX);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(1), new_tuple, &((user_value){.bit_field_value = 0x0a}), UINT32_MAX);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(2), new_tuple, &((user_value){.string_value = "world", .string_size = strlen("world")}), UINT32_MAX);
 }
