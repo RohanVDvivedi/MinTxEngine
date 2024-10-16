@@ -48,14 +48,33 @@ int main()
 		.page_id_width = 2,
 		.page_size = 100,
 	};
+	log_record_tuple_defs lrtd = initialize_log_record_tuple_defs(&stats);
+	printf("\n\n");
 
 	{
 		log_record a = {
 			.type = PAGE_ALLOCATION,
 			.palr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record = get_uint256(943),
+				.page_id = 533,
 			}
 		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialized_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
 	}
+	printf("\n\n");
 
 	return 0;
 }
