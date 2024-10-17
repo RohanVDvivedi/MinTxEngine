@@ -1,6 +1,9 @@
 PICKED
+
  * destroy function to destroy parsed log record
  * check to ensure that log record structs are sufficient to redo, undo changes on the pagess
+ * add functions in blockio to get size of block file
+ * decide if you need first block to store page size of the database, and decide how you want to manage it
 
  * implement initialization functions for mini transaction engine
    * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
@@ -8,6 +11,7 @@ PICKED
  * implement wale related functions to modify the page and generate log record outside and then log the change to the most recent writable wale object
  * implement bufferpool related functions
    * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
+   * if user tries to do any of these on free space mapper page OR a free page then abort it with reason illegal access
    * when ever a write lock in released ensure that the check sum matches the data, if not, update check sum and make it dirty in bufferpool
  * implement both bufferpool and wale related functions
    * acquire new page with write lock
