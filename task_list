@@ -1,5 +1,6 @@
 PICKED
  * if user value is fixed sized then only allocate that in tueiplr
+ * for parsed log record store its serialized version in the log_record
  * destroy function to destroy parsed log record
  * check to ensure that log record structs are sufficient to redo, undo changes on the pagess
  * add functions in blockio to get size of block file
