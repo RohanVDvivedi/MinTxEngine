@@ -273,8 +273,9 @@ struct log_record
 		complete_mini_tx_log_record cmtlr;
 	};
 
-	const void* serialized_log_record;
-	// this memory if not null should be freed when this object is no longer in use
+	const void* parsed_from;
+	// above union may possibly point ot data in the parsed_from attribute
+	// destroyed and freed once it is no longer in use
 };
 
 typedef struct log_record_tuple_defs log_record_tuple_defs;
@@ -316,6 +317,9 @@ struct log_record_tuple_defs
 void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_transaction_engine_stats* stats);
 
 log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size);
+
+// to be called only on parsed log record, it will also free the memory of the parsed log record
+void destroy_and_free_parsed_log_record(log_record* lr);
 
 const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size);
 

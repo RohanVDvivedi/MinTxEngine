@@ -452,6 +452,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.palr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.palr.page_id = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case PAGE_DEALLOCATION :
@@ -463,6 +464,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.palr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.palr.page_id = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case PAGE_INIT :
@@ -479,6 +481,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			user_value new_size_def = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(5), log_record_contents);
 			deserialize_tuple_size_def(&(lr.pilr.new_size_def), new_size_def.blob_value, new_size_def.blob_size);
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case TUPLE_APPEND :
@@ -499,6 +502,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			else
 				lr.talr.new_tuple = new_tuple.blob_value;
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case TUPLE_INSERT :
@@ -521,6 +525,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			else
 				lr.tilr.new_tuple = new_tuple.blob_value;
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case TUPLE_UPDATE :
@@ -549,6 +554,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			else
 				lr.tulr.new_tuple = new_tuple.blob_value;
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case TUPLE_DISCARD :
@@ -571,6 +577,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			else
 				lr.tdlr.old_tuple = old_tuple.blob_value;
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case TUPLE_DISCARD_ALL :
@@ -587,6 +594,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 
 			lr.tdalr.old_page_contents = get_value_from_element_from_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(4), log_record_contents).blob_value;
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
@@ -603,6 +611,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 
 			lr.tdttlr.discarded_trailing_tomb_stones_count = get_value_from_element_from_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(4), log_record_contents).uint_value;
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case TUPLE_SWAP :
@@ -620,6 +629,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.tslr.swap_index1 = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(4), log_record_contents).uint_value;
 			lr.tslr.swap_index2 = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(5), log_record_contents).uint_value;
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
@@ -670,6 +680,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			else
 				lr.tueiplr.new_element = get_user_value_for_type_info(ele_def, new_element.blob_value);
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case PAGE_CLONE :
@@ -687,6 +698,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.pclr.old_page_contents = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(4), log_record_contents).blob_value;
 			lr.pclr.new_page_contents = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(5), log_record_contents).blob_value;
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case FULL_PAGE_WRITE :
@@ -703,6 +715,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 
 			lr.fpwlr.page_contents = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(4), log_record_contents).blob_value;
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case COMPENSATION_LOG :
@@ -715,6 +728,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.clr.undo_of = get_value_from_element_from_tuple(&(lrtd_p->clr_def), STATIC_POSITION(2), log_record_contents).large_uint_value;
 			lr.clr.next_log_record_to_undo = get_value_from_element_from_tuple(&(lrtd_p->clr_def), STATIC_POSITION(3), log_record_contents).large_uint_value;
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case ABORT_MINI_TX :
@@ -725,6 +739,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.amtlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
 			lr.amtlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 		case COMPLETE_MINI_TX :
@@ -744,9 +759,15 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 				lr.cmtlr.info_size = info.blob_size;
 			}
 
+			lr.parsed_from = serialized_log_record;
 			return lr;
 		}
 	}
+}
+
+void destroy_and_free_parsed_log_record(log_record* lr)
+{
+
 }
 
 const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size)
