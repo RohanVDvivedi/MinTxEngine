@@ -1,5 +1,4 @@
 PICKED
- * if user value is fixed sized then only allocate that in tueiplr
  * check to ensure that log record structs are sufficient to redo, undo changes on the pagess
  * add functions in blockio to get size of block file
  * decide if you need first block to store page size of the database, and decide how you want to manage it
