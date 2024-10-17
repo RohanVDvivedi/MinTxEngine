@@ -5,6 +5,13 @@ PICKED
    * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
  * implement function to get a new mini_transaction structure wait if none is available
  * implement wale related functions to modify the page and generate log record outside and then log the change to the most recent writable wale object
+   * first take the shared manager lock and release global mutex, now we are sure that there will not be a checkpoint while we are working
+   * if this is the first modification to the page after checkpoint i.e. its page LSN is lesser than checkpointLSN, then construct a full page write log record
+   * then construct the actual change log record
+   * perform the modification operation
+   * log both the logs one after the another only if the modification is successfull
+   * change the pageLSN to the new value
+   * change writerLSN to the mini_transaction_id of this transaction, suggesting a persistent write lock
  * implement bufferpool related functions
    * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
    * if user tries to do any of these on free space mapper page OR a free page then abort it with reason illegal access
