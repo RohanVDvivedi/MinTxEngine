@@ -1170,12 +1170,34 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 		}
 		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
 		{
+			const data_type_info* ele_def = get_type_info_for_element_from_tuple_def(&(lr->tueiplr.tpl_def), lr->tueiplr.element_index);
+
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tueiplr_def)) + (4 + get_byte_count_for_serialized_type_info(lr->tueiplr.tpl_def.type_info));
 			capacity += (4 + 4 * lr->tueiplr.element_index.positions_length);
 			if(!is_user_value_NULL(&(lr->tueiplr.old_element)))
-				capacity += (4 + stats->page_size);
+			{
+				if(!is_variable_sized_type_info(ele_def))
+				{
+					if(ele_def->type == BIT_FIELD)
+						capacity += (4 + 8);
+					else
+						capacity += (4 + ele_def->size);
+				}
+				else
+					capacity += (4 + stats->page_size);
+			}
 			if(!is_user_value_NULL(&(lr->tueiplr.new_element)))
-				capacity += (4 + stats->page_size);
+			{
+				if(!is_variable_sized_type_info(ele_def))
+				{
+					if(ele_def->type == BIT_FIELD)
+						capacity += (4 + 8);
+					else
+						capacity += (4 + ele_def->size);
+				}
+				else
+					capacity += (4 + stats->page_size);
+			}
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1217,8 +1239,6 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 					if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(5, i), result + 1, &(user_value){.uint_value = lr->tueiplr.element_index.positions[i]}, UINT32_MAX))
 						goto ERROR;
 			}
-
-			const data_type_info* ele_def = get_type_info_for_element_from_tuple_def(&(lr->tueiplr.tpl_def), lr->tueiplr.element_index);
 
 			{
 				if(is_user_value_NULL(&(lr->tueiplr.old_element)))
