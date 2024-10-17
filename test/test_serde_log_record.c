@@ -81,6 +81,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -106,6 +108,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -134,6 +138,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -161,6 +167,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -189,6 +197,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -218,6 +228,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -246,6 +258,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -273,6 +287,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -300,6 +316,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -328,6 +346,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -356,6 +376,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -383,6 +405,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -409,6 +433,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -433,6 +459,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -459,6 +487,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
@@ -489,6 +519,8 @@ int main()
 		printf("\nb :: \n");
 		print_log_record(&b, &stats);
 		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
 	}
 	printf("\n\n");
 
