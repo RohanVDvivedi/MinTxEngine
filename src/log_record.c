@@ -767,7 +767,19 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 
 void destroy_and_free_parsed_log_record(log_record* lr)
 {
+	switch(lr->type)
+	{
+		default :
+			break;
+		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+		{
+			destroy_non_static_type_info_recursively(lr->tueiplr.tpl_def.type_info);
+			free(lr->tueiplr.element_index.positions);
+			break;
+		}
+	}
 
+	free((void*)(lr->parsed_from));
 }
 
 const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size)
