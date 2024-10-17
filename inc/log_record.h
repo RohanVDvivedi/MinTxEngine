@@ -206,6 +206,7 @@ struct page_clone_log_record
 
 // log record struct for FULL_PAGE_WRITE
 // -> undo is a NO-OP, in best case you can put back the page_contents back to the page
+// for REDO copy page_contents to the page and reset it's pageLSN to LSN of this log record
 typedef struct full_page_write_log_record full_page_write_log_record;
 struct full_page_write_log_record
 {
