@@ -780,6 +780,8 @@ void destroy_and_free_parsed_log_record(log_record* lr)
 	}
 
 	free((void*)(lr->parsed_from));
+
+	(*lr) = (log_record){};
 }
 
 const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size)
