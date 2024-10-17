@@ -19,7 +19,7 @@ PICKED
    * starts undoing the changes
      * abort handler function to be implemeted, that is called on all aborting transactions
  * implement recovery function that gets called every time you initialize the mon transaction engine
- * put a FULL_PAGE_WRITE record for the first modification of the page after checkpoint, instead of a regular record
+ * put a FULL_PAGE_WRITE record first for the first modification of the page after checkpoint, instead of a regular record, and then add the actual change record
 
  FAR FUTURE 
  * remove headers not required for public api from publicly installed headers
