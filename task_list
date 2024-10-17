@@ -3,6 +3,11 @@ PICKED
 
  * implement initialization functions for mini transaction engine
    * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
+   * first start by openning files to database and wal
+   * implement the callbacks for the bufferpool
+   * no need to worry about checkpointing first
+   * figure out page size, page_id width and log sequence number width and generate the strict for this stats for the user
+   * initialize the block files for both bufferpool and wale
  * implement function to get a new mini_transaction structure wait if none is available
  * implement wale related functions to modify the page and generate log record outside and then log the change to the most recent writable wale object
    * first take the shared manager lock and release global mutex, now we are sure that there will not be a checkpoint while we are working
@@ -12,6 +17,7 @@ PICKED
    * log both the logs one after the another only if the modification is successfull
    * change the pageLSN to the new value
    * change writerLSN to the mini_transaction_id of this transaction, suggesting a persistent write lock
+   * mark the page as dirty in the bufferpool for safety
  * implement bufferpool related functions
    * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
    * if user tries to do any of these on free space mapper page OR a free page then abort it with reason illegal access
@@ -31,6 +37,7 @@ PICKED
    * starts undoing the changes
      * abort handler function to be implemeted, that is called on all aborting transactions
  * implement recovery function that gets called every time you initialize the mon transaction engine
+ * implement checkpointing and management to truncate the old wal log records -> this is done with exclusivelock on the manager_lock
 
  FAR FUTURE 
  * remove headers not required for public api from publicly installed headers
