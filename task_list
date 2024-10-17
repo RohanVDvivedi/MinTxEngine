@@ -1,5 +1,4 @@
 PICKED
- * FULL_PAGE_WRITE log record to store both old_page_conrtents and new_page_contents
  * add functions in blockio to get size of block file
  * decide if you need first block to store page size of the database, and decide how you want to manage it
 
