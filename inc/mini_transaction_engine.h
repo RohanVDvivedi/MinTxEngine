@@ -8,6 +8,8 @@
 #include<rwlock.h>
 
 #include<mini_transaction_engine_stats.h>
+#include<log_record.h>
+
 #include<mini_transaction.h>
 #include<dirty_page_table_entry.h>
 
@@ -18,7 +20,7 @@ struct mini_transaction_engine_user_stats
 	uint32_t page_id_width; // bytes required to store page_id, same as as mini_transaction_engne_stats.page_id_width
 	uint32_t log_sequence_number_width; // required to store log_sequence_number, same as as mini_transaction_engne_stats.log_sequence_number_width
 
-	uint64_t NULL_PAGE_ID; // zero value
+	uint64_t NULL_PAGE_ID; // zero value, never access this page, ideally never access any page not allocated by the mini transaction engine, it will result in abort
 };
 
 typedef struct mini_transaction_engine mini_transaction_engine;
@@ -40,6 +42,9 @@ struct mini_transaction_engine
 	// the manager/checkpointer discards wales and truncates the old wale block files not longer in use
 	arraylist wale_block_files;
 	arraylist wales;
+
+	// tuple definitions for the log records handled by this engine
+	log_record_tuple_defs lrtd;
 
 	// below three are the parts of mini_transaction table
 	hashmap writer_mini_transactions; // mini_transaction_id != 0, state = IN_PROGRESS or UNDOING_FOR_ABORT else if state = ABORTED or COMMITTED then waiters_count > 0
@@ -63,7 +68,11 @@ struct mini_transaction_engine
 	// as the name suggests check pointing is done every this many milliseconds
 	uint64_t checkpointing_period_in_miliseconds;
 
+	// stats for internal use
 	mini_transaction_engine_stats stats;
+
+	// stats to be used by user
+	mini_transaction_engine_user_stats user_stats;
 };
 
 // on malloc failures we do an exit(-1), no exceptions unless we could handle it
