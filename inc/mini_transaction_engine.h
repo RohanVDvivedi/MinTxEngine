@@ -44,6 +44,11 @@ struct mini_transaction_engine
 	// list of wal_accessor
 	arraylist wa_list;
 
+	// this variable is to be updated as per the rules defined here
+	// flushedLSN = max(flushedLSN, flush_all_log_records(wa_list.last().wale_handle));
+	// this is because we do not have a globally consistent view of the flushedLSN because global lock ges released while retrieveing it, and call to flushing log records will not ensure the return in any correct order, as global lock is released also while flushing the log records
+	uint256 flushedLSN;
+
 	// tuple definitions for the log records handled by this engine
 	log_record_tuple_defs lrtd;
 

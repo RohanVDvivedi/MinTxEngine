@@ -31,7 +31,7 @@ int flush_all_pages_for_bufferpool(const void* page_io_ops_handle);
 // but there is no information about the manager_lock being held in either shared or exclusive state
 // this is the reason why global lock can not be released until you flush the checkpointer log record
 
-// return true if flushed_LSN for the mini_transaction_engine is greater than the pageLSN of the frame passed to the callback
+// return true if flushedLSN for the mini_transaction_engine is greater than the pageLSN of the frame passed to the callback
 int can_be_flushed_to_disk_for_bufferpool(void* flush_callback_handle, uint64_t page_id, const void* frame);
 
 // remove the dirty page entry for the corresponding page_id from the mini_transaction_engine and move it to the free list
