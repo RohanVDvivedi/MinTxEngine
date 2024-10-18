@@ -50,6 +50,15 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	lrtd->size_def_in_bytes_type = get_variable_length_blob_type("size_def", 13);
 	lrtd->type_info_in_bytes_type = get_variable_length_blob_type("type_info", stats->page_size);
 
+	// mark all the above initilaized data types to static
+	lrtd->page_id_type.is_static = 1;
+	lrtd->LSN_type.is_static = 1;
+	lrtd->page_index_type.is_static = 1;
+	lrtd->tuple_positional_accessor_type.is_static = 1;
+	lrtd->data_in_bytes_type.is_static = 1;
+	lrtd->size_def_in_bytes_type.is_static = 1;
+	lrtd->type_info_in_bytes_type.is_static = 1;
+
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(3));
 		if(dti == NULL)
