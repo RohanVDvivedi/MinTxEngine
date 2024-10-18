@@ -21,7 +21,7 @@
 typedef struct wal_accessor wal_accessor;
 struct wal_accessor
 {
-	uint256 wale_LSNs_from; // first LSN that can be found in this file
+	uint256 wale_LSNs_from; // first LSN that can be found in this file, this is also the name of the wal file in decimal
 	block_file wale_block_file;
 	wale wale_handle;
 };
@@ -41,7 +41,7 @@ struct mini_transaction_engine
 	bufferpool bufferpool_handle;
 
 	// list of wal_accessor
-	// the file name of each wale_block_file is database_file_name + ".log." + wale_LSNs_from
+	// the file name of each wale_block_file is database_file_name + "_logs/" + wale_LSNs_from
 	arraylist wa_list;
 
 	// this variable is to be updated as per the rules defined here

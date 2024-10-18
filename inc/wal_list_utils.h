@@ -8,10 +8,12 @@
 
 // create a new wal directory at (mte->database_file_name + "_logs/") and a new first log.7 (almost empty) wal file
 // it will fail if this directory already exists
-void create_new_wal_list(arraylist* wa_list, const mini_transaction_engine* mte);
+int create_new_wal_list(mini_transaction_engine* mte);
 
 // fails if the database_file_name + "/logs/" directory does not exists OR is empty
-void initialize_wal_list(arraylist* wa_list, const mini_transaction_engine* mte);
+// it will also fail if any of the wal file is not named according to their first LSNs
+// of if their log_sequence_number_widths do not match with the one in the stats of mte
+int initialize_wal_list(mini_transaction_engine* mte);
 
 // returns index of the wal_accessor from the wal_list that may include LSN
 cy_uint find_relevant_from_wal_list(arraylist* wa_list, uint256 LSN);
