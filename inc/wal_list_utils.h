@@ -19,9 +19,9 @@ int initialize_wal_list(mini_transaction_engine* mte);
 cy_uint find_relevant_from_wal_list(arraylist* wa_list, uint256 LSN);
 
 // deletes the oldest wale file present in the wa_list
-int drop_oldest_from_wal_list(arraylist* wa_list);
+int drop_oldest_from_wal_list(mini_transaction_engine* mte);
 
 // close all from the wal_list
-void close_all_from_wal_list(arraylist* wa_list);
+void close_all_in_wal_list(arraylist* wa_list);
 
 #endif

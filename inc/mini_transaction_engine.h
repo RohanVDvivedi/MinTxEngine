@@ -40,9 +40,15 @@ struct mini_transaction_engine
 	block_file bufferpool_block_file;
 	bufferpool bufferpool_handle;
 
+	// internal caching parameter for bufferpool
+	uint32_t bufferpool_frame_count;
+
 	// list of wal_accessor
 	// the file name of each wale_block_file is database_file_name + "_logs/" + wale_LSNs_from
 	arraylist wa_list;
+
+	// internal caching parameter for wale
+	uint32_t append_only_buffer_block_count;
 
 	// this variable is to be updated as per the rules defined here
 	// flushedLSN = max(flushedLSN, flush_all_log_records(wa_list.last().wale_handle));
