@@ -14,8 +14,10 @@ int create_new_wal_list(mini_transaction_engine* mte)
 
 	char* directory_name = malloc(strlen(mte->database_file_name) + 20 + 64);
 	if(directory_name == NULL)
+	{
+		deinitialize_arraylist(&(mte->wa_list));
 		return 0;
-
+	}
 	strcpy(directory_name, mte->database_file_name);
 	strcat(directory_name, "_logs/");
 	int directory_name_length = strlen(directory_name);
