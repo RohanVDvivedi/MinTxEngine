@@ -27,8 +27,11 @@ int flush_all_pages_for_bufferpool(const void* page_io_ops_handle);
 #define MAX_PAGE_COUNT(PAGE_SIZE, BLOCK_SIZE) ((MAX_BLOCK_COUNT(BLOCK_SIZE) - 1) / (PAGE_SIZE / BLOCK_SIZE))
 
 // flush_callback_handle is same as mini_transaction_engine for the below 2 functions
+// bufferpool implementation ensures that the below two calls are called with the global mutex (mini_transaction_engine.global_lock) held, ensuring that a consistent state of mini_transaction_engine is seen
+// but there is no information about the manager_lock being held in either shared or exclusive state
+// this is the reason why global lock can not be released until you flush the checkpointer log record
 
-// return true if flushedLSN for the WAL is greater than or equal to the pageLSN of the frame passed to the callback
+// return true if flushed_LSN for the mini_transaction_engine is greater than the pageLSN of the frame passed to the callback
 int can_be_flushed_to_disk_for_bufferpool(void* flush_callback_handle, uint64_t page_id, const void* frame);
 
 // remove the dirty page entry for the corresponding page_id from the mini_transaction_engine and move it to the free list
