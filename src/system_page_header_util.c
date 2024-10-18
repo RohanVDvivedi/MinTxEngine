@@ -10,31 +10,31 @@ static uint32_t calculate_checksum(const void* data, uint32_t data_size)
 
 uint32_t recalculate_page_checksum(void* page, const mini_transaction_engine_stats* stats)
 {
-	uint32_t checksum = calculate_checksum(page + 4, stats->page_size - 4);
-	serialize_uint32(page, 4, checksum);
+	uint32_t checksum = calculate_checksum(page + sizeof(uint32_t), stats->page_size - sizeof(uint32_t));
+	serialize_uint32(page, sizeof(uint32_t), checksum);
 	return checksum;
 }
 
 int validate_page_checksum(const void* page, const mini_transaction_engine_stats* stats)
 {
-	uint32_t checksum = calculate_checksum(page + 4, stats->page_size - 4);
-	return checksum == deserialize_uint32(page, 4);
+	uint32_t checksum = calculate_checksum(page + sizeof(uint32_t), stats->page_size - sizeof(uint32_t));
+	return checksum == deserialize_uint32(page, sizeof(uint32_t));
 }
 
 uint256 get_pageLSN_for_page(const void* page, const mini_transaction_engine_stats* stats)
 {
-	return deserialize_uint256(page + 4, stats->log_sequence_number_width);
+	return deserialize_uint256(page + sizeof(uint32_t), stats->log_sequence_number_width);
 }
 
 int set_pageLSN_for_page(void* page, uint256 pageLSN, const mini_transaction_engine_stats* stats)
 {
-	serialize_uint256(page + 4, stats->log_sequence_number_width, pageLSN);
+	serialize_uint256(page + sizeof(uint32_t), stats->log_sequence_number_width, pageLSN);
 	return 1;
 }
 
 uint64_t is_valid_bits_count_on_free_space_mapper_page(const mini_transaction_engine_stats* stats)
 {
-	return ((uint64_t)(stats->page_size - 4 - stats->log_sequence_number_width)) * UINT64_C(8);
+	return ((uint64_t)(stats->page_size - sizeof(uint32_t) - stats->log_sequence_number_width)) * UINT64_C(8);
 }
 
 #define PAGE_POS_MULTIPLIER(stats) (is_valid_bits_count_on_free_space_mapper_page(stats) + UINT64_C(1))
@@ -61,21 +61,21 @@ int has_writerLSN_on_page(uint64_t page_id, const mini_transaction_engine_stats*
 
 uint256 get_writerLSN_for_page(const void* page, const mini_transaction_engine_stats* stats)
 {
-	return deserialize_uint256(page + 4 + stats->log_sequence_number_width, stats->log_sequence_number_width);
+	return deserialize_uint256(page + sizeof(uint32_t) + stats->log_sequence_number_width, stats->log_sequence_number_width);
 }
 
 int set_writerLSN_for_page(void* page, uint256 writerLSN, const mini_transaction_engine_stats* stats)
 {
-	serialize_uint256(page + 4 + stats->log_sequence_number_width, stats->log_sequence_number_width, writerLSN);
+	serialize_uint256(page + sizeof(uint32_t) + stats->log_sequence_number_width, stats->log_sequence_number_width, writerLSN);
 	return 1;
 }
 
 uint32_t get_system_header_size_for_page(uint64_t page_id, const mini_transaction_engine_stats* stats)
 {
 	if(is_free_space_mapper_page(page_id, stats))
-		return 4 + stats->log_sequence_number_width;
+		return sizeof(uint32_t) + stats->log_sequence_number_width;
 	else
-		return 4 + (2 * stats->log_sequence_number_width);
+		return sizeof(uint32_t) + (2 * stats->log_sequence_number_width);
 }
 
 uint32_t get_page_content_size_for_page(uint64_t page_id, const mini_transaction_engine_stats* stats)
@@ -85,12 +85,12 @@ uint32_t get_page_content_size_for_page(uint64_t page_id, const mini_transaction
 
 uint32_t get_page_content_size_for_data_pages(const mini_transaction_engine_stats* stats)
 {
-	return stats->page_size - (4 + (2 * stats->log_sequence_number_width));
+	return stats->page_size - (sizeof(uint32_t) + (2 * stats->log_sequence_number_width));
 }
 
 uint32_t get_page_content_size_for_free_space_mapper_pages(const mini_transaction_engine_stats* stats)
 {
-	return stats->page_size - (4 + (1 * stats->log_sequence_number_width));
+	return stats->page_size - (sizeof(uint32_t) + (1 * stats->log_sequence_number_width));
 }
 
 void* get_page_contents_for_page(void* page, uint64_t page_id, const mini_transaction_engine_stats* stats)

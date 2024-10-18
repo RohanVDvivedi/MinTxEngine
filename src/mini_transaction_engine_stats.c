@@ -11,9 +11,9 @@ int write_to_first_block(block_file* bf, const mini_transaction_engine_stats* st
 {
 	const uint32_t offset_to_magic_data = 0;
 	const uint32_t offset_to_page_size = strlen(magic_data);
-	const uint32_t offset_to_page_id_width = offset_to_page_size + 4;
-	const uint32_t offset_to_log_sequence_number_width = offset_to_page_id_width + 4;
-	const uint32_t offset_to_end_of_first_block_data = offset_to_log_sequence_number_width + 4;
+	const uint32_t offset_to_page_id_width = offset_to_page_size + sizeof(uint32_t);
+	const uint32_t offset_to_log_sequence_number_width = offset_to_page_id_width + sizeof(uint32_t);
+	const uint32_t offset_to_end_of_first_block_data = offset_to_log_sequence_number_width + sizeof(uint32_t);
 
 	if(offset_to_end_of_first_block_data > get_block_size_for_block_file(bf))
 		return 0;
@@ -23,9 +23,9 @@ int write_to_first_block(block_file* bf, const mini_transaction_engine_stats* st
 		return 0;
 
 	memcpy(first_block + offset_to_magic_data, magic_data, strlen(magic_data));
-	serialize_uint32(first_block + offset_to_page_size, 4, stats->page_size);
-	serialize_uint32(first_block + offset_to_page_id_width, 4, stats->page_id_width);
-	serialize_uint32(first_block + offset_to_log_sequence_number_width, 4, stats->log_sequence_number_width);
+	serialize_uint32(first_block + offset_to_page_size, sizeof(uint32_t), stats->page_size);
+	serialize_uint32(first_block + offset_to_page_id_width, sizeof(uint32_t), stats->page_id_width);
+	serialize_uint32(first_block + offset_to_log_sequence_number_width, sizeof(uint32_t), stats->log_sequence_number_width);
 
 	if(!write_blocks_to_block_file(bf, first_block, 0, 1)
 		|| !flush_all_writes_to_block_file(bf))
@@ -43,9 +43,9 @@ int read_from_first_block(block_file* bf, mini_transaction_engine_stats* stats)
 {
 	const uint32_t offset_to_magic_data = 0;
 	const uint32_t offset_to_page_size = strlen(magic_data);
-	const uint32_t offset_to_page_id_width = offset_to_page_size + 4;
-	const uint32_t offset_to_log_sequence_number_width = offset_to_page_id_width + 4;
-	const uint32_t offset_to_end_of_first_block_data = offset_to_log_sequence_number_width + 4;
+	const uint32_t offset_to_page_id_width = offset_to_page_size + sizeof(uint32_t);
+	const uint32_t offset_to_log_sequence_number_width = offset_to_page_id_width + sizeof(uint32_t);
+	const uint32_t offset_to_end_of_first_block_data = offset_to_log_sequence_number_width + sizeof(uint32_t);
 
 	if(offset_to_end_of_first_block_data > get_block_size_for_block_file(bf))
 		return 0;
@@ -65,9 +65,9 @@ int read_from_first_block(block_file* bf, mini_transaction_engine_stats* stats)
 	if(memcmp(first_block + offset_to_magic_data, magic_data, strlen(magic_data)))
 		goto ERROR;
 
-	stats->page_size = deserialize_uint32(first_block + offset_to_page_size, 4);
-	stats->page_id_width = deserialize_uint32(first_block + offset_to_page_id_width, 4);
-	stats->log_sequence_number_width = deserialize_uint32(first_block + offset_to_log_sequence_number_width, 4);
+	stats->page_size = deserialize_uint32(first_block + offset_to_page_size, sizeof(uint32_t));
+	stats->page_id_width = deserialize_uint32(first_block + offset_to_page_id_width, sizeof(uint32_t));
+	stats->log_sequence_number_width = deserialize_uint32(first_block + offset_to_log_sequence_number_width, sizeof(uint32_t));
 
 	free(first_block);
 	return 1;
