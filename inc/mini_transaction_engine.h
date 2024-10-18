@@ -19,7 +19,7 @@ typedef struct wal_accessor wal_accessor;
 struct wal_accessor
 {
 	char* wale_file_name;
-	uint256 wale_LSNs_from; // first LSN that can be found in this file
+	uint256 wale_LSNs_from; // first LSN that can be found in this file, this is also reflected in the wale_file_name which is just bufferpool_file_name + ".log." + wale_LSNs_from
 	block_file wale_block_file;
 	wale wale_handle;
 };
