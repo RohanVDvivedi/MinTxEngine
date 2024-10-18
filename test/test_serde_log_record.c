@@ -524,5 +524,7 @@ int main()
 	}
 	printf("\n\n");
 
+	deinitialize_log_record_tuple_defs(&lrtd);
+
 	return 0;
 }
