@@ -11,6 +11,16 @@
 #include<mini_transaction.h>
 #include<dirty_page_table_entry.h>
 
+typedef struct mini_transaction_engine_user_stats mini_transaction_engine_user_stats;
+struct mini_transaction_engine_user_stats
+{
+	uint32_t page_size; // size of page in bytes available to the user, effectively page_content_size for non free space mapper pages
+	uint32_t page_id_width; // bytes required to store page_id, same as as mini_transaction_engne_stats.page_id_width
+	uint32_t log_sequence_number_width; // required to store log_sequence_number, same as as mini_transaction_engne_stats.log_sequence_number_width
+
+	uint64_t NULL_PAGE_ID; // zero value
+};
+
 typedef struct mini_transaction_engine mini_transaction_engine;
 struct mini_transaction_engine
 {
