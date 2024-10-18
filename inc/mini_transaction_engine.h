@@ -62,7 +62,7 @@ struct mini_transaction_engine
 	// below two are the parts of dirty page table
 	hashmap dirty_page_table;
 
-	linked_list free_dirty_pages_list; // list of free dirty pages, new dirty pages are assigned from this lists
+	linked_list free_dirty_page_entries_list; // list of free dirty page entries, new dirty page entrues are assigned from this lists or are allocated
 
 	// new threads attempting to start a new mini transaction execution wait here until a slot is available
 	// a signal will be called everytime an insert is performed on free_mini_transactions_list
