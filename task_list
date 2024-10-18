@@ -1,6 +1,6 @@
 PICKED
- * decide if you need first block to store page size of the database, and decide how you want to manage it
-
+ * first block of the database stores magic number, page_size, page_id_width and log_sequence_number_width
+   * implement access functions for that
  * implement initialization functions for mini transaction engine
    * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
    * first start by openning files to database and wal
@@ -38,6 +38,7 @@ PICKED
      * abort handler function to be implemeted, that is called on all aborting transactions
  * implement recovery function that gets called every time you initialize the mon transaction engine
  * implement checkpointing and management to truncate the old wal log records -> this is done with exclusivelock on the manager_lock
+   * and management to truncate the database file if the last page is free and is not writelocked
 
  FAR FUTURE 
  * remove headers not required for public api from publicly installed headers
