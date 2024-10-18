@@ -2,6 +2,7 @@
 
 #include<block_io.h>
 
+// page_id * page_size, will only overflow if the 64 bit off_t offset you are trying to read/write overflows, hence no problem here
 static off_t get_first_block_id_for_page_id(uint64_t page_id, uint32_t page_size, size_t block_size)
 {
 	return ((page_id * page_size) / block_size) + 1; // this +1 ensures that we do not read/write the first read-only header block
