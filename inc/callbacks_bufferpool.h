@@ -26,4 +26,12 @@ int flush_all_pages_for_bufferpool(const void* page_io_ops_handle);
 // any page id you pass on to the bufferpool must be lesser than MAX_PAGE_COUNT, else abort the mini_transaction for illegal access
 #define MAX_PAGE_COUNT(PAGE_SIZE, BLOCK_SIZE) ((MAX_BLOCK_COUNT(BLOCK_SIZE) - 1) / (PAGE_SIZE / BLOCK_SIZE))
 
+// flush_callback_handle is same as mini_transaction_engine for the below 2 functions
+
+// return true if flushedLSN for the WAL is greater than or equal to the pageLSN of the frame passed to the callback
+int can_be_flushed_to_disk_for_bufferpool(void* flush_callback_handle, uint64_t page_id, const void* frame);
+
+// remove the dirty page entry for the corresponding page_id from the mini_transaction_engine and move it to the free list
+void was_flushed_to_disk_for_bufferpool(void* flush_callback_handle, uint64_t page_id, const void* frame);
+
 #endif
