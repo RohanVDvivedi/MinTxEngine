@@ -21,31 +21,27 @@
 typedef struct wal_accessor wal_accessor;
 struct wal_accessor
 {
-	char* wale_file_name;
-	uint256 wale_LSNs_from; // first LSN that can be found in this file, this is also reflected in the wale_file_name which is just bufferpool_file_name + ".log." + wale_LSNs_from
+	uint256 wale_LSNs_from; // first LSN that can be found in this file
 	block_file wale_block_file;
 	wale wale_handle;
-};
-
-typedef struct bufferpool_accessor bufferpool_accessor;
-struct bufferpool_accessor
-{
-	char* bufferpool_file_name; // new wale files are created by appending .log.<first_log_sequence_number> to this string
-	block_file bufferpool_block_file;
-	bufferpool bufferpool_handle;
 };
 
 typedef struct mini_transaction_engine mini_transaction_engine;
 struct mini_transaction_engine
 {
+	// this string is never allocated it is preserved here as it was passed as parameter in the initialization function
+	const char* database_file_name;
+
 	// global lock for the bufferpool_p and wales
 	// also for mini_transaction table
 	pthread_mutex_t global_lock;
 
-	// pointer to the bufferpool accessor
-	bufferpool_accessor* bfa;
+	// bufferpool blockfile (located as database_file_name attribute above) and its handle object
+	block_file bufferpool_block_file;
+	bufferpool bufferpool_handle;
 
 	// list of wal_accessor
+	// the file name of each wale_block_file is database_file_name + ".log." + wale_LSNs_from
 	arraylist wa_list;
 
 	// this variable is to be updated as per the rules defined here
