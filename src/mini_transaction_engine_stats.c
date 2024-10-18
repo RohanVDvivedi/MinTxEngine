@@ -76,3 +76,15 @@ int read_from_first_block(block_file* bf, mini_transaction_engine_stats* stats)
 	free(first_block);
 	return 0;
 }
+
+#include<system_page_header_util.h>
+
+mini_transaction_engine_user_stats get_mini_transaction_engine_user_stats(const mini_transaction_engine_stats* stats)
+{
+	return (mini_transaction_engine_user_stats){
+		.page_size = get_page_content_size_for_data_pages(stats),
+		.page_id_width = stats->page_id_width,
+		.log_sequence_number_width = stats->log_sequence_number_width,
+		.NULL_PAGE_ID = 0,
+	};
+}
