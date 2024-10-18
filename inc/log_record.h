@@ -311,11 +311,12 @@ struct log_record_tuple_defs
 	tuple_def cmtlr_def;
 };
 
-// this function is crucial insucceeding the creation of mini_transaction_engine
+// this function is crucial in succeeding the creation of mini_transaction_engine
 // it won't fail, it any malloc calls fail, we do an exit(-1)
-// we do not have a means to destroy what it initialized so a ctrl+c is what we need
-// i.e. it leaks one time minimal memory, only a fool would call this function in a loop
 void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_transaction_engine_stats* stats);
+
+// destroys all memeory allocated by the above function
+void deinitialize_log_record_tuple_defs(log_record_tuple_defs* lrtd);
 
 log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size);
 

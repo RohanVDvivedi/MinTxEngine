@@ -441,6 +441,27 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	}
 }
 
+void deinitialize_log_record_tuple_defs(log_record_tuple_defs* lrtd)
+{
+	free(lrtd->palr_def.type_info);
+	free(lrtd->pilr_def.type_info);
+	free(lrtd->talr_def.type_info);
+	free(lrtd->tilr_def.type_info);
+	free(lrtd->tulr_def.type_info);
+	free(lrtd->tdlr_def.type_info);
+	free(lrtd->tdalr_def.type_info);
+	free(lrtd->tdttlr_def.type_info);
+	free(lrtd->tslr_def.type_info);
+	free(lrtd->tueiplr_def.type_info);
+	free(lrtd->pclr_def.type_info);
+	free(lrtd->fpwlr_def.type_info);
+	free(lrtd->clr_def.type_info);
+	free(lrtd->amtlr_def.type_info);
+	free(lrtd->cmtlr_def.type_info);
+
+	(*lrtd) = (log_record_tuple_defs){};
+}
+
 log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size)
 {
 	if(serialized_log_record_size <= 1 || serialized_log_record_size > lrtd_p->max_log_record_size)
