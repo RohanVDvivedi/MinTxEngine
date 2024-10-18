@@ -47,10 +47,12 @@ int create_new_wal_list(mini_transaction_engine* mte)
 
 	push_back_to_arraylist(&(mte->wa_list), wa);
 
+	free(directory_name);
 	return 1;
 
 	FAILURE :;
 	close_all_in_wal_list(&(mte->wa_list));
+	free(directory_name);
 	return 0;
 }
 
@@ -69,7 +71,30 @@ cy_uint find_relevant_from_wal_list(arraylist* wa_list, uint256 LSN)
 	return find_preceding_or_equals_in_sorted_iai(&iai, 0, get_element_count_arraylist(wa_list) - 1, &(wal_accessor){.wale_LSNs_from = LSN}, &simple_comparator(compare_wal_accessor));
 }
 
-int drop_oldest_from_wal_list(mini_transaction_engine* mte);
+int drop_oldest_from_wal_list(mini_transaction_engine* mte)
+{
+	if(!is_empty_arraylist(&(mte->wa_list)))
+		return 0;
+
+	char* filename = malloc(strlen(mte->database_file_name) + 20 + 64);
+	if(filename == NULL)
+		return 0;
+
+	wal_accessor* wa = (wal_accessor*) get_front_of_arraylist(&(mte->wa_list));
+	pop_front_from_arraylist(&(mte->wa_list));
+	uint256 file_id = wa->wale_LSNs_from;
+	deinitialize_wale(&(wa->wale_handle));
+	close_block_file(&(wa->wale_block_file));
+	free(wa);
+
+	strcpy(filename, mte->database_file_name);
+	strcat(filename, "_logs/");
+	int directory_name_length = strlen(filename);
+	sprint_uint256(filename + directory_name_length, file_id);
+	remove(filename);
+	free(filename);
+	return 1;
+}
 
 void close_all_in_wal_list(arraylist* wa_list)
 {
