@@ -13,6 +13,24 @@
 #include<mini_transaction.h>
 #include<dirty_page_table_entry.h>
 
+// both the accessor structs below must be created over malloc-ed memory and 
+
+typedef struct wal_accessor wal_accessor;
+struct wal_accessor
+{
+	char* wale_file_name;
+	block_file wale_block_file;
+	wale wale_handle;
+};
+
+typedef struct bufferpool_accessor bufferpool_accessor;
+struct bufferpool_accessor
+{
+	char* bufferpool_file_name; // new wale files are created by appending .log.<first_log_sequence_number> to this string
+	block_file bufferpool_block_file;
+	bufferpool bufferpool_handle;
+};
+
 typedef struct mini_transaction_engine mini_transaction_engine;
 struct mini_transaction_engine
 {
@@ -20,18 +38,11 @@ struct mini_transaction_engine
 	// also for mini_transaction table
 	pthread_mutex_t global_lock;
 
-	// below are the 6 main objects that this mini transaction interactes with bufferpool_p and wale_p and their related block files
-	block_file* bufferpool_block_file;
-	bufferpool* bufferpool_p;
+	// pointer to the bufferpool accessor
+	bufferpool_accessor* bfa;
 
-	// the writable wale
-	block_file* wale_block_file;
-	wale* wale_p;
-
-	// we need more wale objects we only add log record to the latest one (above), all prior wales are read only
-	// the manager/checkpointer discards wales and truncates the old wale block files not longer in use
-	arraylist wale_block_files;
-	arraylist wales;
+	// list of wal_accessor
+	arraylist wa_list;
 
 	// tuple definitions for the log records handled by this engine
 	log_record_tuple_defs lrtd;
