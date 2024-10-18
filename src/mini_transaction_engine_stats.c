@@ -78,13 +78,21 @@ int read_from_first_block(block_file* bf, mini_transaction_engine_stats* stats)
 }
 
 #include<system_page_header_util.h>
+#include<callbacks_bufferpool.h>
 
-mini_transaction_engine_user_stats get_mini_transaction_engine_user_stats(const mini_transaction_engine_stats* stats)
+mini_transaction_engine_user_stats get_mini_transaction_engine_user_stats(const mini_transaction_engine_stats* stats, uint32_t database_file_block_size)
 {
+	// max_page_count is min(MAX_PAGE_COUNT_possible, 1 << (8 * page_id_width))
+	// it is either dictated by the overflow of off_t or the page_id_width
+	uint64_t max_page_count = MAX_PAGE_COUNT(stats->page_size, database_file_block_size);
+	if(stats->page_id_width < 8)
+		max_page_count = min(max_page_count, UINT64_C(1) << (CHAR_BIT * stats->page_id_width));
+
 	return (mini_transaction_engine_user_stats){
 		.page_size = get_page_content_size_for_data_pages(stats),
 		.page_id_width = stats->page_id_width,
 		.log_sequence_number_width = stats->log_sequence_number_width,
 		.NULL_PAGE_ID = 0,
+		.max_page_count = max_page_count,
 	};
 }

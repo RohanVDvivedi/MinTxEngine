@@ -28,9 +28,11 @@ struct mini_transaction_engine_user_stats
 	uint32_t log_sequence_number_width; // required to store log_sequence_number, same as as mini_transaction_engne_stats.log_sequence_number_width
 
 	uint64_t NULL_PAGE_ID; // zero value, never access this page, ideally never access any page not allocated by the mini transaction engine, it will result in abort
+
+	uint64_t max_page_count; // user is not allowed to access more than this number of pages in the database
 };
 
 // generate mini transaction engine user stats from stats
-mini_transaction_engine_user_stats get_mini_transaction_engine_user_stats(const mini_transaction_engine_stats* stats);
+mini_transaction_engine_user_stats get_mini_transaction_engine_user_stats(const mini_transaction_engine_stats* stats, uint32_t database_file_block_size);
 
 #endif
