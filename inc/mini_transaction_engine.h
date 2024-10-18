@@ -18,15 +18,16 @@ struct mini_transaction_engine
 	// also for mini_transaction table
 	pthread_mutex_t global_lock;
 
-	// below are the two main objects that this mini transaction interactes with bufferpool_p and wale_p
+	// below are the 6 main objects that this mini transaction interactes with bufferpool_p and wale_p and their related block files
 	block_file* bufferpool_block_file;
 	bufferpool* bufferpool_p;
 
-	// the writwable wale
+	// the writable wale
 	block_file* wale_block_file;
 	wale* wale_p;
 
 	// we need more wale objects we only add log record to the latest one (above), all prior wales are read only
+	// the manager/checkpointer discards wales and truncates the old wale block files not longer in use
 	arraylist wale_block_files;
 	arraylist wales;
 
