@@ -56,7 +56,18 @@ int create_new_wal_list(mini_transaction_engine* mte)
 
 int initialize_wal_list(mini_transaction_engine* mte);
 
-cy_uint find_relevant_from_wal_list(arraylist* wa_list, uint256 LSN);
+static int compare_wal_accessor(const void* a, const void* b)
+{
+	return compare_uint256(((const wal_accessor*)a)->wale_LSNs_from, ((const wal_accessor*)b)->wale_LSNs_from);
+}
+
+cy_uint find_relevant_from_wal_list(arraylist* wa_list, uint256 LSN)
+{
+	if(is_empty_arraylist(wa_list))
+		return INVALID_INDEX;
+	index_accessed_interface iai = get_index_accessed_interface_for_front_of_arraylist(wa_list);
+	return find_preceding_or_equals_in_sorted_iai(&iai, 0, get_element_count_arraylist(wa_list) - 1, &(wal_accessor){.wale_LSNs_from = LSN}, &simple_comparator(compare_wal_accessor));
+}
 
 int drop_oldest_from_wal_list(mini_transaction_engine* mte);
 
