@@ -10,7 +10,7 @@
 
 int create_new_wal_list(mini_transaction_engine* mte)
 {
-	if(!initialize_arraylist(&(mte->wa_list), 1))
+	if(!initialize_arraylist(&(mte->wa_list), 32))
 		return 0;
 
 	char* dirname = malloc(strlen(mte->database_file_name) + 20 + 64);
