@@ -1,5 +1,4 @@
 PICKED
- * implement a function to get_new and delete function for mini_transaction and dirty_page_table_entry
  * implement initialization functions for mini transaction engine
    * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
    * first start by openning files to database and wal
