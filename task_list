@@ -1,6 +1,5 @@
 PICKED
- * utility function to return the mini transaction that has write locked a page, return NULL if writerLSN is 0 OR is locked by self
- * implement function to get a new mini_transaction structure wait if none is available
+ * utility unsafe function to return the mini transaction that has write locked a page, return NULL if writerLSN is 0 OR is locked by self
  * implement wale related functions to modify the page and generate log record outside and then log the change to the most recent writable wale object
    * first take the shared manager lock and release global mutex, now we are sure that there will not be a checkpoint while we are working
    * if this is the first modification to the page after checkpoint i.e. its page LSN is lesser than checkpointLSN, then construct a full page write log record
@@ -23,12 +22,20 @@ PICKED
  * implement both bufferpool and wale related functions
    * acquire new page with write lock
    * free page, and release lock pages with freeing them
+   * always skip pages that are write locked by other mini transactions
+   * maintain pages_in_use variable and bump it when you allocate a brand new page, when no pages are available
+     * fail if you have reached max page count
  * implement abort handling function
    * fails if the transaction is already committed or in undoing fo abort state
    * marks the mini transaction aborted if not already marked
    * starts undoing the changes
      * abort handler function to be implemeted, that is called on all aborting transactions
- * implement recovery function that gets called every time you initialize the mon transaction engine
+ * implement recovery function that gets called every time you initialize the mini transaction engine
+ * mini_transaction allotter
+   * wait if there are no element free_mini_transactions_list
+   * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
+   * deinitialize_mini_transaction_engine waits for all mini_transactions to be returned
+   * also kill the checkpointer thread
  * implement checkpointing and management tasks to be done periodically
    * if wale file is full create a new one and add it to wa_list
    * add a checkpoint log record
