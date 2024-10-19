@@ -43,7 +43,7 @@ int create_new_wal_list(mini_transaction_engine* mte)
 		free(wa);
 		goto FAILURE;
 	}
-	if(!initialize_wale(&(wa->wale_handle), mte->stats.log_sequence_number_width, FIRST_LOG_SEQUENCE_NUMBER, &(mte->global_lock), get_block_io_ops_for_wale(&(wa->wale_block_file)), mte->append_only_buffer_block_count, &err))
+	if(!initialize_wale(&(wa->wale_handle), mte->stats.log_sequence_number_width, FIRST_LOG_SEQUENCE_NUMBER, &(mte->global_lock), get_block_io_ops_for_wale(&(wa->wale_block_file)), mte->wale_append_only_buffer_block_count, &err))
 	{
 		close_block_file(&(wa->wale_block_file));
 		free(wa);
@@ -189,7 +189,7 @@ int initialize_wal_list(mini_transaction_engine* mte)
 	wal_accessor* wa = (wal_accessor*) get_back_of_arraylist(&(mte->wa_list));
 	pthread_mutex_lock(&(mte->global_lock));
 	int err = 0;
-	int res = modify_append_only_buffer_block_count(&(wa->wale_handle), mte->append_only_buffer_block_count, &err);
+	int res = modify_append_only_buffer_block_count(&(wa->wale_handle), mte->wale_append_only_buffer_block_count, &err);
 	pthread_mutex_unlock(&(mte->global_lock));
 	if(!res)
 		goto FAILURE;
