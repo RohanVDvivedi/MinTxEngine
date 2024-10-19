@@ -1,6 +1,8 @@
 #ifndef MINI_TRANSACTION_ENGINE_H
 #define MINI_TRANSACTION_ENGINE_H
 
+#include<block_io.h>
+
 #include<hashmap.h>
 #include<linkedlist.h>
 #include<arraylist.h>
