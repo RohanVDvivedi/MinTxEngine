@@ -38,13 +38,14 @@ struct mini_transaction_engine
 {
 	// this string is never allocated it is preserved here as it was passed as parameter in the initialization function
 	const char* database_file_name;
+	// database_block_file (located as database_file_name attribute above)
+	block_file database_block_file;
 
 	// global lock for the bufferpool_p and wales
 	// also for mini_transaction table
 	pthread_mutex_t global_lock;
 
-	// bufferpool blockfile (located as database_file_name attribute above) and its handle object
-	block_file bufferpool_block_file;
+	// bufferpool handle object
 	bufferpool bufferpool_handle;
 
 	// internal caching parameter for bufferpool
@@ -98,6 +99,6 @@ struct mini_transaction_engine
 
 // page_size, page_id_width and log_sequence_number_width parameter is only used if passed as non-zero
 // else they are either used for a new database OR are ensured to be correct for an existing database if non-zero
-int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count);
+int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t checkpointing_period_in_miliseconds);
 
 #endif
