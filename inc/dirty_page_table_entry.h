@@ -17,6 +17,7 @@ struct dirty_page_table_entry
 	llnode enode;
 };
 
+// only page_id is the key for the following two functions
 int compare_dirty_page_table_entries(const void* dpte1, const void* dpte2);
 cy_uint hash_dirty_page_table_entry(const void* dpte);
 

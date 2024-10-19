@@ -3,6 +3,11 @@
 
 #include<pthread.h>
 
+#include<stdint.h>
+#include<large_uints.h>
+
+#include<linkedlist.h>
+
 typedef enum mini_transaction_state mini_transaction_state;
 enum mini_transaction_state
 {
@@ -39,5 +44,9 @@ struct mini_transaction
 	// nodes for intrusive structures that this mini transaction resides in, are below
 	llnode enode;
 };
+
+// only mini_transaction_id is the key for the following two functions
+int compare_mini_transactions(const void* mt1, const void* mt2);
+cy_uint hash_mini_transaction(const void* mt);
 
 #endif
