@@ -48,7 +48,7 @@ struct mini_transaction_engine
 	arraylist wa_list;
 
 	// internal caching parameter for wale
-	uint32_t append_only_buffer_block_count; int append_only_buffer_block_count_changed; // flag set if wale's append only buffer counter needs to be updated
+	uint32_t wale_append_only_buffer_block_count; int wale_append_only_buffer_block_count_changed; // flag set if wale's append only buffer counter needs to be updated
 
 	// this variable is to be updated as per the rules defined here
 	// flushedLSN = max(flushedLSN, flush_all_log_records(wa_list.last().wale_handle));
@@ -73,7 +73,7 @@ struct mini_transaction_engine
 
 	// new threads attempting to start a new mini transaction execution wait here until a slot is available
 	// a signal will be called everytime an insert is performed on free_mini_transactions_list
-	pthread_mutex_t conditional_to_wait_for_execution_slot;
+	pthread_cond_t conditional_to_wait_for_execution_slot;
 
 	// manger_lock is to be held in shared mode for all the accesses by the user
 	// it must be held in exclusive mode for truncating WALe and Bufferpool files, check pointing etc
@@ -89,6 +89,8 @@ struct mini_transaction_engine
 	mini_transaction_engine_user_stats user_stats;
 };
 
-// on malloc failures we do an exit(-1), no exceptions unless we could handle it
+// page_size, page_id_width and log_sequence_number_width parameter is only used if passed as non-zero
+// else they are either used for a new database OR are ensured to be correct for an existing database if non-zero
+int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count);
 
 #endif
