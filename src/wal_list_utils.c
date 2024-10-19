@@ -32,6 +32,8 @@ int create_new_wal_list(mini_transaction_engine* mte)
 		goto FAILURE;
 
 	wal_accessor* wa = malloc(sizeof(wal_accessor));
+	if(wa == NULL)
+		goto FAILURE;
 	wa->wale_LSNs_from = FIRST_LOG_SEQUENCE_NUMBER;
 	char* filename = directory_name;
 	sprint_uint256(filename + directory_name_length, FIRST_LOG_SEQUENCE_NUMBER);
@@ -56,6 +58,11 @@ int create_new_wal_list(mini_transaction_engine* mte)
 	close_all_in_wal_list(&(mte->wa_list));
 	free(directory_name);
 	return 0;
+}
+
+static int compare_wal_accessor(const void* a, const void* b)
+{
+	return compare_uint256(((const wal_accessor*)a)->wale_LSNs_from, ((const wal_accessor*)b)->wale_LSNs_from);
 }
 
 static int if_valid_read_file_name_into_LSN(const char* base_filename, uint256* wale_LSNs_from)
@@ -111,6 +118,8 @@ int initialize_wal_list(mini_transaction_engine* mte)
 		strcpy(filename + directory_name_length, en->d_name);
 
 		wal_accessor* wa = malloc(sizeof(wal_accessor));
+		if(wa == NULL)
+			goto FAILURE;
 		wa->wale_LSNs_from = wale_LSNs_from;
 		if(!open_block_file(&(wa->wale_block_file), filename, 0))
 		{
@@ -162,9 +171,18 @@ int initialize_wal_list(mini_transaction_engine* mte)
 		}
 	}
 
-	// sort wal_list by their wale_LSNs_from
-	// add apeend_only_buffer_count buffers to it
+	if(!is_empty_arraylist(&(mte->wa_list)))
+		goto FAILURE;
 
+	// sort wal_list by their wale_LSNs_from
+	index_accessed_interface iai = get_index_accessed_interface_for_front_of_arraylist(&(mte->wa_list));
+	quick_sort_iai(&iai, 0, get_element_count_arraylist(&(mte->wa_list)) - 1, &simple_comparator(compare_wal_accessor));
+
+	// add append_only_buffer_count buffers to the last wale in it
+	wal_accessor* wa = (wal_accessor*) get_back_of_arraylist(&(mte->wa_list));
+	int err = 0;
+	if(!modify_append_only_buffer_block_count(&(wa->wale_handle), mte->append_only_buffer_block_count, &err))
+		goto FAILURE;
 
 	closedir(dr);
 	free(directory_name);
@@ -175,11 +193,6 @@ int initialize_wal_list(mini_transaction_engine* mte)
 	close_all_in_wal_list(&(mte->wa_list));
 	free(directory_name);
 	return 0;
-}
-
-static int compare_wal_accessor(const void* a, const void* b)
-{
-	return compare_uint256(((const wal_accessor*)a)->wale_LSNs_from, ((const wal_accessor*)b)->wale_LSNs_from);
 }
 
 cy_uint find_relevant_from_wal_list(arraylist* wa_list, uint256 LSN)
