@@ -1,5 +1,5 @@
 PICKED
- * add a static function to read all files with database_file_name + ".log.*" to be used to initialize the wa_list
+ * review wa_list utils code
  * implement initialization functions for mini transaction engine
    * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
    * first start by openning files to database and wal
