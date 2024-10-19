@@ -1,10 +1,4 @@
 PICKED
- * implement initialization functions for mini transaction engine
-   * global MinTXEngine structure is initialized with db_file_name, buffer_count, page_size, check_point_perios_in_milli_seconds, wal_file_name, log_sequence_number_width
-   * first start by openning files to database and wal
-   * implement the callbacks for the bufferpool
-   * no need to worry about checkpointing first
-   * initialize the block files for both bufferpool and wales
  * utility function to return the mini transaction that has write locked a page, return NULL if writerLSN is 0 OR is locked by self
  * implement function to get a new mini_transaction structure wait if none is available
  * implement wale related functions to modify the page and generate log record outside and then log the change to the most recent writable wale object
