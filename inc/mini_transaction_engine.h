@@ -16,6 +16,13 @@
 #include<mini_transaction.h>
 #include<dirty_page_table_entry.h>
 
+/*
+	A single minitransaction must comrpise of a single operation using a single thread
+	You may never use multiple threads for a minitransaction
+	Each thread must get its own mini transaction slot and must operate only on atmost 1 logical disk resident data structure using a single thread to avoid deadlocks
+	Yet, you can get concurrency by using multiple concurrent mini_transactions.
+*/
+
 // both the accessor structs below must be created over malloc-ed memory and 
 
 typedef struct wal_accessor wal_accessor;
