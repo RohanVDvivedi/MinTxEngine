@@ -58,7 +58,124 @@ int create_new_wal_list(mini_transaction_engine* mte)
 	return 0;
 }
 
-int initialize_wal_list(mini_transaction_engine* mte);
+static int if_valid_read_file_name_into_LSN(const char* base_filename, uint256* wale_LSNs_from)
+{
+	if(strlen(base_filename) != 64)
+		return 0;
+
+	(*wale_LSNs_from) = get_0_uint256();
+	for(int i = 0; i < 64; i++)
+	{
+		unsigned int digit = get_digit_from_char(base_filename[i], 16);
+		if(digit == -1)
+			return 0;
+		(*wale_LSNs_from) = left_shift_uint256((*wale_LSNs_from), 4);
+		(*wale_LSNs_from) = bitwise_or_uint256((*wale_LSNs_from), get_uint256(digit));
+	}
+
+	return 1;
+}
+
+#include<dirent.h>
+
+int initialize_wal_list(mini_transaction_engine* mte)
+{
+	initialize_arraylist(&(mte->wa_list), 32);
+
+	char* directory_name = malloc(strlen(mte->database_file_name) + 20 + 64);
+	if(directory_name == NULL)
+	{
+		deinitialize_arraylist(&(mte->wa_list));
+		return 0;
+	}
+	strcpy(directory_name, mte->database_file_name);
+	strcat(directory_name, "_logs/");
+	int directory_name_length = strlen(directory_name);
+
+	DIR* dr = opendir(directory_name);
+	if(dr == NULL)
+	{
+		deinitialize_arraylist(&(mte->wa_list));
+		free(directory_name);
+		return 0;
+	}
+
+	struct dirent *en;
+	while ((en = readdir(dr)) != NULL) {
+		
+		uint256 wale_LSNs_from;
+		if(!if_valid_read_file_name_into_LSN(en->d_name, &wale_LSNs_from))
+			goto FAILURE;
+
+		char* filename = directory_name;
+		strcpy(filename + directory_name_length, en->d_name);
+
+		wal_accessor* wa = malloc(sizeof(wal_accessor));
+		wa->wale_LSNs_from = wale_LSNs_from;
+		if(!open_block_file(&(wa->wale_block_file), filename, 0))
+		{
+			free(wa);
+			goto FAILURE;
+		}
+		if(get_total_size_for_block_file(&(wa->wale_block_file)) == 0) // if this block file is empty, delete it, a valid wale file must have mster record written
+		{
+			close_block_file(&(wa->wale_block_file));
+			free(wa);
+			remove(filename);
+			continue;
+		}
+		int err;
+		if(!initialize_wale(&(wa->wale_handle), mte->stats.log_sequence_number_width, INVALID_LOG_SEQUENCE_NUMBER, &(mte->global_lock), get_block_io_ops_for_wale(&(wa->wale_block_file)), 0, &err))
+		{
+			close_block_file(&(wa->wale_block_file));
+			free(wa);
+			goto FAILURE;
+		}
+
+		// fetch firstLSN and nextLSN with the globa lock held
+		pthread_mutex_lock(&(mte->global_lock));
+		uint32_t LSNwidth = get_log_sequence_number_width(&(wa->wale_handle));
+		uint256 firstLSN = get_first_log_sequence_number(&(wa->wale_handle));
+		uint256 nextLSN = get_next_log_sequence_number(&(wa->wale_handle));
+		pthread_mutex_unlock(&(mte->global_lock));
+
+		// check that the first log sequence numbers of wale matches the file id and the log sequence number width matches, else we skip it
+		if((LSNwidth != mte->stats.log_sequence_number_width)
+		|| (!are_equal_uint256(firstLSN, INVALID_LOG_SEQUENCE_NUMBER) && !are_equal_uint256(firstLSN, wa->wale_LSNs_from))
+		|| (are_equal_uint256(firstLSN, INVALID_LOG_SEQUENCE_NUMBER) && !are_equal_uint256(nextLSN, wa->wale_LSNs_from))
+		)
+		{
+			deinitialize_wale(&(wa->wale_handle));
+			close_block_file(&(wa->wale_block_file));
+			free(wa);
+			goto FAILURE;
+		}
+
+		if(is_full_arraylist(&(mte->wa_list)))
+			expand_arraylist(&(mte->wa_list));
+		if(!push_back_to_arraylist(&(mte->wa_list), wa))
+		{
+			deinitialize_wale(&(wa->wale_handle));
+			close_block_file(&(wa->wale_block_file));
+			free(wa);
+			goto FAILURE;
+		}
+	}
+
+	// sort wal_list by their wale_LSNs_from
+	// add apeend_only_buffer_count buffers to it
+
+
+	closedir(dr);
+	free(directory_name);
+	return 1;
+
+	FAILURE :;
+	closedir(dr);
+	close_all_in_wal_list(&(mte->wa_list));
+	free(directory_name);
+	return 0;
+}
 
 static int compare_wal_accessor(const void* a, const void* b)
 {
