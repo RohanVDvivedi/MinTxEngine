@@ -5,6 +5,7 @@ PICKED
    * implement the callbacks for the bufferpool
    * no need to worry about checkpointing first
    * initialize the block files for both bufferpool and wales
+ * utility function to return the mini transaction that has write locked a page, return NULL if writerLSN is 0 OR is locked by self
  * implement function to get a new mini_transaction structure wait if none is available
  * implement wale related functions to modify the page and generate log record outside and then log the change to the most recent writable wale object
    * first take the shared manager lock and release global mutex, now we are sure that there will not be a checkpoint while we are working
@@ -34,8 +35,11 @@ PICKED
    * starts undoing the changes
      * abort handler function to be implemeted, that is called on all aborting transactions
  * implement recovery function that gets called every time you initialize the mon transaction engine
- * implement checkpointing and management to truncate the old wal log records -> this is done with exclusivelock on the manager_lock
-   * and management to truncate the database file if the last page is free and is not writelocked
+ * implement checkpointing and management tasks to be done periodically
+   * if wale file is full create a new one and add it to wa_list
+   * add a checkpoint log record
+   * calculate the minimum visible LSN and remove log files that are no longer visible
+   * count the number of pages that can be truncated in database file (free space mapper page always truncatable, data pages truncatable if free and not write locked) and truncate this file
 
  FAR FUTURE 
  * remove headers not required for public api from publicly installed headers
