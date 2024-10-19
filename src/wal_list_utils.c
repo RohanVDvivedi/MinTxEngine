@@ -10,24 +10,25 @@
 
 int create_new_wal_list(mini_transaction_engine* mte)
 {
-	initialize_arraylist(&(mte->wa_list), 1);
+	if(!initialize_arraylist(&(mte->wa_list), 1))
+		return 0;
 
-	char* directory_name = malloc(strlen(mte->database_file_name) + 20 + 64);
-	if(directory_name == NULL)
+	char* dirname = malloc(strlen(mte->database_file_name) + 20 + 64);
+	if(dirname == NULL)
 	{
 		deinitialize_arraylist(&(mte->wa_list));
 		return 0;
 	}
-	strcpy(directory_name, mte->database_file_name);
-	strcat(directory_name, "_logs/");
-	int directory_name_length = strlen(directory_name);
+	strcpy(dirname, mte->database_file_name);
+	strcat(dirname, "_logs/");
+	int dirname_length = strlen(dirname);
 
 	struct stat s;
-	int err = stat(directory_name, &s);
+	int err = stat(dirname, &s);
 	if(err != -1 || errno != ENOENT)
 		goto FAILURE;
 
-	err = mkdir(directory_name, 0700);
+	err = mkdir(dirname, 0700);
 	if(err == -1)
 		goto FAILURE;
 
@@ -35,8 +36,8 @@ int create_new_wal_list(mini_transaction_engine* mte)
 	if(wa == NULL)
 		goto FAILURE;
 	wa->wale_LSNs_from = FIRST_LOG_SEQUENCE_NUMBER;
-	char* filename = directory_name;
-	sprint_uint256(filename + directory_name_length, FIRST_LOG_SEQUENCE_NUMBER);
+	char* filename = dirname;
+	sprint_uint256(filename + dirname_length, FIRST_LOG_SEQUENCE_NUMBER);
 	if(!create_and_open_block_file(&(wa->wale_block_file), filename, 0))
 	{
 		free(wa);
@@ -51,12 +52,12 @@ int create_new_wal_list(mini_transaction_engine* mte)
 
 	push_back_to_arraylist(&(mte->wa_list), wa);
 
-	free(directory_name);
+	free(dirname);
 	return 1;
 
 	FAILURE :;
 	close_all_in_wal_list(&(mte->wa_list));
-	free(directory_name);
+	free(dirname);
 	return 0;
 }
 
@@ -87,23 +88,24 @@ static int if_valid_read_file_name_into_LSN(const char* base_filename, uint256* 
 
 int initialize_wal_list(mini_transaction_engine* mte)
 {
-	initialize_arraylist(&(mte->wa_list), 32);
+	if(!initialize_arraylist(&(mte->wa_list), 32))
+		return 0;
 
-	char* directory_name = malloc(strlen(mte->database_file_name) + 20 + 64);
-	if(directory_name == NULL)
+	char* dirname = malloc(strlen(mte->database_file_name) + 20 + 64);
+	if(dirname == NULL)
 	{
 		deinitialize_arraylist(&(mte->wa_list));
 		return 0;
 	}
-	strcpy(directory_name, mte->database_file_name);
-	strcat(directory_name, "_logs/");
-	int directory_name_length = strlen(directory_name);
+	strcpy(dirname, mte->database_file_name);
+	strcat(dirname, "_logs/");
+	int dirname_length = strlen(dirname);
 
-	DIR* dr = opendir(directory_name);
+	DIR* dr = opendir(dirname);
 	if(dr == NULL)
 	{
 		deinitialize_arraylist(&(mte->wa_list));
-		free(directory_name);
+		free(dirname);
 		return 0;
 	}
 
@@ -111,11 +113,11 @@ int initialize_wal_list(mini_transaction_engine* mte)
 	while ((en = readdir(dr)) != NULL) {
 		
 		uint256 wale_LSNs_from;
-		if(!if_valid_read_file_name_into_LSN(en->d_name, &wale_LSNs_from))
+		if(!if_valid_read_file_name_into_LSN(en->d_name, &wale_LSNs_from)) // there is some random file in logs directory so fail
 			goto FAILURE;
 
-		char* filename = directory_name;
-		strcpy(filename + directory_name_length, en->d_name);
+		char* filename = dirname;
+		strcpy(filename + dirname_length, en->d_name);
 
 		wal_accessor* wa = malloc(sizeof(wal_accessor));
 		if(wa == NULL)
@@ -176,7 +178,7 @@ int initialize_wal_list(mini_transaction_engine* mte)
 		}
 	}
 
-	if(!is_empty_arraylist(&(mte->wa_list)))
+	if(is_empty_arraylist(&(mte->wa_list)))
 		goto FAILURE;
 
 	// sort wal_list by their wale_LSNs_from
@@ -193,13 +195,13 @@ int initialize_wal_list(mini_transaction_engine* mte)
 		goto FAILURE;
 
 	closedir(dr);
-	free(directory_name);
+	free(dirname);
 	return 1;
 
 	FAILURE :;
 	closedir(dr);
 	close_all_in_wal_list(&(mte->wa_list));
-	free(directory_name);
+	free(dirname);
 	return 0;
 }
 
@@ -213,7 +215,7 @@ cy_uint find_relevant_from_wal_list(arraylist* wa_list, uint256 LSN)
 
 int drop_oldest_from_wal_list(mini_transaction_engine* mte)
 {
-	if(!is_empty_arraylist(&(mte->wa_list)))
+	if(is_empty_arraylist(&(mte->wa_list))) // can not drop wal file from empty wa_list
 		return 0;
 
 	char* filename = malloc(strlen(mte->database_file_name) + 20 + 64);
@@ -229,8 +231,8 @@ int drop_oldest_from_wal_list(mini_transaction_engine* mte)
 
 	strcpy(filename, mte->database_file_name);
 	strcat(filename, "_logs/");
-	int directory_name_length = strlen(filename);
-	sprint_uint256(filename + directory_name_length, file_id);
+	int dirname_length = strlen(filename);
+	sprint_uint256(filename + dirname_length, file_id);
 	remove(filename);
 	free(filename);
 	return 1;
