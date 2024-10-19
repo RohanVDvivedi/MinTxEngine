@@ -180,8 +180,11 @@ int initialize_wal_list(mini_transaction_engine* mte)
 
 	// add append_only_buffer_count buffers to the last wale in it
 	wal_accessor* wa = (wal_accessor*) get_back_of_arraylist(&(mte->wa_list));
+	pthread_mutex_lock(&(mte->global_lock));
 	int err = 0;
-	if(!modify_append_only_buffer_block_count(&(wa->wale_handle), mte->append_only_buffer_block_count, &err))
+	int res = modify_append_only_buffer_block_count(&(wa->wale_handle), mte->append_only_buffer_block_count, &err);
+	pthread_mutex_unlock(&(mte->global_lock));
+	if(!res)
 		goto FAILURE;
 
 	closedir(dr);
