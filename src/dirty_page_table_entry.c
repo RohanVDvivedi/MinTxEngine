@@ -9,3 +9,19 @@ cy_uint hash_dirty_page_table_entry(const void* dpte)
 {
 	return ((const dirty_page_table_entry*)dpte)->page_id;
 }
+
+#include<stdlib.h>
+
+dirty_page_table_entry* get_new_dirty_page_table_entry()
+{
+	dirty_page_table_entry* dpte = malloc(sizeof(dirty_page_table_entry));
+	if(dpte == NULL)
+		exit(-1);
+	initialize_llnode(&(dpte->enode));
+	return dpte;
+}
+
+void delete_dirty_page_table_entry(dirty_page_table_entry* dpte)
+{
+	free(dpte);
+}

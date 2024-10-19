@@ -21,4 +21,8 @@ struct dirty_page_table_entry
 int compare_dirty_page_table_entries(const void* dpte1, const void* dpte2);
 cy_uint hash_dirty_page_table_entry(const void* dpte);
 
+// exits on failure to allocate memory, won't return NULL
+dirty_page_table_entry* get_new_dirty_page_table_entry();
+void delete_dirty_page_table_entry(dirty_page_table_entry* dpte);
+
 #endif
