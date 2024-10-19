@@ -31,7 +31,9 @@ struct mini_transaction
 	uint64_t waiters_count; // the number of transactions waiting on write_lock_wait
 
 	uint256 lastLSN; // LSN of the last log record that this mini_transaction made
-	// this is used to chain new log records in the reverse order, necessary for undoing upon an aborts
+	// this is used to chain new log records in the reverse order, necessary for undoing upon aborts
+
+	// a mini transaction is moved to free list only after it is in ABORTED/COMMITTED state and the waiters_count == 0
 
 	// -----------------
 	// nodes for intrusive structures that this mini transaction resides in, are below
