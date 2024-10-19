@@ -90,18 +90,16 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	}
 	else
 		return 0;
-/*
-	// below three are the parts of mini_transaction table
-	hashmap writer_mini_transactions; // mini_transaction_id != 0, state = IN_PROGRESS or UNDOING_FOR_ABORT else if state = ABORTED or COMMITTED then waiters_count > 0
-	linkedlist reader_mini_transactions; // mini_transaction_id == 0, state = IN_PROGRESS
 
-	linkedlist free_mini_transactions_list; // list of free mini transactions, new mini transactions are assigned from this list, here waiters_count must be 0
+	if(!initialize_hashmap(&(mte->writer_mini_transactions), ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, mte->bufferpool_frame_count, &simple_hasher(hash_mini_transaction), &simple_comparator(compare_mini_transactions), offsetof(mini_transaction, enode)))
+		exit(-1);
+	initialize_linkedlist(&(mte->reader_mini_transactions), offsetof(mini_transaction, enode));
+	initialize_linkedlist(&(mte->free_mini_transactions_list), offsetof(mini_transaction, enode));
 
-	// below two are the parts of dirty page table
-	hashmap dirty_page_table;
+	if(!initialize_hashmap(&(mte->dirty_page_table), ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, mte->bufferpool_frame_count, &simple_hasher(hash_dirty_page_table_entry), &simple_comparator(compare_dirty_page_table_entries), offsetof(dirty_page_table_entry, enode)))
+		exit(-1);
+	initialize_linkedlist(&(mte->free_dirty_page_entries_list), offsetof(dirty_page_table_entry, enode));
 
-	linkedlist free_dirty_page_entries_list; // list of free dirty page entries, new dirty page entrues are assigned from this lists or are allocated
-*/
 	initialize_log_record_tuple_defs(&(mte->lrtd), &(mte->stats));
 	mte->user_stats = get_mini_transaction_engine_user_stats(&(mte->stats), get_block_size_for_block_file(&(mte->database_block_file)));
 
