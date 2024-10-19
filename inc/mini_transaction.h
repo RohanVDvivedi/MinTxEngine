@@ -49,4 +49,8 @@ struct mini_transaction
 int compare_mini_transactions(const void* mt1, const void* mt2);
 cy_uint hash_mini_transaction(const void* mt);
 
+// exits on failure to allocate memory, won't return NULL
+mini_transaction* get_new_mini_transaction();
+void delete_mini_transaction(mini_transaction* mt);
+
 #endif
