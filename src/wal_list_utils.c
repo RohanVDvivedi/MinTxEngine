@@ -149,10 +149,15 @@ int initialize_wal_list(mini_transaction_engine* mte)
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// check that the first log sequence numbers of wale matches the file id and the log sequence number width matches, else we skip it
-		if((LSNwidth != mte->stats.log_sequence_number_width)
-		|| (!are_equal_uint256(firstLSN, INVALID_LOG_SEQUENCE_NUMBER) && !are_equal_uint256(firstLSN, wa->wale_LSNs_from))
-		|| (are_equal_uint256(firstLSN, INVALID_LOG_SEQUENCE_NUMBER) && !are_equal_uint256(nextLSN, wa->wale_LSNs_from))
-		)
+		// valid condition is
+		//		LSNwidth matches AND ((firstLSN is valid AND firstLSN matches filename) OR (firstLSN is invalid AND nextLSN matches filename)
+		// if this condition fails, the logs directory or the files or the filenames were tampered so we quit with failure
+		if(!(
+			(LSNwidth == mte->stats.log_sequence_number_width)
+		&& (
+			(!are_equal_uint256(firstLSN, INVALID_LOG_SEQUENCE_NUMBER) && are_equal_uint256(firstLSN, wa->wale_LSNs_from))
+			|| (are_equal_uint256(firstLSN, INVALID_LOG_SEQUENCE_NUMBER) && are_equal_uint256(nextLSN, wa->wale_LSNs_from)))
+		))
 		{
 			deinitialize_wale(&(wa->wale_handle));
 			close_block_file(&(wa->wale_block_file));
