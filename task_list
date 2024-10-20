@@ -1,5 +1,4 @@
 PICKED
- * utility unsafe function to return the mini transaction that has write locked a page, return NULL if writerLSN is 0 OR is locked by self
  * utility unsafe function to mark a page as dirty in dirty page table
  * implement wale related functions to modify the page and generate log record outside and then log the change to the most recent writable wale object
    * first take the shared manager lock and release global mutex, now we are sure that there will not be a checkpoint while we are working
@@ -10,6 +9,7 @@ PICKED
    * change the pageLSN to the new value
    * change writerLSN to the mini_transaction_id of this transaction, suggesting a persistent write lock
    * mark the page as dirty in the bufferpool for safety
+ * utility unsafe function to return the mini transaction that has write locked a page, return NULL if writerLSN is 0 OR is locked by self
  * implement bufferpool related functions
    * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
    * if user tries to do any of these on free space mapper page OR a free page then abort it with reason illegal access
