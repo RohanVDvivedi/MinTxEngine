@@ -1,5 +1,4 @@
 PICKED
- * utility unsafe function to mark a page as dirty in dirty page table
  * manitain checkpointLSN in mini transaction engine, and update initialize functions of wale to initialize it
  * utility function to update the prev_log_record in serialized log record
  * implement wale related functions to modify the page and generate log record outside and then log the change to the most recent writable wale object
