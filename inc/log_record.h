@@ -46,6 +46,11 @@ enum log_record_type
 
 extern const char log_record_type_strings[17][64];
 
+/*
+	NOTE :: for the first log record for any mini transaction
+	mini_transaction_id and prev_log_record_LSN must be 0 i.e. INVALID_LOG_SEQUENCE_NUMBER
+*/
+
 // log record struct for PAGE_ALLOCATION and PAGE_DEALLOCATION
 // -> undo by deallocation and allocation respectively
 typedef struct page_allocation_log_record page_allocation_log_record;
