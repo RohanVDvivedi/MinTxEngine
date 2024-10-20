@@ -68,7 +68,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "page_id");
@@ -87,7 +87,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "page_id");
@@ -115,7 +115,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "page_id");
@@ -140,7 +140,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "page_id");
@@ -168,7 +168,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "page_id");
@@ -199,7 +199,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "page_id");
@@ -227,7 +227,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "page_id");
@@ -252,7 +252,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "page_id");
@@ -277,7 +277,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "page_id");
@@ -305,7 +305,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "page_id");
@@ -339,7 +339,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "page_id");
@@ -367,7 +367,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "page_id");
@@ -392,7 +392,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "undo_of");
@@ -414,7 +414,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		// this shall never fail
@@ -430,7 +430,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[1].field_name, "prev_log_record");
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[2].field_name, "info");
@@ -479,7 +479,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = PAGE_ALLOCATION;
 
 			lr.palr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.palr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.palr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.palr.page_id = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			lr.parsed_from = serialized_log_record;
@@ -491,7 +491,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = PAGE_DEALLOCATION;
 
 			lr.palr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.palr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.palr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.palr.page_id = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			lr.parsed_from = serialized_log_record;
@@ -503,7 +503,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = PAGE_INIT;
 
 			lr.pilr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.pilr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.pilr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.pilr.page_id = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 			lr.pilr.old_page_contents = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(3), log_record_contents).blob_value;
 			lr.pilr.new_page_header_size = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(4), log_record_contents).uint_value;
@@ -520,7 +520,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = TUPLE_APPEND;
 
 			lr.talr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.talr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.talr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.talr.page_id = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->talr_def), STATIC_POSITION(3), log_record_contents);
@@ -541,7 +541,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = TUPLE_INSERT;
 
 			lr.tilr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.tilr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tilr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.tilr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(3), log_record_contents);
@@ -564,7 +564,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = TUPLE_UPDATE;
 
 			lr.tulr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.tulr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tulr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.tulr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(3), log_record_contents);
@@ -593,7 +593,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = TUPLE_DISCARD;
 
 			lr.tdlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.tdlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tdlr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.tdlr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(3), log_record_contents);
@@ -616,7 +616,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = TUPLE_DISCARD_ALL;
 
 			lr.tdalr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.tdalr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tdalr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.tdalr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(3), log_record_contents);
@@ -633,7 +633,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = TUPLE_DISCARD_TRAILING_TOMB_STONES;
 
 			lr.tdttlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.tdttlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tdttlr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.tdttlr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(3), log_record_contents);
@@ -650,7 +650,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = TUPLE_SWAP;
 
 			lr.tslr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.tslr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tslr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.tslr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(3), log_record_contents);
@@ -668,7 +668,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = TUPLE_UPDATE_ELEMENT_IN_PLACE;
 
 			lr.tueiplr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.tueiplr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.tueiplr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.tueiplr.page_id = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			user_value tpl_def = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(3), log_record_contents);
@@ -719,7 +719,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = PAGE_CLONE;
 
 			lr.pclr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.pclr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.pclr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.pclr.page_id = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(3), log_record_contents);
@@ -737,7 +737,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = FULL_PAGE_WRITE;
 
 			lr.fpwlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.fpwlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.fpwlr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.fpwlr.page_id = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(3), log_record_contents);
@@ -754,7 +754,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = COMPENSATION_LOG;
 
 			lr.clr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->clr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.clr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->clr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.clr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->clr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.clr.undo_of = get_value_from_element_from_tuple(&(lrtd_p->clr_def), STATIC_POSITION(2), log_record_contents).large_uint_value;
 			lr.clr.next_log_record_to_undo = get_value_from_element_from_tuple(&(lrtd_p->clr_def), STATIC_POSITION(3), log_record_contents).large_uint_value;
 
@@ -767,7 +767,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = ABORT_MINI_TX;
 
 			lr.amtlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.amtlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.amtlr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 
 			lr.parsed_from = serialized_log_record;
 			return lr;
@@ -778,7 +778,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.type = COMPLETE_MINI_TX;
 
 			lr.cmtlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
-			lr.cmtlr.prev_log_record = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.cmtlr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 
 			user_value info = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(2), log_record_contents);
 			if(is_user_value_NULL(&info))
@@ -841,7 +841,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->palr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->palr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->palr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->palr.page_id}, UINT32_MAX))
@@ -865,7 +865,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->palr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->palr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->palr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->palr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->palr.page_id}, UINT32_MAX))
@@ -889,7 +889,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->pilr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->pilr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->pilr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->pilr.page_id}, UINT32_MAX))
@@ -926,7 +926,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->talr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->talr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->talr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->talr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->talr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->talr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->talr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->talr.page_id}, UINT32_MAX))
@@ -968,7 +968,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tilr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tilr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tilr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->tilr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->tilr.page_id}, UINT32_MAX))
@@ -1015,7 +1015,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tulr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tulr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tulr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->tulr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->tulr.page_id}, UINT32_MAX))
@@ -1071,7 +1071,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tdlr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tdlr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tdlr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->tdlr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->tdlr.page_id}, UINT32_MAX))
@@ -1114,7 +1114,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tdalr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tdalr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tdalr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->tdalr.page_id}, UINT32_MAX))
@@ -1146,7 +1146,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tdttlr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tdttlr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tdttlr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->tdttlr.page_id}, UINT32_MAX))
@@ -1178,7 +1178,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tslr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tslr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tslr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->tslr.page_id}, UINT32_MAX))
@@ -1240,7 +1240,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->tueiplr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tueiplr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->tueiplr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->tueiplr.page_id}, UINT32_MAX))
@@ -1352,7 +1352,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->pclr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->pclr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->pclr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->pclr.page_id}, UINT32_MAX))
@@ -1387,7 +1387,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->fpwlr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->fpwlr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->fpwlr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->fpwlr.page_id}, UINT32_MAX))
@@ -1419,7 +1419,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->clr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->clr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->clr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->clr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->clr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->clr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(!set_element_in_tuple(&(lrtd_p->clr_def), STATIC_POSITION(2), result + 1, &(user_value){.large_uint_value = lr->clr.undo_of}, UINT32_MAX))
@@ -1446,7 +1446,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->amtlr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->amtlr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->amtlr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->amtlr_def), result + 1) + 1;
@@ -1469,7 +1469,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->cmtlr.mini_transaction_id}, UINT32_MAX))
 				goto ERROR;
 
-			if(!set_element_in_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->cmtlr.prev_log_record}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->cmtlr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
 			if(lr->cmtlr.info == NULL)
@@ -1513,14 +1513,14 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		case PAGE_DEALLOCATION :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->palr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->palr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->palr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->palr.page_id);
 			return;
 		}
 		case PAGE_INIT :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->pilr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->pilr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->pilr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->pilr.page_id);
 			printf("old_page_contents : "); print_blob(lr->pilr.old_page_contents, get_page_content_size_for_page(lr->pilr.page_id, stats)); printf("\n");
 			printf("new_page_header_size : %"PRIu32"\n", lr->pilr.new_page_header_size);
@@ -1530,7 +1530,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		case TUPLE_APPEND :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->talr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->talr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->talr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->talr.page_id);
 			printf("size_def : \n"); print_tuple_size_def(&(lr->talr.size_def)); printf("\n");
 			printf("new_tuple : "); print_blob(lr->talr.new_tuple, get_tuple_size_using_tuple_size_def(&(lr->talr.size_def), lr->talr.new_tuple)); printf("\n");
@@ -1539,7 +1539,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		case TUPLE_INSERT :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->tilr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->tilr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tilr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->tilr.page_id);
 			printf("size_def : \n"); print_tuple_size_def(&(lr->tilr.size_def)); printf("\n");
 			printf("insert_index : %"PRIu32"\n", lr->tilr.insert_index);
@@ -1549,7 +1549,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		case TUPLE_UPDATE :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->tulr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->tulr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tulr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->tulr.page_id);
 			printf("size_def : \n"); print_tuple_size_def(&(lr->tulr.size_def)); printf("\n");
 			printf("update_index : %"PRIu32"\n", lr->tulr.update_index);
@@ -1560,7 +1560,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		case TUPLE_DISCARD :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->tdlr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->tdlr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tdlr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->tdlr.page_id);
 			printf("size_def : \n"); print_tuple_size_def(&(lr->tdlr.size_def)); printf("\n");
 			printf("discard_index : %"PRIu32"\n", lr->tdlr.discard_index);
@@ -1570,7 +1570,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		case TUPLE_DISCARD_ALL :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->tdalr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->tdalr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tdalr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->tdalr.page_id);
 			printf("size_def : \n"); print_tuple_size_def(&(lr->tdalr.size_def)); printf("\n");
 			printf("old_page_contents : "); print_blob(lr->tdalr.old_page_contents, get_page_content_size_for_page(lr->tdalr.page_id, stats)); printf("\n");
@@ -1579,7 +1579,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->tdttlr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->tdttlr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tdttlr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->tdttlr.page_id);
 			printf("size_def : \n"); print_tuple_size_def(&(lr->tdttlr.size_def)); printf("\n");
 			printf("discarded_trailing_tomb_stones_count : %"PRIu32"\n", lr->tdttlr.discarded_trailing_tomb_stones_count);
@@ -1588,7 +1588,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		case TUPLE_SWAP :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->tslr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->tslr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tslr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->tslr.page_id);
 			printf("size_def : \n"); print_tuple_size_def(&(lr->tslr.size_def)); printf("\n");
 			printf("swap_index1 : %"PRIu32"\n", lr->tslr.swap_index1);
@@ -1598,7 +1598,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->tueiplr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->tueiplr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->tueiplr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->tueiplr.page_id);
 			printf("tpl_def : "); print_tuple_def(&(lr->tueiplr.tpl_def)); printf("\n");
 			printf("tuple_index : %"PRIu32"\n", lr->tueiplr.tuple_index);
@@ -1611,7 +1611,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		case PAGE_CLONE :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->pclr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->pclr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->pclr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->pclr.page_id);
 			printf("size_def : \n"); print_tuple_size_def(&(lr->pclr.size_def)); printf("\n");
 			printf("old_page_contents : "); print_blob(lr->pclr.old_page_contents, get_page_content_size_for_page(lr->pclr.page_id, stats)); printf("\n");
@@ -1621,7 +1621,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		case FULL_PAGE_WRITE :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->fpwlr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->fpwlr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->fpwlr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->fpwlr.page_id);
 			printf("size_def : \n"); print_tuple_size_def(&(lr->fpwlr.size_def)); printf("\n");
 			printf("page_contents : "); print_blob(lr->fpwlr.page_contents, get_page_content_size_for_page(lr->fpwlr.page_id, stats)); printf("\n");
@@ -1630,7 +1630,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		case COMPENSATION_LOG :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->clr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->clr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->clr.prev_log_record_LSN); printf("\n");
 			printf("undo_of : "); print_uint256(lr->clr.undo_of); printf("\n");
 			printf("next_log_record_to_undo : "); print_uint256(lr->clr.next_log_record_to_undo); printf("\n");
 			return;
@@ -1638,13 +1638,13 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		case ABORT_MINI_TX :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->amtlr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->amtlr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->amtlr.prev_log_record_LSN); printf("\n");
 			return;
 		}
 		case COMPLETE_MINI_TX :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->cmtlr.mini_transaction_id); printf("\n");
-			printf("prev_log_record : "); print_uint256(lr->cmtlr.prev_log_record); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->cmtlr.prev_log_record_LSN); printf("\n");
 			printf("info : "); print_blob(lr->cmtlr.info, lr->cmtlr.info_size); printf("\n");
 			return;
 		}
