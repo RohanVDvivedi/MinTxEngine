@@ -17,6 +17,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	mte->bufferpool_frame_count = bufferpool_frame_count;
 	mte->wale_append_only_buffer_block_count = wale_append_only_buffer_block_count;
 	mte->flushedLSN = INVALID_LOG_SEQUENCE_NUMBER;
+	mte->checkpointLSN = INVALID_LOG_SEQUENCE_NUMBER;
 	initialize_rwlock(&(mte->manager_lock), &(mte->global_lock));
 	pthread_cond_init(&(mte->conditional_to_wait_for_execution_slot), NULL);
 	mte->checkpointing_period_in_miliseconds = checkpointing_period_in_miliseconds;
