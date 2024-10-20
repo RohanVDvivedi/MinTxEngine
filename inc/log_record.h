@@ -154,7 +154,7 @@ struct tuple_discard_trailing_tombstones_log_record
 	tuple_size_def size_def;
 
 	// number of tombstones discarded
-	uint32_t discarded_trailing_tomb_stones_count;
+	uint32_t discarded_trailing_tomb_stones_count; // ideally ths value is available only after the operation is performed, but you may call get_trailing_tomb_stones_count_on_page() to get this valu prior to applying this transformation
 };
 
 // log record struct for TUPLE_SWAP
