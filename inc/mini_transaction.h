@@ -17,6 +17,12 @@ enum mini_transaction_state
 	COMMITTED,
 };
 
+/*
+	An instance of mini transaction can not be distributed to several threads to do more concurrent operations
+	Yet you may have multiple active mini transactions to do more work in parallel OR concurrently
+	But note that a mini transaction is a culmination of multiple sequential transactional operations
+*/
+
 typedef struct mini_transaction mini_transaction;
 struct mini_transaction
 {
