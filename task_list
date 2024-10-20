@@ -1,5 +1,6 @@
 PICKED
  * utility unsafe function to return the mini transaction that has write locked a page, return NULL if writerLSN is 0 OR is locked by self
+ * utility unsafe function to mark a page as dirty in dirty page table
  * implement wale related functions to modify the page and generate log record outside and then log the change to the most recent writable wale object
    * first take the shared manager lock and release global mutex, now we are sure that there will not be a checkpoint while we are working
    * if this is the first modification to the page after checkpoint i.e. its page LSN is lesser than checkpointLSN, then construct a full page write log record
