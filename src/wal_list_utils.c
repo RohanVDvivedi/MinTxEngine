@@ -52,6 +52,10 @@ int create_new_wal_list(mini_transaction_engine* mte)
 
 	push_back_to_arraylist(&(mte->wa_list), wa);
 
+	// since it is a new databse set both flushedLSN and checkpointLSN to INVALID_LOG_SEQUENCE_NUMBER
+	mte->flushedLSN = INVALID_LOG_SEQUENCE_NUMBER;
+	mte->checkpointLSN = INVALID_LOG_SEQUENCE_NUMBER;
+
 	free(dirname);
 	return 1;
 
@@ -193,6 +197,20 @@ int initialize_wal_list(mini_transaction_engine* mte)
 	pthread_mutex_unlock(&(mte->global_lock));
 	if(!res)
 		goto FAILURE;
+
+	pthread_mutex_lock(&(mte->global_lock));
+
+	// iterate in reverse and set the flushedLSN attribute
+	mte->flushedLSN = INVALID_LOG_SEQUENCE_NUMBER;
+	for(cy_uint i = 0; i < get_element_count_arraylist(&(mte->wa_list)) && are_equal_uint256(mte->flushedLSN, INVALID_LOG_SEQUENCE_NUMBER); i++)
+		mte->flushedLSN = get_last_flushed_log_sequence_number(&(((wal_accessor*)get_from_back_of_arraylist(&(mte->wa_list), i))->wale_handle));
+
+	// iterate in reverse and set the checkpointLSN attribute
+	mte->checkpointLSN = INVALID_LOG_SEQUENCE_NUMBER;
+	for(cy_uint i = 0; i < get_element_count_arraylist(&(mte->wa_list)) && are_equal_uint256(mte->checkpointLSN, INVALID_LOG_SEQUENCE_NUMBER); i++)
+		mte->checkpointLSN = get_check_point_log_sequence_number(&(((wal_accessor*)get_from_back_of_arraylist(&(mte->wa_list), i))->wale_handle));
+
+	pthread_mutex_unlock(&(mte->global_lock));
 
 	closedir(dr);
 	free(dirname);
