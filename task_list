@@ -37,7 +37,7 @@ PICKED
    * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
    * deinitialize_mini_transaction_engine waits for all mini_transactions to be returned
    * also kill the checkpointer thread
- * implement a deinitialize function
+ * implement a deinitialize function for mini transaction engine
  * implement checkpointing and management tasks to be done periodically
    * if wale file is full create a new one and add it to wa_list
    * add a checkpoint log record
