@@ -1,5 +1,4 @@
 PICKED
- * manitain checkpointLSN in mini transaction engine, and update initialize functions of wale to initialize it
  * utility function to update the prev_log_record in serialized log record
  * implement wale related functions to modify the page and generate log record outside and then log the change to the most recent writable wale object
    * first take the shared manager lock and release global mutex, now we are sure that there will not be a checkpoint while we are working
