@@ -46,9 +46,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	lrtd->LSN_type = define_large_uint_non_nullable_type("LSN", stats->log_sequence_number_width);
 	lrtd->page_index_type = define_uint_non_nullable_type("page_index", bytes_for_page_index(stats->page_size));
 	lrtd->tuple_positional_accessor_type = get_variable_element_count_array_type("tuple_positional_accessor_type", stats->page_size, &(lrtd->page_index_type));
-	lrtd->data_in_bytes_type = get_variable_length_blob_type("data", stats->page_size);
-	lrtd->size_def_in_bytes_type = get_variable_length_blob_type("size_def", 13);
-	lrtd->type_info_in_bytes_type = get_variable_length_blob_type("type_info", stats->page_size);
+	// in the below 4 data types 4 is added to include the element count in sizes for the corresponding types
+	lrtd->data_in_bytes_type = get_variable_length_blob_type("data", stats->page_size + 4);
+	lrtd->size_def_in_bytes_type = get_variable_length_blob_type("size_def", 13 + 4);
+	lrtd->type_info_in_bytes_type = get_variable_length_blob_type("type_info", stats->page_size + 4);
 
 	// mark all the above initilaized data types to static
 	lrtd->page_id_type.is_static = 1;
