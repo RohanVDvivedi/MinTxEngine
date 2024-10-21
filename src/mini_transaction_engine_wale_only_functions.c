@@ -66,26 +66,59 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 	if(are_equal_uint256(get_pageLSN_for_page(page, &(mte->stats)), INVALID_LOG_SEQUENCE_NUMBER) || compare_uint256(get_pageLSN_for_page(page, &(mte->stats)), mte->checkpointLSN) < 0)
 	{
 		// construct full page write log record
+		log_record fpw_lr = {
+			.type = FULL_PAGE_WRITE,
+			.fpwlr = {
+				.mini_transaction_id = mt->mini_transaction_id,
+				.prev_log_record_LSN = mt->lastLSN,
+				.page_id = page_id,
+				.size_def = *tpl_sz_d,
+				.page_contents = page_contents,
+			}
+		};
+
 		// serialize full page write log record
+		uint32_t serialized_fpw_lr_size = 0;
+		const void* serialized_fpw_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
+		if(serialized_fpw_lr == NULL)
+			exit(-1);
+
 		// log the full page write log record
+		pthread_mutex_lock(&(mte->global_lock));
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id);
+		pthread_mutex_unlock(&(mte->global_lock));
 
 		// free full page write log record
+		free((void*)serialized_fpw_lr);
 	}
 
 	// goto here to skip full page write
 	SKIP_FULL_PAGE_WRITE:;
 
 	// construct log record object
+	log_record act_lr = {
+
+	};
+
 	// serialize log record object
+	uint32_t serialized_act_lr_size = 0;
+	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	if(serialized_act_lr == NULL)
+		exit(-1);
+
 	// apply the actual operation
-	int result = 0;
+	int result = ;
 
 	if(result)
 	{
 		// log the actual change log record
+		pthread_mutex_lock(&(mte->global_lock));
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id);
+		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
 	// free the actual change log record
+	free((void*)serialized_act_lr);
 
 	// release manager lock and quit
 	pthread_mutex_lock(&(mte->global_lock));
