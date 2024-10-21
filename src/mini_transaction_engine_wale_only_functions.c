@@ -357,7 +357,15 @@ int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 
 	// construct log record object
 	log_record act_lr = {
-
+		.type = TUPLE_INSERT,
+		.tilr = {
+			.mini_transaction_id = mt->mini_transaction_id,
+			.prev_log_record_LSN = mt->lastLSN,
+			.page_id = page_id,
+			.size_def = *tpl_sz_d,
+			.insert_index = index,
+			.new_tuple = external_tuple,
+		}
 	};
 
 	// serialize log record object
@@ -367,7 +375,7 @@ int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 		exit(-1);
 
 	// apply the actual operation
-	int result = ;
+	int result = insert_tuple_on_page(page_contents, mte->user_stats.page_size, tpl_sz_d, index, external_tuple);
 
 	if(result)
 	{
