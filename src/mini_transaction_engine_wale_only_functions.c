@@ -713,7 +713,14 @@ uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engin
 
 	// construct log record object
 	log_record act_lr = {
-
+		.type = TUPLE_DISCARD_TRAILING_TOMB_STONES,
+		.tdttlr = {
+			.mini_transaction_id = mt->mini_transaction_id,
+			.prev_log_record_LSN = mt->lastLSN,
+			.page_id = page_id,
+			.size_def = *tpl_sz_d,
+			.discarded_trailing_tomb_stones_count = get_trailing_tomb_stones_count_on_page(page_contents, mte->user_stats.page_size, tpl_sz_d),
+		},
 	};
 
 	// serialize log record object
@@ -723,7 +730,7 @@ uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engin
 		exit(-1);
 
 	// apply the actual operation
-	int result = ;
+	uint32_t result = discard_trailing_tomb_stones_on_page(page_contents, mte->user_stats.page_size, tpl_sz_d);
 
 	if(result)
 	{
