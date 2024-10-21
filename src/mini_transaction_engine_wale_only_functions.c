@@ -989,7 +989,15 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 
 	// construct log record object
 	log_record act_lr = {
-
+		.type = PAGE_CLONE,
+		.pclr = {
+			.mini_transaction_id = mt->mini_transaction_id,
+			.prev_log_record_LSN = mt->lastLSN,
+			.page_id = page_id,
+			.size_def = *tpl_sz_d,
+			.old_page_contents = page_contents,
+			.new_page_contents = page_contents_src,
+		},
 	};
 
 	// serialize log record object
@@ -999,9 +1007,9 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 		exit(-1);
 
 	// apply the actual operation
-	int result = ;
+	clone_page(page_contents, mte->user_stats.page_size, tpl_sz_d, page_contents_src);
 
-	if(result)
+	if(1)
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
@@ -1017,7 +1025,7 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 		shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
 
-	return result;
+	return ;
 }
 
 /*int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, uint32_t page_size, const tuple_size_def* tpl_sz_d)
