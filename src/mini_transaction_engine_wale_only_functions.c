@@ -842,6 +842,14 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 
 int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const user_value* value)
 {
+	// if the tuple to be updated in place is NULL, fail
+	const void* tuple_to_update_in_place = get_nth_tuple_on_page(page_contents, mte->user_stats.page_size, &(tpl_d->size_def), tuple_index);
+	if(tuple_to_update_in_place == NULL)
+		return 0;
+	user_value old_element = get_value_from_element_from_tuple(tpl_d, element_index, tuple_to_update_in_place);
+	if(is_user_value_OUT_OF_BOUNDS(&old_element))
+		return 0;
+
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
 	pthread_mutex_lock(&(mte->global_lock));
@@ -865,7 +873,7 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
 				.page_id = page_id,
-				.size_def = *tpl_sz_d,
+				.size_def = tpl_d->size_def,
 				.page_contents = page_contents,
 			}
 		};
@@ -890,7 +898,17 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 
 	// construct log record object
 	log_record act_lr = {
-
+		.type = TUPLE_UPDATE_ELEMENT_IN_PLACE,
+		.tueiplr = {
+			.mini_transaction_id = mt->mini_transaction_id,
+			.prev_log_record_LSN = mt->lastLSN,
+			.page_id = page_id,
+			.tpl_def = *tpl_d,
+			.tuple_index = tuple_index,
+			.element_index = element_index,
+			.old_element = old_element,
+			.new_element = *value,
+		}
 	};
 
 	// serialize log record object
@@ -900,7 +918,7 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 		exit(-1);
 
 	// apply the actual operation
-	int result = ;
+	int result = set_element_in_tuple_in_place_on_page(page_contents, mte->user_stats.page_size, tpl_d, tuple_index, element_index, value);
 
 	if(result)
 	{
