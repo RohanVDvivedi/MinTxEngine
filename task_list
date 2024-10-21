@@ -1,7 +1,7 @@
 PICKED
  * remove tuple size def from full page write log record, it is not needed
  * add set page header log record
- * add page compaction log record, primarily holds size_def and new_page_contents
+ * add page compaction log record, primarily holds size_def and compacted_page_contents -> undo is no-op since it does not change logical contents on the page
  * implement wale related functions to modify the page and generate log record outside and then log the change to the most recent writable wale object
    * first take the shared manager lock and release global mutex, now we are sure that there will not be a checkpoint while we are working
    * if this is the first modification to the page after checkpoint i.e. its page LSN is lesser than checkpointLSN, then construct a full page write log record
