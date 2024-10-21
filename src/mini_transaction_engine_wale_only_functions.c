@@ -801,7 +801,15 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 
 	// construct log record object
 	log_record act_lr = {
-
+		.type = TUPLE_SWAP,
+		.tslr = {
+			.mini_transaction_id = mt->mini_transaction_id,
+			.prev_log_record_LSN = mt->lastLSN,
+			.page_id = page_id,
+			.size_def = *tpl_sz_d,
+			.swap_index1 = i1,
+			.swap_index2 = i2,
+		},
 	};
 
 	// serialize log record object
@@ -811,7 +819,7 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 		exit(-1);
 
 	// apply the actual operation
-	int result = ;
+	int result = swap_tuples_on_page(page_contents, mte->user_stats.page_size, tpl_sz_d, i1, i2);
 
 	if(result)
 	{
