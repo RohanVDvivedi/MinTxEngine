@@ -416,6 +416,34 @@ int main()
 
 	{
 		log_record a = {
+			.type = PAGE_COMPACTION,
+			.pcptlr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record_LSN = get_uint256(943),
+				.page_id = 533,
+				.size_def = tpl_def.size_def,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
 			.type = FULL_PAGE_WRITE,
 			.fpwlr = {
 				.mini_transaction_id = get_uint256(113),
