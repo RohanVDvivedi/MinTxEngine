@@ -27,11 +27,11 @@ const char log_record_type_strings[17][64] = {
 
 static uint32_t bytes_for_page_index(uint32_t page_size)
 {
-	if(page_size < (UINT32_C(1) < 8))
+	if(page_size < (UINT32_C(1) << 8))
 		return 1;
-	else if(page_size < (UINT32_C(1) < 16))
+	else if(page_size < (UINT32_C(1) << 16))
 		return 2;
-	else if(page_size < (UINT32_C(1) < 24))
+	else if(page_size < (UINT32_C(1) << 24))
 		return 3;
 	else
 		return 4;
