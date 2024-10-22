@@ -148,6 +148,36 @@ int main()
 
 	{
 		log_record a = {
+			.type = PAGE_SET_HEADER,
+			.pshlr = {
+				.mini_transaction_id = get_uint256(113),
+				.prev_log_record_LSN = get_uint256(943),
+				.page_id = 533,
+				.old_page_header_contents = old_page_contents,
+				.new_page_header_contents = new_page_contents,
+				.page_header_size = 5,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
 			.type = TUPLE_APPEND,
 			.talr = {
 				.mini_transaction_id = get_uint256(113),
