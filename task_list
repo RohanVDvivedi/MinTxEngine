@@ -1,5 +1,4 @@
 PICKED
- * add PSHLR wale function
  * add page compaction log record, type == PAGE_COMPACTION, struct = pctlr, primarily holds size_def and compacted_page_contents -> undo is no-op since it does not change logical contents on the page
  * for page compaction perform page compaction first
    * then if it is contender for full page write do that
