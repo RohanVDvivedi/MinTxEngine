@@ -388,7 +388,6 @@ int main()
 				.mini_transaction_id = get_uint256(113),
 				.prev_log_record_LSN = get_uint256(943),
 				.page_id = 533,
-				.size_def = tpl_def.size_def,
 				.page_contents = old_page_contents,
 			}
 		};
