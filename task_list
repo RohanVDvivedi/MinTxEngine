@@ -1,5 +1,4 @@
 PICKED
- * remove tuple size def from full page write log record, it is not needed
  * add set page header log record, type == PAGE_SET_HEADER, struct = pshlr, and implement corresponding wale function
  * add page compaction log record, type == PAGE_COMPACTION, struct = pctlr, primarily holds size_def and compacted_page_contents -> undo is no-op since it does not change logical contents on the page
  * for page compaction perform page compaction first
