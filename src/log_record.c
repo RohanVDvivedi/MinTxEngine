@@ -390,6 +390,28 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(4));
 		if(dti == NULL)
 			exit(-1);
+		initialize_tuple_data_type_info(dti, "pcptlr_def", 0, lrtd->max_log_record_size, 4);
+
+		strcpy(dti->containees[0].field_name, "mini_transaction_id");
+		dti->containees[0].type_info = &(lrtd->LSN_type);
+
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
+		dti->containees[1].type_info = &(lrtd->LSN_type);
+
+		strcpy(dti->containees[2].field_name, "page_id");
+		dti->containees[2].type_info = &(lrtd->page_id_type);
+
+		strcpy(dti->containees[3].field_name, "size_def");
+		dti->containees[3].type_info = &(lrtd->size_def_in_bytes_type);
+
+		// this shall never fail
+		initialize_tuple_def(&(lrtd->pcptlr_def), dti);
+	}
+
+	{
+		data_type_info* dti = malloc(sizeof_tuple_data_type_info(4));
+		if(dti == NULL)
+			exit(-1);
 		initialize_tuple_data_type_info(dti, "fpwlr_def", 0, lrtd->max_log_record_size, 4);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
