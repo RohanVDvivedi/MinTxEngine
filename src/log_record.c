@@ -5,11 +5,12 @@
 #include<stdlib.h>
 #include<string.h>
 
-const char log_record_type_strings[17][64] = {
+const char log_record_type_strings[18][64] = {
 	"UNIDENTIFIED",
 	"PAGE_ALLOCATION",
 	"PAGE_DEALLOCATION",
 	"PAGE_INIT",
+	"PAGE_SET_HEADER",
 	"TUPLE_APPEND",
 	"TUPLE_INSERT",
 	"TUPLE_UPDATE",
@@ -105,6 +106,31 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd->pilr_def), dti);
+	}
+
+	{
+		data_type_info* dti = malloc(sizeof_tuple_data_type_info(5));
+		if(dti == NULL)
+			exit(-1);
+		initialize_tuple_data_type_info(dti, "pshlr_def", 0, lrtd->max_log_record_size, 5);
+
+		strcpy(dti->containees[0].field_name, "mini_transaction_id");
+		dti->containees[0].type_info = &(lrtd->LSN_type);
+
+		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
+		dti->containees[1].type_info = &(lrtd->LSN_type);
+
+		strcpy(dti->containees[2].field_name, "page_id");
+		dti->containees[2].type_info = &(lrtd->page_id_type);
+
+		strcpy(dti->containees[3].field_name, "old_page_header_contents");
+		dti->containees[3].type_info = &(lrtd->data_in_bytes_type);
+
+		strcpy(dti->containees[4].field_name, "new_page_header_contents");
+		dti->containees[4].type_info = &(lrtd->data_in_bytes_type);
+
+		// this shall never fail
+		initialize_tuple_def(&(lrtd->pshlr_def), dti);
 	}
 
 	{
@@ -443,6 +469,7 @@ void deinitialize_log_record_tuple_defs(log_record_tuple_defs* lrtd)
 {
 	free(lrtd->palr_def.type_info);
 	free(lrtd->pilr_def.type_info);
+	free(lrtd->pshlr_def.type_info);
 	free(lrtd->talr_def.type_info);
 	free(lrtd->tilr_def.type_info);
 	free(lrtd->tulr_def.type_info);
@@ -508,6 +535,22 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 
 			user_value new_size_def = get_value_from_element_from_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(5), log_record_contents);
 			deserialize_tuple_size_def(&(lr.pilr.new_size_def), new_size_def.blob_value, new_size_def.blob_size);
+
+			lr.parsed_from = serialized_log_record;
+			return lr;
+		}
+		case PAGE_SET_HEADER :
+		{
+			log_record lr;
+			lr.type = PAGE_SET_HEADER;
+
+			lr.pshlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->pshlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.pshlr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->pshlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.pshlr.page_id = get_value_from_element_from_tuple(&(lrtd_p->pshlr_def), STATIC_POSITION(2), log_record_contents).uint_value;
+			lr.pshlr.old_page_header_contents = get_value_from_element_from_tuple(&(lrtd_p->pshlr_def), STATIC_POSITION(3), log_record_contents).blob_value;
+			lr.pshlr.new_page_header_contents = get_value_from_element_from_tuple(&(lrtd_p->pshlr_def), STATIC_POSITION(4), log_record_contents).blob_value;
+
+			lr.pshlr.page_header_size = get_value_from_element_from_tuple(&(lrtd_p->pshlr_def), STATIC_POSITION(3), log_record_contents).blob_size;
 
 			lr.parsed_from = serialized_log_record;
 			return lr;
@@ -902,6 +945,36 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->pilr_def), result + 1) + 1;
+			return result;
+		}
+		case PAGE_SET_HEADER :
+		{
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pshlr_def)) + 2 * (4 + lr->pshlr.page_header_size);
+
+			void* result = malloc(capacity);
+			if(result == NULL)
+				goto ERROR;
+
+			((unsigned char*)result)[0] = PAGE_INIT;
+
+			init_tuple(&(lrtd_p->pshlr_def), result + 1);
+
+			if(!set_element_in_tuple(&(lrtd_p->pshlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->pshlr.mini_transaction_id}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->pshlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->pshlr.prev_log_record_LSN}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->pshlr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->pshlr.page_id}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->pshlr_def), STATIC_POSITION(3), result + 1, &(user_value){.blob_value = lr->pshlr.old_page_header_contents, .blob_size = lr->pshlr.page_header_size}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->pshlr_def), STATIC_POSITION(4), result + 1, &(user_value){.blob_value = lr->pshlr.new_page_header_contents, .blob_size = lr->pshlr.page_header_size}, UINT32_MAX))
+				goto ERROR;
+
+			(*result_size) = get_tuple_size(&(lrtd_p->pshlr_def), result + 1) + 1;
 			return result;
 		}
 		case TUPLE_APPEND :
@@ -1504,6 +1577,11 @@ void update_prev_log_record_LSN_in_serialized_log_record(const log_record_tuple_
 			set_element_in_tuple(&(lrtd_p->pilr_def), STATIC_POSITION(1), serialized_log_record + 1, &(user_value){.large_uint_value = prev_log_record_LSN}, UINT32_MAX);
 			break;
 		}
+		case PAGE_SET_HEADER :
+		{
+			set_element_in_tuple(&(lrtd_p->pshlr_def), STATIC_POSITION(1), serialized_log_record + 1, &(user_value){.large_uint_value = prev_log_record_LSN}, UINT32_MAX);
+			break;
+		}
 		case TUPLE_APPEND :
 		{
 			set_element_in_tuple(&(lrtd_p->talr_def), STATIC_POSITION(1), serialized_log_record + 1, &(user_value){.large_uint_value = prev_log_record_LSN}, UINT32_MAX);
@@ -1602,6 +1680,15 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 			printf("old_page_contents : "); print_blob(lr->pilr.old_page_contents, get_page_content_size_for_page(lr->pilr.page_id, stats)); printf("\n");
 			printf("new_page_header_size : %"PRIu32"\n", lr->pilr.new_page_header_size);
 			printf("new_size_def : \n"); print_tuple_size_def(&(lr->pilr.new_size_def)); printf("\n");
+			return;
+		}
+		case PAGE_SET_HEADER :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->pshlr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->pshlr.prev_log_record_LSN); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->pshlr.page_id);
+			printf("old_page_header_contents : "); print_blob(lr->pshlr.old_page_header_contents, lr->pshlr.page_header_size); printf("\n");
+			printf("new_page_header_contents : "); print_blob(lr->pshlr.new_page_header_contents, lr->pshlr.page_header_size); printf("\n");
 			return;
 		}
 		case TUPLE_APPEND :

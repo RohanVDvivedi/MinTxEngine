@@ -17,34 +17,36 @@ enum log_record_type
 
 	PAGE_INIT = 3,
 
-	TUPLE_APPEND = 4,
-	TUPLE_INSERT = 5,
-	TUPLE_UPDATE = 6,
-	TUPLE_DISCARD = 7,
+	PAGE_SET_HEADER = 4,
 
-	TUPLE_DISCARD_ALL = 8,
-	TUPLE_DISCARD_TRAILING_TOMB_STONES = 9,
+	TUPLE_APPEND = 5,
+	TUPLE_INSERT = 6,
+	TUPLE_UPDATE = 7,
+	TUPLE_DISCARD = 8,
 
-	TUPLE_SWAP = 10,
+	TUPLE_DISCARD_ALL = 9,
+	TUPLE_DISCARD_TRAILING_TOMB_STONES = 10,
 
-	TUPLE_UPDATE_ELEMENT_IN_PLACE = 11,
+	TUPLE_SWAP = 11,
 
-	PAGE_CLONE = 12,
+	TUPLE_UPDATE_ELEMENT_IN_PLACE = 12,
 
-	FULL_PAGE_WRITE = 13,
+	PAGE_CLONE = 13,
+
+	FULL_PAGE_WRITE = 14,
 	// this log record is first written for any page type, the first time it becomes dirty after a checkpoint
 
-	COMPENSATION_LOG = 14,
+	COMPENSATION_LOG = 15,
 	// this is the log record type to be used it points to any of the above log types and performs their undo on tha page
 
-	ABORT_MINI_TX = 15,
+	ABORT_MINI_TX = 16,
 	// informational suggesting abort of the mini transaction
 
-	COMPLETE_MINI_TX = 16,
+	COMPLETE_MINI_TX = 17,
 	// informational suggesting no more log records will be or should be generated for this mini transaction
 };
 
-extern const char log_record_type_strings[17][64];
+extern const char log_record_type_strings[18][64];
 
 /*
 	NOTE :: for the first log record for any mini transaction
@@ -76,6 +78,25 @@ struct page_init_log_record
 	// input params for page init
 	uint32_t new_page_header_size;
 	tuple_size_def new_size_def;
+};
+
+// log record struct for PAGE_SET_HEADER
+// -> undo by copy pasting the old_page_header
+typedef struct page_set_header_log_record page_set_header_log_record;
+struct page_set_header_log_record
+{
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
+	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transaction
+	uint64_t page_id;
+
+	// prior_page_header as is
+	const void* old_page_header_contents;
+
+	// new_page_header as is
+	const void* new_page_header_contents;
+
+	// this is not stored in the log record, it is derieved from the blob_size of old_page_header_contents
+	uint32_t page_header_size;
 };
 
 // log record struct for TUPLE_APPEND
@@ -263,6 +284,7 @@ struct log_record
 	{
 		page_allocation_log_record palr;
 		page_init_log_record pilr;
+		page_set_header_log_record pshlr;
 		tuple_append_log_record talr;
 		tuple_insert_log_record tilr;
 		tuple_update_log_record tulr;
@@ -300,6 +322,7 @@ struct log_record_tuple_defs
 
 	tuple_def palr_def;
 	tuple_def pilr_def;
+	tuple_def pshlr_def;
 	tuple_def talr_def;
 	tuple_def tilr_def;
 	tuple_def tulr_def;
