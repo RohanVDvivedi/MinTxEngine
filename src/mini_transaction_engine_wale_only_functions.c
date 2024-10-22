@@ -137,7 +137,7 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 	return result;
 }
 
-/*void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const void* hdr, int* abort_error)
+void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const void* hdr, int* abort_error)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
@@ -184,9 +184,20 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 	// goto here to skip full page write
 	SKIP_FULL_PAGE_WRITE:;
 
+	uint32_t page_header_size = get_page_header_size(page_contents, mte->user_stats.page_size);
+	void* old_page_header_contents = get_page_header(page_contents, mte->user_stats.page_size);
+
 	// construct log record object
 	log_record act_lr = {
-
+		.type = PAGE_SET_HEADER,
+		.pshlr = {
+			.mini_transaction_id = mt->mini_transaction_id,
+			.prev_log_record_LSN = mt->lastLSN,
+			.page_id = page_id,
+			.old_page_header_contents = old_page_header_contents,
+			.new_page_header_contents = hdr,
+			.page_header_size = page_header_size,
+		},
 	};
 
 	// serialize log record object
@@ -196,9 +207,9 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 		exit(-1);
 
 	// apply the actual operation
-	int result = ;
+	memory_move(old_page_header_contents, hdr, page_header_size);
 
-	if(result)
+	if(1)
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
@@ -214,8 +225,8 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 		shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
 
-	return result;
-}*/
+	return ;
+}
 
 int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, const void* external_tuple)
 {
