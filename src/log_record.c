@@ -360,10 +360,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	}
 
 	{
-		data_type_info* dti = malloc(sizeof_tuple_data_type_info(5));
+		data_type_info* dti = malloc(sizeof_tuple_data_type_info(4));
 		if(dti == NULL)
 			exit(-1);
-		initialize_tuple_data_type_info(dti, "fpwlr_def", 0, lrtd->max_log_record_size, 5);
+		initialize_tuple_data_type_info(dti, "fpwlr_def", 0, lrtd->max_log_record_size, 4);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
