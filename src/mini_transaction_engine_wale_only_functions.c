@@ -1106,7 +1106,7 @@ int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, TAKE_PERSISTENT_WRITER_LOCK);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, DO_NOT_TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
