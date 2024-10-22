@@ -955,7 +955,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(result == NULL)
 				goto ERROR;
 
-			((unsigned char*)result)[0] = PAGE_INIT;
+			((unsigned char*)result)[0] = PAGE_SET_HEADER;
 
 			init_tuple(&(lrtd_p->pshlr_def), result + 1);
 
