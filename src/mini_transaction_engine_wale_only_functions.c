@@ -11,11 +11,11 @@
 	2. if mt->mini_transaction_id == INVALID, then assigns it and moves the mt to writer_mini_transactions and assigns its mini_transaction_id to log_record_LSN
 	3. mt->lastLSN = log_record_LSN
 	4. page->pageLSN = log_record_LSN
-	5. if the page_id is not that of free space mapper page, then page->writerLSN = mt->mini_transaction_id
+	5. if take_persistent_writer_lock flag is set AND is not a free space mapper page, then page->writerLSN = mt->mini_transaction_id
 	6. mark it dirty in dirty page table and bufferpool both
 	7. returns log_record_LSN of the log record we just logged
 */
-static uint256 log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mini_transaction_engine* mte, const void* log_record, uint32_t log_record_size, mini_transaction* mt, void* page, uint64_t page_id)
+static uint256 log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mini_transaction_engine* mte, const void* log_record, uint32_t log_record_size, mini_transaction* mt, void* page, uint64_t page_id, int take_persistent_writer_lock)
 {
 	wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
 
@@ -40,7 +40,8 @@ static uint256 log_the_already_applied_log_record_for_mini_transaction_and_manag
 	set_pageLSN_for_page(page, log_record_LSN, &(mte->stats));
 
 	// set the writer LSN to the mini_transaction_id, (marking it as write locked) only if it is not a free space mapper page
-	if(!is_free_space_mapper_page(page_id, &(mte->stats)))
+	// AND the take_persistent_writer_lock flag is set
+	if(take_persistent_writer_lock && !is_free_space_mapper_page(page_id, &(mte->stats)))
 		set_writerLSN_for_page(page, mt->mini_transaction_id, &(mte->stats));
 
 	// mark the page as dirty in the bufferpool and dirty page table
