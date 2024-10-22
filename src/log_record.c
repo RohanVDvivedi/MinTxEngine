@@ -502,6 +502,7 @@ void deinitialize_log_record_tuple_defs(log_record_tuple_defs* lrtd)
 	free(lrtd->tslr_def.type_info);
 	free(lrtd->tueiplr_def.type_info);
 	free(lrtd->pclr_def.type_info);
+	free(lrtd->pcptlr_def.type_info);
 	free(lrtd->fpwlr_def.type_info);
 	free(lrtd->clr_def.type_info);
 	free(lrtd->amtlr_def.type_info);
@@ -791,6 +792,21 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 
 			lr.pclr.old_page_contents = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(4), log_record_contents).blob_value;
 			lr.pclr.new_page_contents = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(5), log_record_contents).blob_value;
+
+			lr.parsed_from = serialized_log_record;
+			return lr;
+		}
+		case PAGE_COMPACTION :
+		{
+			log_record lr;
+			lr.type = PAGE_CLONE;
+
+			lr.pcptlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->pcptlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.pcptlr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->pcptlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.pcptlr.page_id = get_value_from_element_from_tuple(&(lrtd_p->pcptlr_def), STATIC_POSITION(2), log_record_contents).uint_value;
+
+			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->pcptlr_def), STATIC_POSITION(3), log_record_contents);
+			deserialize_tuple_size_def(&(lr.pcptlr.size_def), size_def.blob_value, size_def.blob_size);
 
 			lr.parsed_from = serialized_log_record;
 			return lr;
@@ -1463,6 +1479,35 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			(*result_size) = get_tuple_size(&(lrtd_p->pclr_def), result + 1) + 1;
 			return result;
 		}
+		case PAGE_COMPACTION :
+		{
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pcptlr_def)) + 16;
+
+			void* result = malloc(capacity);
+			if(result == NULL)
+				goto ERROR;
+
+			((unsigned char*)result)[0] = PAGE_COMPACTION;
+
+			init_tuple(&(lrtd_p->pcptlr_def), result + 1);
+
+			if(!set_element_in_tuple(&(lrtd_p->pcptlr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->pcptlr.mini_transaction_id}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->pcptlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->pcptlr.prev_log_record_LSN}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->pcptlr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->pcptlr.page_id}, UINT32_MAX))
+				goto ERROR;
+
+			user_value size_def = {.blob_value = (uint8_t [13]){}};
+			size_def.blob_size = serialize_tuple_size_def(&(lr->pcptlr.size_def), (void*)(size_def.blob_value));
+			if(!set_element_in_tuple(&(lrtd_p->pcptlr_def), STATIC_POSITION(3), result + 1, &size_def, UINT32_MAX))
+				goto ERROR;
+
+			(*result_size) = get_tuple_size(&(lrtd_p->pcptlr_def), result + 1) + 1;
+			return result;
+		}
 		case FULL_PAGE_WRITE :
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->fpwlr_def)) + 16 + (4 + get_page_content_size_for_page(lr->fpwlr.page_id, stats));
@@ -1650,6 +1695,11 @@ void update_prev_log_record_LSN_in_serialized_log_record(const log_record_tuple_
 			set_element_in_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(1), serialized_log_record + 1, &(user_value){.large_uint_value = prev_log_record_LSN}, UINT32_MAX);
 			break;
 		}
+		case PAGE_COMPACTION :
+		{
+			set_element_in_tuple(&(lrtd_p->pcptlr_def), STATIC_POSITION(1), serialized_log_record + 1, &(user_value){.large_uint_value = prev_log_record_LSN}, UINT32_MAX);
+			break;
+		}
 		case FULL_PAGE_WRITE :
 		{
 			set_element_in_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(1), serialized_log_record + 1, &(user_value){.large_uint_value = prev_log_record_LSN}, UINT32_MAX);
@@ -1803,6 +1853,14 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 			printf("size_def : \n"); print_tuple_size_def(&(lr->pclr.size_def)); printf("\n");
 			printf("old_page_contents : "); print_blob(lr->pclr.old_page_contents, get_page_content_size_for_page(lr->pclr.page_id, stats)); printf("\n");
 			printf("new_page_contents : "); print_blob(lr->pclr.new_page_contents, get_page_content_size_for_page(lr->pclr.page_id, stats)); printf("\n");
+			return;
+		}
+		case PAGE_COMPACTION :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->pcptlr.mini_transaction_id); printf("\n");
+			printf("prev_log_record : "); print_uint256(lr->pcptlr.prev_log_record_LSN); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->pcptlr.page_id);
+			printf("size_def : \n"); print_tuple_size_def(&(lr->pcptlr.size_def)); printf("\n");
 			return;
 		}
 		case FULL_PAGE_WRITE :
