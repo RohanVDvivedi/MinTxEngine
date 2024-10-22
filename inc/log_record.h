@@ -218,9 +218,8 @@ struct full_page_write_log_record
 	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
-	tuple_size_def size_def;
 
-	const void* page_contents;
+	const void* page_contents; // there is no size def here, because a just allocated page may not have a valid size_def
 };
 
 // this type of log record can be redone but never undone

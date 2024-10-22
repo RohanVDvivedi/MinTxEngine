@@ -74,7 +74,6 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
 				.page_id = page_id,
-				.size_def = *tpl_sz_d,
 				.page_contents = page_contents,
 			}
 		};
@@ -163,7 +162,6 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
 				.page_id = page_id,
-				.size_def = *tpl_sz_d,
 				.page_contents = page_contents,
 			}
 		};
@@ -244,7 +242,6 @@ int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
 				.page_id = page_id,
-				.size_def = *tpl_sz_d,
 				.page_contents = page_contents,
 			}
 		};
@@ -332,7 +329,6 @@ int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
 				.page_id = page_id,
-				.size_def = *tpl_sz_d,
 				.page_contents = page_contents,
 			}
 		};
@@ -421,7 +417,6 @@ int update_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
 				.page_id = page_id,
-				.size_def = *tpl_sz_d,
 				.page_contents = page_contents,
 			}
 		};
@@ -511,7 +506,6 @@ int discard_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transac
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
 				.page_id = page_id,
-				.size_def = *tpl_sz_d,
 				.page_contents = page_contents,
 			}
 		};
@@ -600,7 +594,6 @@ void discard_all_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_t
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
 				.page_id = page_id,
-				.size_def = *tpl_sz_d,
 				.page_contents = page_contents,
 			}
 		};
@@ -688,7 +681,6 @@ uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engin
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
 				.page_id = page_id,
-				.size_def = *tpl_sz_d,
 				.page_contents = page_contents,
 			}
 		};
@@ -776,7 +768,6 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
 				.page_id = page_id,
-				.size_def = *tpl_sz_d,
 				.page_contents = page_contents,
 			}
 		};
@@ -873,7 +864,6 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
 				.page_id = page_id,
-				.size_def = tpl_d->size_def,
 				.page_contents = page_contents,
 			}
 		};
@@ -964,7 +954,6 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
 				.page_id = page_id,
-				.size_def = *tpl_sz_d,
 				.page_contents = page_contents,
 			}
 		};

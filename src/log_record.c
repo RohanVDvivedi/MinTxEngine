@@ -374,11 +374,8 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[2].field_name, "page_id");
 		dti->containees[2].type_info = &(lrtd->page_id_type);
 
-		strcpy(dti->containees[3].field_name, "size_def");
-		dti->containees[3].type_info = &(lrtd->size_def_in_bytes_type);
-
-		strcpy(dti->containees[4].field_name, "page_contents");
-		dti->containees[4].type_info = &(lrtd->data_in_bytes_type);
+		strcpy(dti->containees[3].field_name, "page_contents");
+		dti->containees[3].type_info = &(lrtd->data_in_bytes_type);
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd->fpwlr_def), dti);
@@ -741,10 +738,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.fpwlr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 			lr.fpwlr.page_id = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
-			user_value size_def = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(3), log_record_contents);
-			deserialize_tuple_size_def(&(lr.fpwlr.size_def), size_def.blob_value, size_def.blob_size);
-
-			lr.fpwlr.page_contents = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(4), log_record_contents).blob_value;
+			lr.fpwlr.page_contents = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(3), log_record_contents).blob_value;
 
 			lr.parsed_from = serialized_log_record;
 			return lr;
@@ -1394,12 +1388,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(2), result + 1, &(user_value){.uint_value = lr->fpwlr.page_id}, UINT32_MAX))
 				goto ERROR;
 
-			user_value size_def = {.blob_value = (uint8_t [13]){}};
-			size_def.blob_size = serialize_tuple_size_def(&(lr->fpwlr.size_def), (void*)(size_def.blob_value));
-			if(!set_element_in_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(3), result + 1, &size_def, UINT32_MAX))
-				goto ERROR;
-
-			if(!set_element_in_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(4), result + 1, &(user_value){.blob_value = lr->fpwlr.page_contents, .blob_size = get_page_content_size_for_page(lr->fpwlr.page_id, stats)}, UINT32_MAX))
+			if(!set_element_in_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(3), result + 1, &(user_value){.blob_value = lr->fpwlr.page_contents, .blob_size = get_page_content_size_for_page(lr->fpwlr.page_id, stats)}, UINT32_MAX))
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->fpwlr_def), result + 1) + 1;
@@ -1711,7 +1700,6 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 			printf("mini_transaction_id : "); print_uint256(lr->fpwlr.mini_transaction_id); printf("\n");
 			printf("prev_log_record : "); print_uint256(lr->fpwlr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->fpwlr.page_id);
-			printf("size_def : \n"); print_tuple_size_def(&(lr->fpwlr.size_def)); printf("\n");
 			printf("page_contents : "); print_blob(lr->fpwlr.page_contents, get_page_content_size_for_page(lr->fpwlr.page_id, stats)); printf("\n");
 			return;
 		}
