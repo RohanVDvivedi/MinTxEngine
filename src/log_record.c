@@ -5,7 +5,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-const char log_record_type_strings[18][64] = {
+const char log_record_type_strings[19][64] = {
 	"UNIDENTIFIED",
 	"PAGE_ALLOCATION",
 	"PAGE_DEALLOCATION",
@@ -20,6 +20,7 @@ const char log_record_type_strings[18][64] = {
 	"TUPLE_SWAP",
 	"TUPLE_UPDATE_ELEMENT_IN_PLACE",
 	"PAGE_CLONE",
+	"PAGE_COMPACTION",
 	"FULL_PAGE_WRITE",
 	"COMPENSATION_LOG",
 	"ABORT_MINI_TX",

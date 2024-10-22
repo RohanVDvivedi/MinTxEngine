@@ -1082,6 +1082,7 @@ int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 			.mini_transaction_id = mt->mini_transaction_id,
 			.prev_log_record_LSN = mt->lastLSN,
 			.page_id = page_id,
+			.size_def = *tpl_sz_d,
 		},
 	};
 

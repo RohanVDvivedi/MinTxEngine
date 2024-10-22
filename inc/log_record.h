@@ -33,20 +33,22 @@ enum log_record_type
 
 	PAGE_CLONE = 13,
 
-	FULL_PAGE_WRITE = 14,
+	PAGE_COMPACTION = 14,
+
+	FULL_PAGE_WRITE = 15,
 	// this log record is first written for any page type, the first time it becomes dirty after a checkpoint
 
-	COMPENSATION_LOG = 15,
+	COMPENSATION_LOG = 16,
 	// this is the log record type to be used it points to any of the above log types and performs their undo on tha page
 
-	ABORT_MINI_TX = 16,
+	ABORT_MINI_TX = 17,
 	// informational suggesting abort of the mini transaction
 
-	COMPLETE_MINI_TX = 17,
+	COMPLETE_MINI_TX = 18,
 	// informational suggesting no more log records will be or should be generated for this mini transaction
 };
 
-extern const char log_record_type_strings[18][64];
+extern const char log_record_type_strings[19][64];
 
 /*
 	NOTE :: for the first log record for any mini transaction
@@ -230,6 +232,17 @@ struct page_clone_log_record
 	const void* new_page_contents;
 };
 
+// log record struct for PAGE_COMPACTION
+// -> undo is a NO-OP
+typedef struct page_compaction_log_record page_compaction_log_record;
+struct page_compaction_log_record
+{
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
+	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transaction
+	uint64_t page_id;
+	tuple_size_def size_def; // this is required for redo
+};
+
 // log record struct for FULL_PAGE_WRITE
 // -> undo is a NO-OP, in best case you can put back the page_contents back to the page
 // for REDO copy page_contents to the page and reset it's pageLSN to LSN of this log record
@@ -294,6 +307,7 @@ struct log_record
 		tuple_swap_log_record tslr;
 		tuple_update_element_in_place_log_record tueiplr;
 		page_clone_log_record pclr;
+		page_compaction_log_record pcptlr;
 		full_page_write_log_record fpwlr;
 		compensation_log_record clr;
 		abort_mini_tx_log_record amtlr;
@@ -332,6 +346,7 @@ struct log_record_tuple_defs
 	tuple_def tslr_def;
 	tuple_def tueiplr_def;
 	tuple_def pclr_def;
+	tuple_def pcptlr_def;
 	tuple_def fpwlr_def;
 	tuple_def clr_def;
 	tuple_def amtlr_def;
