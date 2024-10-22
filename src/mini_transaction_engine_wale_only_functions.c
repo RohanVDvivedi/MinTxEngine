@@ -43,6 +43,7 @@ static uint256 log_the_already_applied_log_record_for_mini_transaction_and_manag
 	// AND the take_persistent_writer_lock flag is set
 	if(take_persistent_writer_lock && !is_free_space_mapper_page(page_id, &(mte->stats)))
 		set_writerLSN_for_page(page, mt->mini_transaction_id, &(mte->stats));
+	// since we got the write latch on the page, either we ourselves have locked the page OR it was not persistently locked by any one
 
 	// mark the page as dirty in the bufferpool and dirty page table
 	mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
