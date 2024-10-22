@@ -90,7 +90,7 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 
 		// log the full page write log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id, DO_NOT_TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// free full page write log record
@@ -126,7 +126,7 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
@@ -178,7 +178,7 @@ void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction*
 
 		// log the full page write log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id, DO_NOT_TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// free full page write log record
@@ -217,7 +217,7 @@ void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction*
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
@@ -269,7 +269,7 @@ int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 
 		// log the full page write log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id, DO_NOT_TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// free full page write log record
@@ -304,7 +304,7 @@ int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
@@ -356,7 +356,7 @@ int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 
 		// log the full page write log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id, DO_NOT_TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// free full page write log record
@@ -392,7 +392,7 @@ int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
@@ -444,7 +444,7 @@ int update_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 
 		// log the full page write log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id, DO_NOT_TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// free full page write log record
@@ -481,7 +481,7 @@ int update_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
@@ -533,7 +533,7 @@ int discard_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transac
 
 		// log the full page write log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id, DO_NOT_TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// free full page write log record
@@ -569,7 +569,7 @@ int discard_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transac
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
@@ -621,7 +621,7 @@ void discard_all_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_t
 
 		// log the full page write log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id, DO_NOT_TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// free full page write log record
@@ -656,7 +656,7 @@ void discard_all_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_t
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
@@ -708,7 +708,7 @@ uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engin
 
 		// log the full page write log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id, DO_NOT_TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// free full page write log record
@@ -743,7 +743,7 @@ uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engin
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
@@ -795,7 +795,7 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 
 		// log the full page write log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id, DO_NOT_TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// free full page write log record
@@ -831,7 +831,7 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
@@ -891,7 +891,7 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 
 		// log the full page write log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id, DO_NOT_TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// free full page write log record
@@ -929,7 +929,7 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
@@ -981,7 +981,7 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 
 		// log the full page write log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id, DO_NOT_TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// free full page write log record
@@ -1017,7 +1017,7 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
@@ -1069,7 +1069,7 @@ int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 
 		// log the full page write log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_fpw_lr, serialized_fpw_lr_size, mt, page, page_id, DO_NOT_TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// free full page write log record
@@ -1106,7 +1106,7 @@ int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 	{
 		// log the actual change log record
 		pthread_mutex_lock(&(mte->global_lock));
-			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id);
+			log_the_already_applied_log_record_for_mini_transaction_and_manage_state_UNSAFE(mte, serialized_act_lr, serialized_act_lr_size, mt, page, page_id, TAKE_PERSISTENT_WRITER_LOCK);
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
