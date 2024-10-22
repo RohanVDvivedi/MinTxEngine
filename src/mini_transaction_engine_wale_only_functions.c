@@ -49,6 +49,8 @@ static uint256 log_the_already_applied_log_record_for_mini_transaction_and_manag
 
 	return log_record_LSN;
 }
+#define TAKE_PERSISTENT_WRITER_LOCK         1
+#define DO_NOT_TAKE_PERSISTENT_WRITER_LOCK  0
 
 int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, uint32_t page_header_size, const tuple_size_def* tpl_sz_d)
 {
