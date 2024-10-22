@@ -799,7 +799,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 		case PAGE_COMPACTION :
 		{
 			log_record lr;
-			lr.type = PAGE_CLONE;
+			lr.type = PAGE_COMPACTION;
 
 			lr.pcptlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->pcptlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
 			lr.pcptlr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->pcptlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
