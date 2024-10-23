@@ -32,7 +32,7 @@ mini_transaction* get_mini_transaction_that_last_persistent_write_locked_this_pa
 	if(are_equal_uint256(writerLSN, INVALID_LOG_SEQUENCE_NUMBER))
 		return NULL;
 
-	mini_transaction* mt = find_equals_in_hashmap(&(mte->writer_mini_transactions), &(mini_transaction){.mini_transaction_id = writerLSN});
+	mini_transaction* mt = (mini_transaction*)find_equals_in_hashmap(&(mte->writer_mini_transactions), &(mini_transaction){.mini_transaction_id = writerLSN});
 	if(mt == NULL)
 		return NULL;
 
