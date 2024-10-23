@@ -1,5 +1,4 @@
 PICKED
- * utility unsafe function to return the mini transaction that has write locked a page, return NULL if writerLSN is 0 OR is locked by a completed, committed or aborted transaction
  * reference_counter usage
    * other people increment it only for waiting
    * users do it when a mini transaction is allotted
