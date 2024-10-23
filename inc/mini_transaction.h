@@ -46,7 +46,7 @@ struct mini_transaction
 	pthread_cond_t write_lock_wait; // any mini_transaction who wants to waits for the writer lock on the page, write locked by this mini_transaction waits here
 	// this wait completes soon after this transaction moves to COMMITTED or ABORTED state
 
-	uint64_t waiters_count; // the number of transactions waiting on write_lock_wait
+	uint64_t reference_counter; // the number of transactions waiting on write_lock_wait + the users of the transaction
 
 	// a mini transaction is moved to free list only after it is in ABORTED/COMMITTED state and the waiters_count == 0
 

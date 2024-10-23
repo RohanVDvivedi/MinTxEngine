@@ -18,7 +18,7 @@ mini_transaction* get_new_mini_transaction()
 	if(mt == NULL)
 		exit(-1);
 	pthread_cond_init(&(mt->write_lock_wait), NULL);
-	mt->waiters_count = 0;
+	mt->reference_counter = 0;
 	initialize_llnode(&(mt->enode));
 	return mt;
 }
