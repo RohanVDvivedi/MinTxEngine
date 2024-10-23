@@ -1,4 +1,10 @@
 PICKED
+ * in mini transaction change waiters_count to reference_counter -> count of the user + count of waiters
+   * other people increment it only for waiting
+   * users do it when a mini transaction is allotted
+   * decremented when wait finishes/marked completed on complete_mini_transaction function call
+ * function to wait for completion of a mini transaction
+ * function to decrement_reference_counter_for_mini_transaction
  * utility unsafe function to return the mini transaction that has write locked a page, return NULL if writerLSN is 0 OR is locked by a completed, committed or aborted transaction
  * implement bufferpool related functions
    * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
