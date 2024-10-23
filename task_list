@@ -1,11 +1,4 @@
 PICKED
- * reference_counter usage
-   * other people increment it only for waiting
-   * users do it when a mini transaction is allotted
-   * decremented when wait finishes/marked completed on complete_mini_transaction function call
- * only a completed mini transaction with 0 reference_counter can be made free
- * function to decrement_reference_counter_for_mini_transaction -> decrement reference counter and make it free if reference counter reaches 0 and is completed, then, put it back in free list, and then wake up an thread waiting for new execution slot
- * function to wait for completion of a mini transaction -> this first manually increments reference counter and then decrements the reference counter using the function above
  * implement bufferpool related functions
    * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
    * if user tries to do any of these on free space mapper page OR a free page then abort it with reason illegal access
