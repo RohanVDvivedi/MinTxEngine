@@ -58,6 +58,11 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
 	pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
@@ -146,6 +151,11 @@ void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction*
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
 	pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return ;
+		}
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
@@ -237,6 +247,11 @@ int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
 	pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
@@ -324,6 +339,11 @@ int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
 	pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
@@ -412,6 +432,11 @@ int update_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
 	pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
@@ -501,6 +526,11 @@ int discard_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transac
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
 	pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
@@ -589,6 +619,11 @@ void discard_all_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_t
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
 	pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return ;
+		}
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
@@ -676,6 +711,11 @@ uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engin
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
 	pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
@@ -763,6 +803,11 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
 	pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
@@ -859,6 +904,11 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
 	pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
@@ -949,6 +999,11 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
 	pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return ;
+		}
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
@@ -1034,9 +1089,14 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 
 int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, uint32_t page_size, const tuple_size_def* tpl_sz_d)
 {
-		// grab manager_lock so manager threads do not enter while we are working
+	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
 	pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
