@@ -61,13 +61,11 @@ void decrement_mini_transaction_reference_counter_UNSAFE(mini_transaction_engine
 
 int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt)
 {
-	const uint64_t write_lock_wait_timeout_in_microseconds = 300;
-
 	// no one will make this mini transaction free as you just incremented it reference counter
 	mt->reference_counter++;
 
 	int wait_error = 0;
-	uint64_t write_lock_wait_timeout_in_microseconds_LEFT = write_lock_wait_timeout_in_microseconds;
+	uint64_t write_lock_wait_timeout_in_microseconds_LEFT = mte->write_lock_wait_timeout_in_microseconds;
 	while(mt->state != MIN_TX_COMPLETED && !wait_error)
 	{
 		struct timespec current_time;
