@@ -1,13 +1,8 @@
 PICKED
- * in mini transaction change waiters_count to reference_counter -> count of the user + count of waiters
+ * reference_counter usage
    * other people increment it only for waiting
    * users do it when a mini transaction is allotted
    * decremented when wait finishes/marked completed on complete_mini_transaction function call
- * change in state diagram of min_transaction
-   IN_PROGRESS -> COMPLETED
-       |              /\
-      \/              |
-   ABORTED     -> UNDOING_FOR_ABORT
  * only a completed mini transaction with 0 reference_counter can be made free
  * function to decrement_reference_counter_for_mini_transaction -> decrement reference counter and make it free if reference counter reaches 0 and is completed, then, put it back in free list, and then wake up an thread waiting for new execution slot
  * function to wait for completion of a mini transaction -> this first manually increments reference counter and then decrements the reference counter using the function above
