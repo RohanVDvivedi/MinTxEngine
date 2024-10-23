@@ -11,10 +11,10 @@
 typedef enum mini_transaction_state mini_transaction_state;
 enum mini_transaction_state
 {
-	IN_PROGRESS,		// normal flow of operation of the transaction, reading and making changes
-	ABORTED,			// aborted, abort_error set, but the ABORT_MIN_TX log not yet written
-	UNDOING_FOR_ABORT,	// abort log written, and the changes of this transaction are being undone
-	COMPLETED,			// COMPLETE_MINI_TX log written, nothing needs to be done now
+	MIN_TX_IN_PROGRESS,			// normal flow of operation of the transaction, reading and making changes
+	MIN_TX_ABORTED,				// aborted, abort_error set, but the ABORT_MIN_TX log not yet written
+	MIN_TX_UNDOING_FOR_ABORT,	// abort log written, and the changes of this transaction are being undone
+	MIN_TX_COMPLETED,			// COMPLETE_MINI_TX log written, nothing needs to be done now
 };
 
 /*
@@ -39,19 +39,19 @@ struct mini_transaction
 	mini_transaction_state state;
 	/*
 		State transition
-		IN_PROGRESS ---------------------------------> COMPLETED
+		MIN_TX_IN_PROGRESS -----------------------------------------------> MIN_TX_COMPLETED
 		OR
-		IN_PROGRESS -> ABORTED -> UNDOING_FOR_ABORT -> COMPLETED
+		MIN_TX_IN_PROGRESS -> MIN_TX_ABORTED -> MIN_TX_UNDOING_FOR_ABORT -> MIN_TX_COMPLETED
 	*/
 
-	int abort_error; // reason for abort if state = ABORTED, UNDOING_FOR_ABORT OR COMPLETED, else set to 0
+	int abort_error; // reason for abort if state = MIN_TX_ABORTED, MIN_TX_UNDOING_FOR_ABORT OR MIN_TX_COMPLETED, else set to 0
 
 	pthread_cond_t write_lock_wait; // any mini_transaction who wants to waits for the writer lock on the page, write locked by this mini_transaction waits here
 	// this wait completes soon after this transaction moves to COMPLETED state
 
 	uint64_t reference_counter; // the number of transactions waiting on write_lock_wait + the users of the transaction
 
-	// a mini transaction is moved to free list only after it is in COMPLETED state and the reference_counter == 0
+	// a mini transaction is moved to free list only after it is in MIN_TX_COMPLETED state and the reference_counter == 0
 
 	// -----------------
 	// nodes for intrusive structures that this mini transaction resides in, are below
