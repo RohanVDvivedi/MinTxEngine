@@ -38,3 +38,7 @@ mini_transaction* get_mini_transaction_that_last_persistent_write_locked_this_pa
 
 	return mt;
 }
+
+void decrement_mini_transaction_reference_counter_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt);
+
+int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt);
