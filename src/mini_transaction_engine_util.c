@@ -24,3 +24,17 @@ void mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mini_transacti
 	dpte->recLSN = get_pageLSN_for_page(page, &(mte->stats));
 	insert_in_hashmap(&(mte->dirty_page_table), dpte);
 }
+
+mini_transaction* get_mini_transaction_that_last_persistent_write_locked_this_page_UNSAFE(mini_transaction_engine* mte, void* page)
+{
+	uint256 writerLSN = get_writerLSN_for_page(page, &(mte->stats));
+
+	if(are_equal_uint256(writerLSN, INVALID_LOG_SEQUENCE_NUMBER))
+		return NULL;
+
+	mini_transaction* mt = find_equals_in_hashmap(&(mte->writer_mini_transactions), &(mini_transaction){.mini_transaction_id = writerLSN});
+	if(mt == NULL)
+		return NULL;
+
+	return mt;
+}
