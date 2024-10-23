@@ -11,10 +11,10 @@
 typedef enum mini_transaction_state mini_transaction_state;
 enum mini_transaction_state
 {
-	IN_PROGRESS,
-	UNDOING_FOR_ABORT,
-	ABORTED,
-	COMMITTED,
+	IN_PROGRESS,		// normal flow of operation of the transaction, reading and making changes
+	ABORTED,			// aborted, abort_error set, but the ABORT_MIN_TX log not yet written
+	UNDOING_FOR_ABORT,	// abort log written, and the changes of this transaction are being undone
+	COMPLETED,			// COMPLETE_MINI_TX log written, nothing needs to be done now
 };
 
 /*
@@ -38,17 +38,20 @@ struct mini_transaction
 
 	mini_transaction_state state;
 	/*
-		ABORTED <- UNDOING_FOR_ABORT <- IN_PROGRESS -> COMMITTED
+		State transition
+		IN_PROGRESS ---------------------------------> COMPLETED
+		OR
+		IN_PROGRESS -> ABORTED -> UNDOING_FOR_ABORT -> COMPLETED
 	*/
 
-	int abort_error; // reason for abort if state = UNDOING_FOR_ABORT or ABORTED, else set to 0
+	int abort_error; // reason for abort if state = ABORTED, UNDOING_FOR_ABORT OR COMPLETED, else set to 0
 
 	pthread_cond_t write_lock_wait; // any mini_transaction who wants to waits for the writer lock on the page, write locked by this mini_transaction waits here
-	// this wait completes soon after this transaction moves to COMMITTED or ABORTED state
+	// this wait completes soon after this transaction moves to COMPLETED state
 
 	uint64_t reference_counter; // the number of transactions waiting on write_lock_wait + the users of the transaction
 
-	// a mini transaction is moved to free list only after it is in ABORTED/COMMITTED state and the waiters_count == 0
+	// a mini transaction is moved to free list only after it is in COMPLETED state and the reference_counter == 0
 
 	// -----------------
 	// nodes for intrusive structures that this mini transaction resides in, are below
