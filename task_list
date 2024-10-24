@@ -1,4 +1,5 @@
 PICKED
+ * review acquire_*_latch_* functions
  * upgrade/down grade lock
   * get shared lock on the manager
   * make sure that the min tx is IN_PROGRESS
