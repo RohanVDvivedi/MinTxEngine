@@ -190,7 +190,18 @@ int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_
 			return 0;
 		}
 
+		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
+		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count)
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 
 		// recalculate page checksum, prior to downgrading the lock
 		recalculate_page_checksum(page, &(mte->stats));
@@ -222,7 +233,18 @@ int upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(mini_transaction_en
 			return 0;
 		}
 
+		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
+		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count)
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 
 		result = upgrade_reader_lock_to_writer_lock(&(mte->bufferpool_handle), page);
 
