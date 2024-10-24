@@ -109,4 +109,6 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 
 #include<mini_transaction_engine_wale_only_functions.h>
 
+#include<mini_transaction_engine_bufferpool_only_functions.h>
+
 #endif
