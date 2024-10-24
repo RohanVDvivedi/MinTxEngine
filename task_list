@@ -1,7 +1,4 @@
 PICKED
- * implement bufferpool related functions
-   * api to release locks on a page frame, directly supported by Bufferpool
-   * when ever a write lock is released ensure that the check sum matches the data, by recalculating checksum
  * implement both bufferpool and wale related functions
    * acquire new page with write lock
    * free page, and release lock pages with freeing them
