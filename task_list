@@ -62,21 +62,7 @@ PICKED
 
 
 Tasks necessary to develop MinTxEngine
- * to be build using Bufferpool, WALe and TupleStore
- * each page stores pageLSN (last LSN that modified tha page), writer_min_tx_id (mini transaction id of the writer that has presistently write locked the page) and checksum
- * each writer gets a min_tx_id which is already equal to the its first WALe log
- * deadlock prevenion strategy -> only a new transaction can wait on an old one, this is identified with its min_tx_id
- * we store the dirty page table, a page table storing the page_ids of all dirty pages and their corresponding dirtied_by_lsn -> the first LSN that made it dirty
-   * inserted when a WALe log for the page is written and removed by the bufferpool call back
- * we also strore the list of all currently active mini transactions
- * a page is persistently write locked only if it has a valid writer_min_tx_id and that writer_min_tx_id corresponds to an active mini transaction
- * we also maintain a flushed LSN, only pages whose pageLSN is greater than or equal to this value can be flushed to the disk, by the Bufferpool
-   * if pageLSN is 0, then this means this pages is not being WAL logged and is non persistent, so it can be flushed to disk
- * similarly if a writer_min_tx_id is 0, then this means the page is not persistently write locked
  * checkpointing is done by writing the mini transaction table and dirty page table to the WALe as a check point record
- * only 1 Bufferpool file is maintained
- * possibly numerous WALe files are maintained, old ones are discarded
-   * a WALe file can be discarded if it is prior to any LSN in dirty page table, min_tx_ids, latest checkpoint LSN and trnsaction_id min -> minimum higher level transaction id -> provided as call back
  * there has to be a module to allocate and deallocate pages
    * pages are maintained as bitmap
    * there N bits can fit in a allocation bitmap page, then it stores is valid bit for that many pages after that
@@ -109,39 +95,3 @@ Tasks necessary to develop MinTxEngine
  * atlast there is a recovery function that must be called as the first line of your application, it recovers from crash
  * add a disk pager module that is allocation module plus Bufferpool + No logging page modification methods + a truncate functionality
    * to be used by transaction and lock table, i.e. non persistent storage of the database for higher level fuinctions
- * the module also keeps track of how many pages the user is allowed to hold latches on
-   * minitransactions come with a request on how many pages they will hold latches on simultaneously
-   * minitransactions can only reduce this number, once they are allowed to start their minitransaction
-   * minitransactions that attempt to go beyond this number will get aborted immediately
-   * all aborted minitransactions will only be allowed to hold 1 page latch, i.e. their number will be dropped, and they would have to perform all undos using only 1 buffer
-   * when ever a minitransactions drops its page frame requiremnts this number will be added to the available space, alowing other requesters to start
-   * an API will be provided to register if you are in the declining phase of your lock acquisition, when you do this, your allowance of the page requirement will first decrement to your current page latches count, and then from then on, it will decrease by 1 every time you release a page latch
- * how to avoid dead lock after getting a writer lock after modifying a page
-   * latches will never create deadlock, while accessing 1 data structure of a tupleIndexer, this has to be ensured by TupleIndexer and the user
-   * make only 1 pass from root to leaf allowed, if you modify something, at the leaf you commit the corresponding mini transaction
-   * the end log of the mini transaction must store what modification was made, like a insert, delete or an update on that data structure
-   * since after you modify some pages, you will hold persistent write latched on the page, you can dead lock if you reenter, so reentering a datastructure is forbidden, take care of this while desigining your tuple indexer functions and you mini transactions
-   * you may reenter if you are sure that there would not be anyone between you and the page you want to lock, i.e. there is noone holding latches or persistent write locks on pages between you and the page you want to lock next
-     * like on a delete iterator you may walk down bplus_tree again from the unmodified page to delete something in the bottom again
-       * NOTE the above operation can create dead locks, but can be mitigated if you never use unstacked iterators, i.e. never traverse using the link pointers of the leaf pgaes of the bplus_tree
-     * but similarly you can not restart a leaf only write iterator after a modification, because there can be another reader of writer between your persitent lock and a latch
-   * you can and are allowed to wait on a persistently write locked page, since these assumptions guarantee that you will almost never deadlock, but with a timeout, upon a timeout you abort
-     * this timeout must be atmost 20 write-io operations on the disk that you are using
-   * moral do not walk down the tree again if you think there can be anyone between you and the page you want to lock and do operate on only 1 minitransaction at a time, if you are running multiple minitransactions then ensure that the datastructure that they work on are in the same relative order, i.e. common data structures to both the minitransactions are accesses in the same order
-     * for instance always insert to heap tables before the indexes, and while vaccumming always delete from indexes before heap tables, these 2 operations if clubbed in 2 different minitransaction, then they must not be concurrently called by any of the higher level transactions.
-   * persistent write locks are not provided to come back again, they are provided so that you can release your write latches, and the bufferpool can attempt to flush these pages to disk, making room for your new pages to be brought in from the disk; without persistent write locks, if you release latches on pages early, the you will allow other mini-transactions to do dirty reads, and then if you abort, you will cause cascading aborts, hence persistent write locks are needed, but with a caution of their usage
- * for every mini transaction you need to release all latches on all pages you hold latches on to commit
- * on an abort, after it is notified to you must release all latches, and then call rollback_mini_transaction to undo all the changes
-   * you may also anonymously call rollback_mini_transaction, this will notifiy all the threads working for that mini transaction and once they are done we perform the rollback
-
-
-TEMPORARY PAGES
- * this feature will not be supported by MinTXEngine as we will not be able to undo their changes if the same page is priorly used as regular page then reused as temporary page and then if we abort, we will never know how to reach the prior state, as its intermediate transitions are not logged.
- * separate development will be required/done for a module that solves this issue
-
-
-FUTURE POSSIBILITY
- * look for possibility of putting the page contents onto the log record on deallocation, check if this could help in any cases
- * there is no meaning/value of a page contents if and only if the latest modification to a page is free page and mini transaction that called it is committed
-   * a free page call on a mini transaction not committed can still abort, and may require to be undo forcing us to put valid old contents on the page
-   * A solution ot this is that we only mark the page as allocated/free in the bitmap and make no chnages on the page contents for allocation and freeing, this will also save us crucial space on the WAL
