@@ -9,6 +9,19 @@
 	We while granting locks to you do not ensure that the page is not free
 */
 
+/*
+	For acquire_page_with_*_latch_for_mini_tx function, we do check that the page_id is within bounds of max_page_count and database_page_count, and that it is not a free space mapper page
+	But we do not check if the page is free or not (ideal logic should be to abort if a user is trying to latch a free page)
+	This is not done because
+	To ensure no deadlocks happen, while allocating a free page, the order is first lock the free space mapper page and then the actual page
+	while for freeing a page, the order is to first lock the actual data page and then the corresponding free space mapper page
+
+	if we are unsure and want to check if a page is free or not, we are thwarted by the logic as we do not know the correct order to lock these both pages, and a wring decission may result in a deadlock
+	so we do not do this check here
+
+	SO I ADVISE YOU TO ONLY ACCESS/LATCH PAGES THAT YOU KNOW ARE ALLOCATED, PERIOD.
+*/
+
 void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id);
 void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id);
 
