@@ -7,7 +7,7 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 {
 	pthread_mutex_lock(&(mte->global_lock));
 
-		// mini transaction is not in progres, then quit
+		// mini transaction is not in progress, then quit
 		if(mt->state != MIN_TX_IN_PROGRESS)
 		{
 			pthread_mutex_unlock(&(mte->global_lock));
@@ -94,7 +94,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 {
 	pthread_mutex_lock(&(mte->global_lock));
 
-		// mini transaction is not in progres, then quit
+		// mini transaction is not in progress, then quit
 		if(mt->state != MIN_TX_IN_PROGRESS)
 		{
 			pthread_mutex_unlock(&(mte->global_lock));
@@ -183,7 +183,7 @@ int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_
 
 	pthread_mutex_lock(&(mte->global_lock));
 
-		// mini transaction is not in progres, then quit
+		// mini transaction is not in progress, then quit
 		if(mt->state != MIN_TX_IN_PROGRESS)
 		{
 			pthread_mutex_unlock(&(mte->global_lock));
@@ -194,7 +194,7 @@ int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_
 
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
-		if(page_id >= mte->database_page_count)
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
@@ -203,10 +203,10 @@ int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_
 			return 0;
 		}
 
-		// recalculate page checksum, prior to downgrading the lock
+		// recalculate page checksum, prior to downgrading the latch
 		recalculate_page_checksum(page, &(mte->stats));
 
-		result = downgrade_writer_lock_to_reader_lock(&(mte->bufferpool_handle), page, 0, 0);
+		result = downgrade_writer_lock_to_reader_lock(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
 
 		if(!result)
 		{
@@ -226,7 +226,7 @@ int upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(mini_transaction_en
 
 	pthread_mutex_lock(&(mte->global_lock));
 
-		// mini transaction is not in progres, then quit
+		// mini transaction is not in progress, then quit
 		if(mt->state != MIN_TX_IN_PROGRESS)
 		{
 			pthread_mutex_unlock(&(mte->global_lock));
@@ -237,7 +237,7 @@ int upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(mini_transaction_en
 
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
-		if(page_id >= mte->database_page_count)
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
@@ -264,7 +264,42 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 {
 	if(!free_page) // simple release latch
 	{
+		int result = 0;
 
+		pthread_mutex_lock(&(mte->global_lock));
+
+			// mini transaction is not in progress, then quit
+			if(mt->state != MIN_TX_IN_PROGRESS)
+			{
+				pthread_mutex_unlock(&(mte->global_lock));
+				return 0;
+			}
+
+			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+
+			void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
+			uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+			if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+			{
+				mt->state = MIN_TX_ABORTED;
+				mt->abort_error = ILLEGAL_PAGE_ID;
+				shared_unlock(&(mte->manager_lock));
+				pthread_mutex_unlock(&(mte->global_lock));
+				return 0;
+			}
+
+			result = release_reader_lock_on_page(&(mte->bufferpool_handle), page);
+
+			if(!result)
+			{
+				mt->state = MIN_TX_ABORTED;
+				mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+			}
+
+			shared_unlock(&(mte->manager_lock));
+		pthread_mutex_unlock(&(mte->global_lock));
+
+		return result;
 	}
 	else // release latch + free page
 	{
@@ -276,7 +311,45 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 {
 	if(!free_page) // simple release latch
 	{
+		int result = 0;
 
+		pthread_mutex_lock(&(mte->global_lock));
+
+			// mini transaction is not in progress, then quit
+			if(mt->state != MIN_TX_IN_PROGRESS)
+			{
+				pthread_mutex_unlock(&(mte->global_lock));
+				return 0;
+			}
+
+			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+
+			void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
+			uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+			if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+			{
+				mt->state = MIN_TX_ABORTED;
+				mt->abort_error = ILLEGAL_PAGE_ID;
+				shared_unlock(&(mte->manager_lock));
+				pthread_mutex_unlock(&(mte->global_lock));
+				return 0;
+			}
+
+			// recalculate page checksum, prior to releasing the latch
+			recalculate_page_checksum(page, &(mte->stats));
+
+			result = release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+
+			if(!result)
+			{
+				mt->state = MIN_TX_ABORTED;
+				mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+			}
+
+			shared_unlock(&(mte->manager_lock));
+		pthread_mutex_unlock(&(mte->global_lock));
+
+		return result;
 	}
 	else // release latch + free page
 	{
