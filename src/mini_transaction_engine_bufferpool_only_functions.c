@@ -11,37 +11,37 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 		if(mt->state != MIN_TX_IN_PROGRESS)
 		{
 			pthread_mutex_unlock(&(mte->global_lock));
-			return 0;
+			return NULL;
 		}
 
-		// if you are attempting to lock a free space mapper page, then quit
+		// if you are attempting to lock a free space mapper page, then abort and quit
 		if(is_free_space_mapper_page(page_id, &(mte->stats)))
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
 			pthread_mutex_unlock(&(mte->global_lock));
-			return 0;
+			return NULL;
 		}
 
-		// you must not cross max page count
+		// you must not cross max page count, else abort and quit
 		if(page_id >= mte->user_stats.max_page_count)
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
 			pthread_mutex_unlock(&(mte->global_lock));
-			return 0;
+			return NULL;
 		}
 
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
 		// check to ensure that you are not attempting to allocate a page that is out of bounds for the current page count
-		if(page_id >= mte->database_page_count)
+		if(page_id >= mte->database_page_count) // this check must be done with manager_lock held
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
-			return 0;
+			return NULL;
 		}
 
 		void* latched_page = NULL;
@@ -73,6 +73,7 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 			// wait for completion of a mt_locked_by mini transaction
 			if(!wait_for_mini_transaction_completion_UNSAFE(mte, mt_locked_by))
 			{
+				// comes here when we time out, this could be because of a PLAUSIBLE_DEADLOCK
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = PLAUSIBLE_DEADLOCK;
 				break;
@@ -97,37 +98,37 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 		if(mt->state != MIN_TX_IN_PROGRESS)
 		{
 			pthread_mutex_unlock(&(mte->global_lock));
-			return 0;
+			return NULL;
 		}
 
-		// if you are attempting to lock a free space mapper page, then quit
+		// if you are attempting to lock a free space mapper page, then abort and quit
 		if(is_free_space_mapper_page(page_id, &(mte->stats)))
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
 			pthread_mutex_unlock(&(mte->global_lock));
-			return 0;
+			return NULL;
 		}
 
-		// you must not cross max page count
+		// you must not cross max page count, else abort and quit
 		if(page_id >= mte->user_stats.max_page_count)
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
 			pthread_mutex_unlock(&(mte->global_lock));
-			return 0;
+			return NULL;
 		}
 
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
 		// check to ensure that you are not attempting to allocate a page that is out of bounds for the current page count
-		if(page_id >= mte->database_page_count)
+		if(page_id >= mte->database_page_count) // this check must be done with manager_lock held
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
-			return 0;
+			return NULL;
 		}
 
 		void* latched_page = NULL;
@@ -135,7 +136,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 		while(1)
 		{
 			// attempt to acquire latch on this page with page_id
-			latched_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, 1, 0);
+			latched_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // -> not to be overwritten
 			if(latched_page == NULL)
 			{
 				mt->state = MIN_TX_ABORTED;
@@ -159,6 +160,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 			// wait for completion of a mt_locked_by mini transaction
 			if(!wait_for_mini_transaction_completion_UNSAFE(mte, mt_locked_by))
 			{
+				// comes here when we time out, this could be because of a PLAUSIBLE_DEADLOCK
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = PLAUSIBLE_DEADLOCK;
 				break;
