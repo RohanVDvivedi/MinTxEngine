@@ -79,6 +79,7 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 				break;
 			}
 
+			// we waited until completion of a mini transaction, we must try again and test if the latch could be acquired without any contention, so continue
 			continue;
 		}
 
@@ -166,6 +167,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 				break;
 			}
 
+			// we waited until completion of a mini transaction, we must try again and test if the latch could be acquired without any contention, so continue
 			continue;
 		}
 
