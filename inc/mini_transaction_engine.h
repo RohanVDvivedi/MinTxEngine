@@ -18,6 +18,8 @@
 #include<mini_transaction.h>
 #include<dirty_page_table_entry.h>
 
+#include<abort_errors_list.h>
+
 /*
 	A single minitransaction must comrpise of a single operation using a single thread
 	You may never use multiple threads for a minitransaction
@@ -81,6 +83,9 @@ struct mini_transaction_engine
 
 	linkedlist free_dirty_page_entries_list; // list of free dirty page entries, new dirty page entrues are assigned from this lists or are allocated
 
+	// wait for these many milliseconds for acquiring a latch
+	uint64_t latch_wait_timeout_in_milliseconds;
+
 	// timeout to wait for completion of a mini transaction
 	// if you hit the timeout, you must abort the waiting transaction as there could be a deadlock
 	uint64_t write_lock_wait_timeout_in_microseconds;
@@ -105,7 +110,7 @@ struct mini_transaction_engine
 
 // page_size, page_id_width and log_sequence_number_width parameter is only used if passed as non-zero
 // else they are either used for a new database OR are ensured to be correct for an existing database if non-zero
-int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_miliseconds);
+int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_milliseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_miliseconds);
 
 #include<mini_transaction_engine_wale_only_functions.h>
 

@@ -6,7 +6,7 @@
 
 #define GLOBAL_PERIODIC_FLUSH_JOB_STATUS (periodic_flush_job_status){.frames_to_flush = 100, .period_in_milliseconds = 10}
 
-int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_miliseconds)
+int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_milliseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_miliseconds)
 {
 	if(mte->bufferpool_frame_count == 0 || mte->wale_append_only_buffer_block_count == 0)
 		return 0;
@@ -20,6 +20,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	mte->checkpointLSN = INVALID_LOG_SEQUENCE_NUMBER;
 	initialize_rwlock(&(mte->manager_lock), &(mte->global_lock));
 	pthread_cond_init(&(mte->conditional_to_wait_for_execution_slot), NULL);
+	mte->latch_wait_timeout_in_milliseconds = latch_wait_timeout_in_milliseconds;
 	mte->write_lock_wait_timeout_in_microseconds = write_lock_wait_timeout_in_microseconds;
 	mte->checkpointing_period_in_miliseconds = checkpointing_period_in_miliseconds;
 
