@@ -262,10 +262,24 @@ int upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(mini_transaction_en
 
 int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, int free_page)
 {
-	// TODO
+	if(!free_page) // simple release latch
+	{
+
+	}
+	else // release latch + free page
+	{
+		// TODO
+	}
 }
 
 int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, int free_page)
 {
-	// TODO
+	if(!free_page) // simple release latch
+	{
+
+	}
+	else // release latch + free page
+	{
+		// TODO
+	}
 }
