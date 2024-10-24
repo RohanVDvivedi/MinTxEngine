@@ -72,6 +72,8 @@ struct mini_transaction_engine
 	// this is the number of pages in database that are in use
 	// this must be lesser than or equal to user_stats.max_page_count
 	uint64_t database_page_count;
+	// database_page_count, refers to in-memory copy of the page count in the database_block_file
+	// as you guessed we need a exclusive lock on the manager_lock to extend/truncate the file
 
 	// tuple definitions for the log records handled by this engine
 	log_record_tuple_defs lrtd;

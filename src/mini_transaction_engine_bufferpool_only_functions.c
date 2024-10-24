@@ -17,6 +17,8 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 		// if you are attempting to lock a free space mapper page, then quit
 		if(is_free_space_mapper_page(page_id, &(mte->stats)))
 		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
 		}
@@ -24,13 +26,23 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 		// you must not cross max page count
 		if(page_id >= mte->user_stats.max_page_count)
 		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
 		}
 
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
-		// TODO :: check to ensure that you are not attempting to allocate a page that is out of bounds for the current page count
+		// check to ensure that you are not attempting to allocate a page that is out of bounds for the current page count
+		if(page_id >= mte->database_page_count)
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 
 		void* latched_page = NULL;
 		int wait_attempts = 3;
@@ -91,6 +103,8 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 		// if you are attempting to lock a free space mapper page, then quit
 		if(is_free_space_mapper_page(page_id, &(mte->stats)))
 		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
 		}
@@ -98,13 +112,23 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 		// you must not cross max page count
 		if(page_id >= mte->user_stats.max_page_count)
 		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
 		}
 
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
-		// TODO :: check to ensure that you are not attempting to allocate a page that is out of bounds for the current page count
+		// check to ensure that you are not attempting to allocate a page that is out of bounds for the current page count
+		if(page_id >= mte->database_page_count)
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 
 		void* latched_page = NULL;
 		int wait_attempts = 3;
