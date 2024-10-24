@@ -19,6 +19,8 @@
 	if we are unsure and want to check if a page is free or not, we are thwarted by the logic as we do not know the correct order to lock these both pages, and a wring decission may result in a deadlock
 	so we do not do this check here
 
+	This very same thing happens also when you release latch on the page.
+
 	SO I ADVISE YOU TO ONLY ACCESS/LATCH PAGES THAT YOU KNOW ARE ALLOCATED, AND FREE/RELEASE LATCHES TO PAGES YOU GET POINTERS TO FOR ENGINE, PERIOD.
 */
 
