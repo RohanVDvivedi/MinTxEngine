@@ -69,6 +69,10 @@ struct mini_transaction_engine
 	uint256 flushedLSN;
 	uint256 checkpointLSN;
 
+	// this is the number of pages in database that are in use
+	// this must be lesser than or equal to user_stats.max_page_count
+	uint64_t database_page_count;
+
 	// tuple definitions for the log records handled by this engine
 	log_record_tuple_defs lrtd;
 

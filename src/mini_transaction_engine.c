@@ -40,6 +40,15 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 			return 0;
 		}
 
+		// initialize user_stats
+		mte->database_page_count = (get_total_size_for_block_file(&(mte->database_block_file)) - get_block_size_for_block_file(&(mte->database_block_file))) / mte->stats.page_size;
+		mte->user_stats = get_mini_transaction_engine_user_stats(&(mte->stats), get_block_size_for_block_file(&(mte->database_block_file)));
+		if(mte->database_page_count > mte->user_stats.max_page_count)
+		{
+			close_block_file(&(mte->database_block_file));
+			return 0;
+		}
+
 		// initialize bufferpool
 		if(!initialize_bufferpool(&(mte->bufferpool_handle), mte->bufferpool_frame_count, &(mte->global_lock), get_page_io_ops_for_bufferpool(&(mte->database_block_file), mte->stats.page_size, mte->stats.page_size), can_be_flushed_to_disk_for_bufferpool, was_flushed_to_disk_for_bufferpool, mte, GLOBAL_PERIODIC_FLUSH_JOB_STATUS))
 		{
@@ -73,6 +82,10 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 			close_block_file(&(mte->database_block_file));
 			return 0;
 		}
+
+		// initialize user_stats
+		mte->database_page_count = 0;
+		mte->user_stats = get_mini_transaction_engine_user_stats(&(mte->stats), get_block_size_for_block_file(&(mte->database_block_file)));
 
 		// initialize bufferpool
 		if(!initialize_bufferpool(&(mte->bufferpool_handle), mte->bufferpool_frame_count, &(mte->global_lock), get_page_io_ops_for_bufferpool(&(mte->database_block_file), mte->stats.page_size, mte->stats.page_size), can_be_flushed_to_disk_for_bufferpool, was_flushed_to_disk_for_bufferpool, mte, GLOBAL_PERIODIC_FLUSH_JOB_STATUS))
@@ -112,7 +125,6 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	}
 
 	initialize_log_record_tuple_defs(&(mte->lrtd), &(mte->stats));
-	mte->user_stats = get_mini_transaction_engine_user_stats(&(mte->stats), get_block_size_for_block_file(&(mte->database_block_file)));
 
 	// TODO call recovery functions here
 
