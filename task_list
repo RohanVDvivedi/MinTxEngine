@@ -1,15 +1,4 @@
 PICKED
- * get read latch, write latch
-  * make sure that the min tx is IN_PROGRESS
-  * make sure that the page id is withing bounds, allocated range and max page, and that the page is not free space mapper page
-  * get shared lock on the manager
-  * loop atmost 10 times
-    * get read/write latch on the page, if NULL is returned
-    * check who last write locked it locked, if NULL or self, break out of the loop
-    * release latch on the page
-    * wait for the completion of the min_tx, if fails due to time lock break out
-  * if failed mark abort error and quit
-  * release shared lock on the manager
  * upgrade/down grade lock
   * get shared lock on the manager
   * make sure that the min tx is IN_PROGRESS
