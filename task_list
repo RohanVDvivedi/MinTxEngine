@@ -1,9 +1,32 @@
 PICKED
  * implement both bufferpool and wale related functions
-   * acquire new page with write lock
+   * build another utility function that performs full page write log record for a page if it is necessary
+     * refactor the wale_only functions to use this utility instead
+   * start by implementing a new apge allocation deallocation util
    * free page, and release lock pages with freeing them
-   * implement a free page util that frees a page with write lock on the page held, and use it in release lock and free page calls
-   * always skip pages that are write locked by other active mini transactions
+     * implement a free page util that frees a page with write lock on the page held, and use it in release lock and free page calls
+     * get shared lock on the manager_lock
+     * get page and page_id of this page
+     * ensure that page_id < database_page_count
+     * get lock on the free space mapper page
+     * if deemed necessary full page write both the pages
+     * reset the free bit to 0 value
+     * log the deallocation and quit
+   * acquire new page with write lock
+     * get shared manager lock
+       * start iterating over all the free space mapper pages that are within database_page_count bounds
+       * find a free page from the free space mapper page, which is also within bounds of databse_page_count
+       * check that it is not write locked, else skip
+       * once a right one is found, if deemed required full page write both the pages
+       * then mark that page allocated by setting the bit to 1, and setting the writerLSN on the actual page
+       * then log allocation record, release lock on free space mapper page and quit
+     * if this fails acquire exclusive lock on manager lock
+       * ensure that database_page_count < max_page_count
+       * if so allocate 1 page if the new page is not a free space mapper page, else allocate 2 pages, with overwrite flag set
+       * log full page write for both the pages
+       * then mark that page allocated by setting the bit to 1, and setting the writerLSN on the actual page
+       * then log allocation record, release lock on free space mapper page and quit
+   * always skip pages (while allocating and deallocating) that are write locked by other active mini transactions
    * maintain database_page_count variable and bump it when you allocate a brand new page, when no pages are available -> to be done with exclusive lock on the manager held
      * fail if you have reached max page count
  * implement complete_mini_transaction function
