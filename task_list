@@ -16,12 +16,12 @@ PICKED
      * acquire the latch and quit
    * for upgrade down grade nothing needs to be done except for the underlying bufferpool call
    * release lock calls do the same
-   * when ever a write lock in released ensure that the check sum matches the data, if not, update check sum and make it dirty in bufferpool
+   * when ever a write lock is released ensure that the check sum matches the data, if not, update check sum and make it dirty in bufferpool
  * implement both bufferpool and wale related functions
    * acquire new page with write lock
    * free page, and release lock pages with freeing them
    * always skip pages that are write locked by other mini transactions
-   * maintain pages_in_use variable and bump it when you allocate a brand new page, when no pages are available
+   * maintain pages_in_database variable and bump it when you allocate a brand new page, when no pages are available
      * fail if you have reached max page count
  * implement complete_mini_transaction function
    * if the mini_tx_id == INVALID, it is a reader transaction, nothing needs to be done
