@@ -73,13 +73,13 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 
 		// make an attempt for atleast write_lock_wait_timeout_in_microseconds_LEFT
 		{
-			unsigned long long int secs = write_lock_wait_timeout_in_microseconds_LEFT / 1000000;
-			unsigned long long int nano_secs_extra = (write_lock_wait_timeout_in_microseconds_LEFT % 1000000) * 1000;
-
-			struct timespec wait_till = {.tv_sec = (current_time.tv_sec + secs), .tv_nsec = (current_time.tv_nsec + nano_secs_extra)};
+			struct timespec diff = {.tv_sec = (write_lock_wait_timeout_in_microseconds_LEFT / 1000000LL), .tv_nsec = (write_lock_wait_timeout_in_microseconds_LEFT % 1000000LL) * 1000LL};
+			struct timespec stop_at = {.tv_sec = current_time.tv_sec + diff.tv_sec, .tv_nsec = current_time.tv_nsec + diff.tv_nsec};
+			stop_at.tv_sec += stop_at.tv_nsec / 1000000000LL;
+			stop_at.tv_nsec = stop_at.tv_nsec % 1000000000LL;
 
 			// do timedwait
-			wait_error = pthread_cond_timedwait(&(mt->write_lock_wait), &(mte->global_lock), &wait_till);
+			wait_error = pthread_cond_timedwait(&(mt->write_lock_wait), &(mte->global_lock), &stop_at);
 		}
 
 		// substract elapsed time from write_lock_wait_timeout_in_microseconds_LEFT
