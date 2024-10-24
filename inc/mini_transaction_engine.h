@@ -83,8 +83,8 @@ struct mini_transaction_engine
 
 	linkedlist free_dirty_page_entries_list; // list of free dirty page entries, new dirty page entrues are assigned from this lists or are allocated
 
-	// wait for these many milliseconds for acquiring a latch
-	uint64_t latch_wait_timeout_in_milliseconds;
+	// wait for these many microseconds for acquiring a latch
+	uint64_t latch_wait_timeout_in_microseconds;
 
 	// timeout to wait for completion of a mini transaction
 	// if you hit the timeout, you must abort the waiting transaction as there could be a deadlock
@@ -98,8 +98,8 @@ struct mini_transaction_engine
 	// it must be held in exclusive mode for truncating WALe and Bufferpool files, check pointing etc
 	rwlock manager_lock;
 
-	// as the name suggests check pointing is done every this many milliseconds
-	uint64_t checkpointing_period_in_miliseconds;
+	// as the name suggests check pointing is done every this many microseconds
+	uint64_t checkpointing_period_in_microseconds;
 
 	// stats for internal use
 	mini_transaction_engine_stats stats;
@@ -110,7 +110,7 @@ struct mini_transaction_engine
 
 // page_size, page_id_width and log_sequence_number_width parameter is only used if passed as non-zero
 // else they are either used for a new database OR are ensured to be correct for an existing database if non-zero
-int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_milliseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_miliseconds);
+int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds);
 
 #include<mini_transaction_engine_wale_only_functions.h>
 

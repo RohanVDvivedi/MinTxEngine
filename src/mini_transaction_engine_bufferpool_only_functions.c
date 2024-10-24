@@ -37,7 +37,7 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 		while(attempts > 0)
 		{
 			// attempt to acquire latch on this page with page_id
-			latched_page = acquire_page_with_reader_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_milliseconds, 1);
+			latched_page = acquire_page_with_reader_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, 1);
 			if(latched_page == NULL)
 			{
 				mt->state = MIN_TX_ABORTED;
