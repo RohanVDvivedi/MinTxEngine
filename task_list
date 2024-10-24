@@ -5,8 +5,9 @@ PICKED
  * implement both bufferpool and wale related functions
    * acquire new page with write lock
    * free page, and release lock pages with freeing them
-   * always skip pages that are write locked by other mini transactions
-   * maintain pages_in_database variable and bump it when you allocate a brand new page, when no pages are available
+   * implement a free page util that frees a page with write lock on the page held, and use it in release lock and free page calls
+   * always skip pages that are write locked by other active mini transactions
+   * maintain database_page_count variable and bump it when you allocate a brand new page, when no pages are available -> to be done with exclusive lock on the manager held
      * fail if you have reached max page count
  * implement complete_mini_transaction function
    * if the mini_tx_id == INVALID, it is a reader transaction, nothing needs to be done
