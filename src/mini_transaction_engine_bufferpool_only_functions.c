@@ -86,7 +86,7 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 
 	if(latched_page == NULL)
 		return NULL;
-	return latched_page - get_system_header_size_for_data_pages(&(mte->stats));
+	return latched_page + get_system_header_size_for_data_pages(&(mte->stats));
 }
 
 void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id)
@@ -172,17 +172,68 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 
 	if(latched_page == NULL)
 		return NULL;
-	return latched_page - get_system_header_size_for_data_pages(&(mte->stats));
+	return latched_page + get_system_header_size_for_data_pages(&(mte->stats));
 }
 
 int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents)
 {
-	// TODO
+	int result = 0;
+
+	pthread_mutex_lock(&(mte->global_lock));
+
+		// mini transaction is not in progres, then quit
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
+
+		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
+
+		// recalculate page checksum, prior to downgrading the lock
+		recalculate_page_checksum(page, &(mte->stats));
+
+		result = downgrade_writer_lock_to_reader_lock(&(mte->bufferpool_handle), page, 0, 0);
+
+		if(!result)
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+		}
+
+		shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	return result;
 }
 
 int upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents)
 {
-	// TODO
+	int result = 0;
+
+	pthread_mutex_lock(&(mte->global_lock));
+
+		// mini transaction is not in progres, then quit
+		if(mt->state != MIN_TX_IN_PROGRESS)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
+
+		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
+
+		result = upgrade_reader_lock_to_writer_lock(&(mte->bufferpool_handle), page);
+
+		if(!result)
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+		}
+
+		shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	return result;
 }
 
 int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, int free_page)
