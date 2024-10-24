@@ -3,6 +3,12 @@
 
 #include<mini_transaction_engine.h>
 
+/*
+	You should never attempt to acquire a lock on a page that you do know of being allocated or not
+	Attempting to lock free pages and uses them may succeed but will create dead locks
+	We while granting locks to you do not ensure that the page is not free
+*/
+
 void* acquire_page_with_reader_lock_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id);
 void* acquire_page_with_writer_lock_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id);
 
