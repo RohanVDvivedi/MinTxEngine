@@ -111,7 +111,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 		while(1)
 		{
 			// attempt to acquire latch on this page with page_id
-			latched_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, 1);
+			latched_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, 1, 0);
 			if(latched_page == NULL)
 			{
 				mt->state = MIN_TX_ABORTED;
@@ -125,7 +125,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 				break;
 
 			// release latch on the latched page, this must succeed
-			release_writer_lock_on_page(&(mte->bufferpool_handle), latched_page);
+			release_writer_lock_on_page(&(mte->bufferpool_handle), latched_page, 0, 0); // was_modified = 0, force_flushd = 0 -> so that global lock is not released while we are working
 			latched_page = NULL;
 
 			if(wait_attempts == 0)
