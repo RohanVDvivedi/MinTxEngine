@@ -29,6 +29,8 @@ PICKED
    * always skip pages (while allocating and deallocating) that are write locked by other active mini transactions
    * maintain database_page_count variable and bump it when you allocate a brand new page, when no pages are available -> to be done with exclusive lock on the manager held
      * fail if you have reached max page count
+ 
+ * implement utility function to get a parsed log record given the log sequence number, from all the available wales
  * implement complete_mini_transaction function
    * if the mini_tx_id == INVALID, it is a reader transaction, nothing needs to be done
    * if transaction is in IN_PROGRESS state, put COMPLETE_MINI_TX log record and flush all logs 
@@ -45,6 +47,7 @@ PICKED
    * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
    * deinitialize_mini_transaction_engine waits for all mini_transactions to be returned
    * also kill the checkpointer thread
+ * write test case where you build a bplus tree and then delete the databse file and try reconstructing the complete database using the logs, then compare the database files, or print the bplus tree
  * implement a deinitialize function for mini transaction engine
  * add a flag suggesting shutdown of the mini transaction engine
  * fail all new calls if the shut_down flag is set, and wait for shutdown by taking a manager exclusive lock
