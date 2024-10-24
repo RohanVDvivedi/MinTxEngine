@@ -1,5 +1,4 @@
 PICKED
- * review acquire_*_latch_*, upgrade/downgrade latch
  * implement bufferpool related functions
    * api to get write lock, read lock, upgrade and down grade locks and release locks on a page frame, directly supported by Bufferpool
    * if user tries to do any of these on free space mapper page OR a free page then abort it with reason illegal access
