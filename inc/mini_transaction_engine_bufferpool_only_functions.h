@@ -19,7 +19,7 @@
 	if we are unsure and want to check if a page is free or not, we are thwarted by the logic as we do not know the correct order to lock these both pages, and a wring decission may result in a deadlock
 	so we do not do this check here
 
-	SO I ADVISE YOU TO ONLY ACCESS/LATCH PAGES THAT YOU KNOW ARE ALLOCATED, PERIOD.
+	SO I ADVISE YOU TO ONLY ACCESS/LATCH PAGES THAT YOU KNOW ARE ALLOCATED, AND FREE/RELEASE LATCHES TO PAGES YOU GET POINTERS TO FOR ENGINE, PERIOD.
 */
 
 void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id);
