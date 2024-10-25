@@ -3,6 +3,9 @@
 
 #include<mini_transaction_engine.h>
 
+// All _UNSAFE functions, must be called with with global lock held
+// All _INTERNAL functions, must be called with with global lock not held
+
 // performes a free page routine to free a page write latched by the given mini transaction
 // this function must be called with manager lock, but without global lock held, it will take global lock as and when necessary
 // page may not be persistently write locked by the provided mini transaction, and is assumed to be either not write locked by anyone or write locked by self

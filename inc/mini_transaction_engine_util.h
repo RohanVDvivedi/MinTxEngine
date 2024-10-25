@@ -4,6 +4,7 @@
 #include<mini_transaction_engine.h>
 
 // All _UNSAFE functions, must be called with with global lock held
+// All _INTERNAL functions, must be called with with global lock not held
 
 // it marks the page as dirty in the dirty page table and bufferpool, both as dirty
 // it is expected that page contains the pageLSN that made it dirty, so the newly inserted dirty page table entry (if any) has its recLSN as pageLSN of the page
