@@ -1,7 +1,7 @@
 PICKED
 
  * implement both bufferpool and wale related functions
-   * start by implementing a new apge allocation deallocation util
+   * start by implementing a new page allocation deallocation util
    * free page, and release lock pages with freeing them
      * implement a free page util that frees a page with write lock on the page held, and use it in release lock and free page calls
      * get shared lock on the manager_lock
