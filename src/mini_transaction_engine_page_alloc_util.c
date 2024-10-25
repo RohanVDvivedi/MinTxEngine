@@ -7,6 +7,13 @@
 
 int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id)
 {
+	if(is_free_space_mapper_page(page_id, &(mte->stats)))
+	{
+		mt->state = MIN_TX_ABORTED;
+		mt->abort_error = ILLEGAL_PAGE_ID;
+		return 0;
+	}
+
 	// fetch the free space mapper page an bit position that we need to flip
 	uint64_t free_space_mapper_page_id = get_is_valid_bit_page_id_for_page(page_id, &(mte->stats));
 	uint64_t free_space_mapper_bit_pos = get_is_valid_bit_position_for_page(page_id, &(mte->stats));
