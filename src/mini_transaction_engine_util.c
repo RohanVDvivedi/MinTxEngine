@@ -62,6 +62,9 @@ uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mi
 		// set pageLSN of the page to the log_record_LSN
 		set_pageLSN_for_page(page, log_record_LSN, &(mte->stats));
 
+		// do not set writerLSN as we did not modify the contents of the page (we only modified pageLSN of the page)
+		// so we are not entitled to take writerLSN on the page
+
 		// mark the page as dirty in the bufferpool and dirty page table
 		// we updated its pageLSN, this page is now considered dirty
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
