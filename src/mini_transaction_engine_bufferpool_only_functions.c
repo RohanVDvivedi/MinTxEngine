@@ -309,7 +309,55 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 	}
 	else // release latch + free page
 	{
-		// TODO
+		int result = 0;
+
+		pthread_mutex_lock(&(mte->global_lock));
+
+			// mini transaction is not in progress, then quit
+			if(mt->state != MIN_TX_IN_PROGRESS)
+			{
+				pthread_mutex_unlock(&(mte->global_lock));
+				return 0;
+			}
+
+			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+
+			void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
+			uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+			if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+			{
+				mt->state = MIN_TX_ABORTED;
+				mt->abort_error = ILLEGAL_PAGE_ID;
+				shared_unlock(&(mte->manager_lock));
+				pthread_mutex_unlock(&(mte->global_lock));
+				return 0;
+			}
+
+			// attempt to upgrade to writer lock on the page
+			if(!upgrade_reader_lock_to_writer_lock(&(mte->bufferpool_handle), page))
+			{
+				mt->state = MIN_TX_ABORTED;
+				mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+				shared_unlock(&(mte->manager_lock));
+				pthread_mutex_unlock(&(mte->global_lock));
+			}
+
+			pthread_mutex_unlock(&(mte->global_lock));
+
+			// perform the actual free here
+			result = free_write_latched_page_INTERNAL(mte, mt, page, page_id);
+
+			pthread_mutex_lock(&(mte->global_lock));
+
+			// on failure do downgrade the lock back
+			if(!result)
+				// this must succeed if the prior upgrade call succeeded
+				downgrade_writer_lock_to_reader_lock(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+
+			shared_unlock(&(mte->manager_lock));
+		pthread_mutex_unlock(&(mte->global_lock));
+
+		return result;
 	}
 }
 
