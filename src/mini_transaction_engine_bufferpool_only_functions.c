@@ -206,7 +206,9 @@ int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_
 		}
 
 		// recalculate page checksum, prior to downgrading the latch
+		pthread_mutex_unlock(&(mte->global_lock));
 		recalculate_page_checksum(page, &(mte->stats));
+		pthread_mutex_lock(&(mte->global_lock));
 
 		result = downgrade_writer_lock_to_reader_lock(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
 
@@ -338,7 +340,9 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 			}
 
 			// recalculate page checksum, prior to releasing the latch
+			pthread_mutex_unlock(&(mte->global_lock));
 			recalculate_page_checksum(page, &(mte->stats));
+			pthread_mutex_lock(&(mte->global_lock));
 
 			result = release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
 
