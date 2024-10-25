@@ -34,7 +34,7 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
-		// check to ensure that you are not attempting to allocate a page that is out of bounds for the current page count
+		// check to ensure that you are not attempting to latch a page that is out of bounds for the current page count
 		if(page_id >= mte->database_page_count) // this check must be done with manager_lock held
 		{
 			mt->state = MIN_TX_ABORTED;
@@ -122,7 +122,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
-		// check to ensure that you are not attempting to allocate a page that is out of bounds for the current page count
+		// check to ensure that you are not attempting to latch a page that is out of bounds for the current page count
 		if(page_id >= mte->database_page_count) // this check must be done with manager_lock held
 		{
 			mt->state = MIN_TX_ABORTED;
