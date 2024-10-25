@@ -1,7 +1,5 @@
 PICKED
 
- * perform recalculate checksum outside of the global lock
-
  * implement both bufferpool and wale related functions
    * start by implementing a new apge allocation deallocation util
    * free page, and release lock pages with freeing them
