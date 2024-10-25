@@ -340,6 +340,7 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 				mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
 				shared_unlock(&(mte->manager_lock));
 				pthread_mutex_unlock(&(mte->global_lock));
+				return 0;
 			}
 
 			pthread_mutex_unlock(&(mte->global_lock));
