@@ -48,6 +48,14 @@ enum log_record_type
 	// informational suggesting no more log records will be or should be generated for this mini transaction
 };
 
+/*
+	Every log record modifies the pageLSN to their own value
+	All log records from 3-14 persistently write lock the page and have a corresponding undo, and get a corresponding COMPENSATION_LOG_RECORD
+	  -> while redoing these log records writerLSN becomes the mt->min_transaction_id, while undoing them their CLR records never change the writerLSN
+	FULL_PAGE_WRITE log records are always redo-ne, and their undo is a NO-OP
+	  -> while redoing them they get writerLSN as in the log record, if their page_id suggests that they have one (if theyr are not a free space mapper page)
+*/
+
 extern const char log_record_type_strings[19][64];
 
 /*
