@@ -253,7 +253,7 @@ struct page_compaction_log_record
 
 // log record struct for FULL_PAGE_WRITE
 // -> undo is a NO-OP, in best case you can put back the page_contents back to the page
-// for REDO copy page_contents to the page and reset it's pageLSN to LSN of this log record
+// for REDO copy page_contents to the page and reset it's pageLSN to LSN of this log record, if it is not a free space mapper page, then also copy the writerLSN
 typedef struct full_page_write_log_record full_page_write_log_record;
 struct full_page_write_log_record
 {
@@ -261,6 +261,7 @@ struct full_page_write_log_record
 	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 
+	uint256 writerLSN; // writerLSN of the page (if it is not a free space mapper page) at the time of writing this log record
 	const void* page_contents; // there is no size def here, because a just allocated page may not have a valid size_def
 };
 
