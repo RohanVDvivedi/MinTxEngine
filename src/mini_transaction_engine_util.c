@@ -2,81 +2,6 @@
 
 #include<system_page_header_util.h>
 
-uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id)
-{
-	// if page size is same as block size, no full page write is required
-	if(mte->stats.page_size == get_block_size_for_block_file(&(mte->database_block_file)))
-		return INVALID_LOG_SEQUENCE_NUMBER;
-
-	// a full page write is necessary only if pageLSN == INVALID_LOG_SEQUENCE_NUMBER OR pageLSN < checkpointLSN
-	if(!(
-		are_equal_uint256(get_pageLSN_for_page(page, &(mte->stats)), INVALID_LOG_SEQUENCE_NUMBER) ||
-		compare_uint256(get_pageLSN_for_page(page, &(mte->stats)), mte->checkpointLSN) < 0)
-	)
-		return INVALID_LOG_SEQUENCE_NUMBER;
-
-	// construct full page write log record, with writerLSN if it is not a free space mapper page
-	log_record fpw_lr = {
-		.type = FULL_PAGE_WRITE,
-		.fpwlr = {
-			.mini_transaction_id = mt->mini_transaction_id,
-			.prev_log_record_LSN = mt->lastLSN,
-			.page_id = page_id,
-			.writerLSN = INVALID_LOG_SEQUENCE_NUMBER,
-			.page_contents = get_page_contents_for_page(page, page_id, &(mte->stats)),
-		}
-	};
-	if(!is_free_space_mapper_page(page_id, &(mte->stats)))
-		fpw_lr.fpwlr.writerLSN = get_writerLSN_for_page(page, &(mte->stats));
-
-	// serialize full page write log record
-	uint32_t serialized_fpw_lr_size = 0;
-	const void* serialized_fpw_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
-	if(serialized_fpw_lr == NULL)
-		exit(-1);
-
-	pthread_mutex_lock(&(mte->global_lock));
-
-		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
-
-		int wal_error = 0;
-		uint256 log_record_LSN = append_log_record(wale_p, serialized_fpw_lr, serialized_fpw_lr_size, 0, &wal_error);
-		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
-			exit(-1);
-
-		// if mt->mini_transaction_id is INVALID, then assign it log_record_LSN. and make it a writer_mini_transaction
-		if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
-		{
-			mt->mini_transaction_id = log_record_LSN;
-
-			// remove mt from mte->reader_mini_transactions
-			remove_from_linkedlist(&(mte->reader_mini_transactions), mt);
-
-			// insert it to mte->writer_mini_transactions
-			insert_in_hashmap(&(mte->writer_mini_transactions), mt);
-		}
-
-		// update lastLSN of the mini transaction
-		mt->lastLSN = log_record_LSN;
-
-		// set pageLSN of the page to the log_record_LSN
-		set_pageLSN_for_page(page, log_record_LSN, &(mte->stats));
-
-		// do not set writerLSN as we did not modify the contents of the page (we only modified pageLSN of the page)
-		// so we are not entitled to take writerLSN on the page
-
-		// mark the page as dirty in the bufferpool and dirty page table
-		// we updated its pageLSN, this page is now considered dirty
-		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
-
-	pthread_mutex_unlock(&(mte->global_lock));
-
-	// free full page write log record
-	free((void*)serialized_fpw_lr);
-
-	return log_record_LSN;
-}
-
 void mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mini_transaction_engine* mte, void* page, uint64_t page_id)
 {
 	notify_modification_for_write_locked_page(&(mte->bufferpool_handle), page);
@@ -181,4 +106,79 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 	decrement_mini_transaction_reference_counter_UNSAFE(mte, mt);
 
 	return success;
+}
+
+uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id)
+{
+	// if page size is same as block size, no full page write is required
+	if(mte->stats.page_size == get_block_size_for_block_file(&(mte->database_block_file)))
+		return INVALID_LOG_SEQUENCE_NUMBER;
+
+	// a full page write is necessary only if pageLSN == INVALID_LOG_SEQUENCE_NUMBER OR pageLSN < checkpointLSN
+	if(!(
+		are_equal_uint256(get_pageLSN_for_page(page, &(mte->stats)), INVALID_LOG_SEQUENCE_NUMBER) ||
+		compare_uint256(get_pageLSN_for_page(page, &(mte->stats)), mte->checkpointLSN) < 0)
+	)
+		return INVALID_LOG_SEQUENCE_NUMBER;
+
+	// construct full page write log record, with writerLSN if it is not a free space mapper page
+	log_record fpw_lr = {
+		.type = FULL_PAGE_WRITE,
+		.fpwlr = {
+			.mini_transaction_id = mt->mini_transaction_id,
+			.prev_log_record_LSN = mt->lastLSN,
+			.page_id = page_id,
+			.writerLSN = INVALID_LOG_SEQUENCE_NUMBER,
+			.page_contents = get_page_contents_for_page(page, page_id, &(mte->stats)),
+		}
+	};
+	if(!is_free_space_mapper_page(page_id, &(mte->stats)))
+		fpw_lr.fpwlr.writerLSN = get_writerLSN_for_page(page, &(mte->stats));
+
+	// serialize full page write log record
+	uint32_t serialized_fpw_lr_size = 0;
+	const void* serialized_fpw_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
+	if(serialized_fpw_lr == NULL)
+		exit(-1);
+
+	pthread_mutex_lock(&(mte->global_lock));
+
+		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+
+		int wal_error = 0;
+		uint256 log_record_LSN = append_log_record(wale_p, serialized_fpw_lr, serialized_fpw_lr_size, 0, &wal_error);
+		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+			exit(-1);
+
+		// if mt->mini_transaction_id is INVALID, then assign it log_record_LSN. and make it a writer_mini_transaction
+		if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
+		{
+			mt->mini_transaction_id = log_record_LSN;
+
+			// remove mt from mte->reader_mini_transactions
+			remove_from_linkedlist(&(mte->reader_mini_transactions), mt);
+
+			// insert it to mte->writer_mini_transactions
+			insert_in_hashmap(&(mte->writer_mini_transactions), mt);
+		}
+
+		// update lastLSN of the mini transaction
+		mt->lastLSN = log_record_LSN;
+
+		// set pageLSN of the page to the log_record_LSN
+		set_pageLSN_for_page(page, log_record_LSN, &(mte->stats));
+
+		// do not set writerLSN as we did not modify the contents of the page (we only modified pageLSN of the page)
+		// so we are not entitled to take writerLSN on the page
+
+		// mark the page as dirty in the bufferpool and dirty page table
+		// we updated its pageLSN, this page is now considered dirty
+		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
+
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	// free full page write log record
+	free((void*)serialized_fpw_lr);
+
+	return log_record_LSN;
 }

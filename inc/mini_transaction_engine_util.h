@@ -3,22 +3,7 @@
 
 #include<mini_transaction_engine.h>
 
-// All _UNSAFE functions, must be called with with necessary locks held
-
-// below function performs all necessary operation required for a full page write
-// this function does everything except taking writer lock on the page
-/*
-	1. makes sure that full page write is indeed necessary, else returns INVALID_LOG_SEQUENCE_NUMBER
-	2. generates full page write log record for the page
-	3. logs log record to latest wale, gets the log_record_LSN for this record
-	4. if mt->mini_transaction_id == INVALID, then assigns it and moves the mt to writer_mini_transactions and assigns its mini_transaction_id to log_record_LSN
-	5. mt->lastLSN = log_record_LSN
-	6. page->pageLSN = log_record_LSN
-	7. mark it dirty in dirty page table and bufferpool both
-	8. returns log_record_LSN of the log record we just logged
-*/
-// this function must be called with manager_lock held, it will take global lock as and when necessary, so it must be called without global lock held
-uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id);
+// All _UNSAFE functions, must be called with with global lock held
 
 // it marks the page as dirty in the dirty page table and bufferpool, both as dirty
 // it is expected that page contains the pageLSN that made it dirty, so the newly inserted dirty page table entry (if any) has its recLSN as pageLSN of the page
@@ -47,5 +32,20 @@ void decrement_mini_transaction_reference_counter_UNSAFE(mini_transaction_engine
 // a return value of 0, may be due to a dead lock, so you may need to abort if this function returns 0
 // this function must be called with global_lock and manager_lock held
 int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt);
+
+// below function performs all necessary operation required for a full page write
+// this function does everything except taking writer lock on the page
+/*
+	1. makes sure that full page write is indeed necessary, else returns INVALID_LOG_SEQUENCE_NUMBER
+	2. generates full page write log record for the page
+	3. logs log record to latest wale, gets the log_record_LSN for this record
+	4. if mt->mini_transaction_id == INVALID, then assigns it and moves the mt to writer_mini_transactions and assigns its mini_transaction_id to log_record_LSN
+	5. mt->lastLSN = log_record_LSN
+	6. page->pageLSN = log_record_LSN
+	7. mark it dirty in dirty page table and bufferpool both
+	8. returns log_record_LSN of the log record we just logged
+*/
+// this function must be called with manager_lock held, it will take global lock as and when necessary, so it must be called without global lock held
+uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id);
 
 #endif

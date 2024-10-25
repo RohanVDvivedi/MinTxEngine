@@ -66,7 +66,7 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
-	perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mte, mt, page, page_id);
+	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 
 	// construct log record object
 	log_record act_lr = {
@@ -125,7 +125,7 @@ void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction*
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
-	perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mte, mt, page, page_id);
+	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 
 	uint32_t page_header_size = get_page_header_size(page_contents, mte->user_stats.page_size);
 	void* old_page_header_contents = get_page_header(page_contents, mte->user_stats.page_size);
@@ -187,7 +187,7 @@ int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
-	perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mte, mt, page, page_id);
+	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 
 	// construct log record object
 	log_record act_lr = {
@@ -245,7 +245,7 @@ int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
-	perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mte, mt, page, page_id);
+	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 
 	// construct log record object
 	log_record act_lr = {
@@ -304,7 +304,7 @@ int update_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
-	perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mte, mt, page, page_id);
+	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 
 	// construct log record object
 	log_record act_lr = {
@@ -364,7 +364,7 @@ int discard_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transac
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
-	perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mte, mt, page, page_id);
+	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 
 	// construct log record object
 	log_record act_lr = {
@@ -423,7 +423,7 @@ void discard_all_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_t
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
-	perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mte, mt, page, page_id);
+	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 
 	// construct log record object
 	log_record act_lr = {
@@ -481,7 +481,7 @@ uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engin
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
-	perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mte, mt, page, page_id);
+	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 
 	// construct log record object
 	log_record act_lr = {
@@ -539,7 +539,7 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
-	perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mte, mt, page, page_id);
+	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 
 	// construct log record object
 	log_record act_lr = {
@@ -606,7 +606,7 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
-	perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mte, mt, page, page_id);
+	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 
 	// construct log record object
 	log_record act_lr = {
@@ -667,7 +667,7 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
-	perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mte, mt, page, page_id);
+	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 
 	// construct log record object
 	log_record act_lr = {
@@ -726,7 +726,7 @@ int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
-	perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mte, mt, page, page_id);
+	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 
 	// construct log record object
 	log_record act_lr = {
