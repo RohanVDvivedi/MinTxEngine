@@ -1,6 +1,5 @@
 PICKED
-  * free_page_INTERNAL function review
-    * implement all free function implementations
+ * implement all free function implementations
 
  * implement both bufferpool and wale related functions
    * acquire new page with write lock
