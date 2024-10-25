@@ -1,5 +1,4 @@
 PICKED
- * add current_writerLSN for full page write log record
  * build another utility function that performs full page write log record for a page if it is necessary
    * refactor the wale_only functions to use this utility instead
  * page compaction log record persistently write locks the page
