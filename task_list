@@ -1,11 +1,11 @@
 PICKED
  * add current_writerLSN for full page write log record
+ * build another utility function that performs full page write log record for a page if it is necessary
+   * refactor the wale_only functions to use this utility instead
  * page compaction log record persistently write locks the page
  * perform recalculate checksum outside of the global lock
 
  * implement both bufferpool and wale related functions
-   * build another utility function that performs full page write log record for a page if it is necessary
-     * refactor the wale_only functions to use this utility instead
    * start by implementing a new apge allocation deallocation util
    * free page, and release lock pages with freeing them
      * implement a free page util that frees a page with write lock on the page held, and use it in release lock and free page calls
