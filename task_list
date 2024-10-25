@@ -1,6 +1,4 @@
 PICKED
- * implement all free function implementations
-
  * implement both bufferpool and wale related functions
    * acquire new page with write lock
      * get shared manager lock
