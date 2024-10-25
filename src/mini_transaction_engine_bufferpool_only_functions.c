@@ -194,8 +194,8 @@ int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_
 
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
+		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
-		void* page = get_page_for_page_contents(page_contents, page_id, &(mte->stats));
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
 		{
 			mt->state = MIN_TX_ABORTED;
@@ -239,8 +239,8 @@ int upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(mini_transaction_en
 
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
+		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
-		void* page = get_page_for_page_contents(page_contents, page_id, &(mte->stats));
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
 		{
 			mt->state = MIN_TX_ABORTED;
@@ -283,8 +283,8 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 
 			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
+			void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 			uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
-			void* page = get_page_for_page_contents(page_contents, page_id, &(mte->stats));
 			if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
 			{
 				mt->state = MIN_TX_ABORTED;
@@ -322,8 +322,8 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 
 			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
+			void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 			uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
-			void* page = get_page_for_page_contents(page_contents, page_id, &(mte->stats));
 			if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
 			{
 				mt->state = MIN_TX_ABORTED;
@@ -379,8 +379,8 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 
 			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
+			void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 			uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
-			void* page = get_page_for_page_contents(page_contents, page_id, &(mte->stats));
 			if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
 			{
 				mt->state = MIN_TX_ABORTED;
@@ -423,8 +423,8 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 
 			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
+			void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 			uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
-			void* page = get_page_for_page_contents(page_contents, page_id, &(mte->stats));
 			if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
 			{
 				mt->state = MIN_TX_ABORTED;
