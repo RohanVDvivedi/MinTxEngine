@@ -1,16 +1,8 @@
 PICKED
+  * free_page_INTERNAL function review
+    * implement all free function implementations
 
  * implement both bufferpool and wale related functions
-   * start by implementing a new page allocation deallocation util
-   * free page, and release lock pages with freeing them
-     * implement a free page util that frees a page with write lock on the page held, and use it in release lock and free page calls
-     * get shared lock on the manager_lock
-     * get page and page_id of this page
-     * ensure that page_id < database_page_count
-     * get lock on the free space mapper page
-     * if deemed necessary full page write both the pages
-     * reset the free bit to 0 value
-     * log the deallocation and quit
    * acquire new page with write lock
      * get shared manager lock
        * start iterating over all the free space mapper pages that are within database_page_count bounds
