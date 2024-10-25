@@ -63,6 +63,14 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
@@ -122,6 +130,14 @@ void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction*
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return ;
+		}
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
@@ -184,6 +200,14 @@ int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
@@ -242,6 +266,14 @@ int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
@@ -301,6 +333,14 @@ int update_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
@@ -361,6 +401,14 @@ int discard_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transac
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
@@ -420,6 +468,14 @@ void discard_all_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_t
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return ;
+		}
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
@@ -478,6 +534,14 @@ uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engin
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
@@ -536,6 +600,14 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
@@ -603,6 +675,14 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
@@ -664,6 +744,14 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return ;
+		}
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
@@ -723,6 +811,14 @@ int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ILLEGAL_PAGE_ID;
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page write if necessary, it will take global lock as it deems necessary considering manager_lock is held
