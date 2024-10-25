@@ -17,7 +17,7 @@
 	7. mark it dirty in dirty page table and bufferpool both
 	8. returns log_record_LSN of the log record we just logged
 */
-// this function must be called with manager_lock held, it will take global lock as and when necessary
+// this function must be called with manager_lock held, it will take global lock as and when necessary, so it must be called without global lock held
 uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id);
 
 // it marks the page as dirty in the dirty page table and bufferpool, both as dirty
