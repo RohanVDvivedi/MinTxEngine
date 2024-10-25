@@ -12,6 +12,7 @@
 // so you need to make sure that this page is either not write locked by any one or write locked by self
 // we also do not check whether the page is free or not, you must ensure that the page is allocated prior to this call
 // aborts, only if we couldn't latch the free_space_mapper_page for the provided page_id
-int free_write_latched_page_INTERNAL_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id);
+// it will release latch on page provided, if it is successfully freed
+int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id);
 
 #endif

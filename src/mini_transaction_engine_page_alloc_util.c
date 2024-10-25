@@ -87,6 +87,10 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 		// mark the page and free_space_mapper_page as dirty in the bufferpool and dirty page table
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, free_space_mapper_page, free_space_mapper_page_id);
+
+		// this has to succeed, we already marked it dirty, so was_modified can be set to 0
+		release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+		release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // was_modified = 0, force_flush = 0
 	}
 	pthread_mutex_unlock(&(mte->global_lock));
 
