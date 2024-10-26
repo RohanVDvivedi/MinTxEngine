@@ -60,8 +60,8 @@ int free_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, ui
 		if(mt_locked_by != NULL && mt_locked_by != mt) // if locked by an active transaction, we abort and quit
 		{
 			release_writer_lock_on_page(&(mte->bufferpool_handle), page_to_free, 0, 0); // was_modified = 0, force_flush = 0
-			mt->state = PAGE_TO_BE_FREED_IS_LOCKED;
-			mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = PAGE_TO_BE_FREED_IS_LOCKED;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
