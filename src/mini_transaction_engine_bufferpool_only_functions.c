@@ -313,7 +313,12 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 
 		pthread_mutex_lock(&(mte->global_lock));
 
-			// you can release latches with mini transaction being in any state
+			// mini transaction is not in progress, then quit
+			if(mt->state != MIN_TX_IN_PROGRESS)
+			{
+				pthread_mutex_unlock(&(mte->global_lock));
+				return 0;
+			}
 
 			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
@@ -365,7 +370,12 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 
 		pthread_mutex_lock(&(mte->global_lock));
 
-			// you can release latches with mini transaction being in any state
+			// mini transaction is not in progress, then quit
+			if(mt->state != MIN_TX_IN_PROGRESS)
+			{
+				pthread_mutex_unlock(&(mte->global_lock));
+				return 0;
+			}
 
 			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
