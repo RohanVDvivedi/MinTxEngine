@@ -36,6 +36,7 @@ PICKED
    * deinitialize_mini_transaction_engine waits for all mini_transactions to be returned
    * also kill the checkpointer thread
  * write test case where you build a bplus tree and then delete the databse file and try reconstructing the complete database using the logs, then compare the database files, or print the bplus tree
+ * write test to initialize and print wale_LSNs_from for all wa_list wal_accessors and ensure that they are correctly initialized
  * implement a deinitialize function for mini transaction engine
  * add a flag suggesting shutdown of the mini transaction engine
  * fail all new calls if the shut_down flag is set, and wait for shutdown by taking a manager exclusive lock
