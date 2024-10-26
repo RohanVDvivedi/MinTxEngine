@@ -132,7 +132,7 @@ int initialize_wal_list(mini_transaction_engine* mte)
 			free(wa);
 			goto FAILURE;
 		}
-		if(get_total_size_for_block_file(&(wa->wale_block_file)) == 0) // if this block file is empty, delete it, a valid wale file must have mster record written
+		if(get_total_size_for_block_file(&(wa->wale_block_file)) == 0) // if this block file is empty, delete it, a valid wale file must have master record written
 		{
 			close_block_file(&(wa->wale_block_file));
 			free(wa);
@@ -147,7 +147,7 @@ int initialize_wal_list(mini_transaction_engine* mte)
 			goto FAILURE;
 		}
 
-		// fetch firstLSN and nextLSN with the globa lock held
+		// fetch LSNwidth,firstLSN and nextLSN with the global lock held
 		pthread_mutex_lock(&(mte->global_lock));
 		uint32_t LSNwidth = get_log_sequence_number_width(&(wa->wale_handle));
 		uint256 firstLSN = get_first_log_sequence_number(&(wa->wale_handle));
