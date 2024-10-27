@@ -1,22 +1,11 @@
 PICKED
  * implement both bufferpool and wale related functions
    * acquire new page with write lock
-     * get shared manager lock
-       * start iterating over all the free space mapper pages that are within database_page_count bounds
-       * find a free page from the free space mapper page, which is also within bounds of databse_page_count
-       * check that it is not write locked, else skip
-       * once a right one is found, if deemed required full page write both the pages
-       * then mark that page allocated by setting the bit to 1, and setting the writerLSN on the actual page
-       * then log allocation record, release lock on free space mapper page and quit
      * if this fails acquire exclusive lock on manager lock
-       * ensure that database_page_count < max_page_count
-       * if so allocate 1 page if the new page is not a free space mapper page, else allocate 2 pages, with overwrite flag set
-       * log full page write for both the pages
-       * then mark that page allocated by setting the bit to 1, and setting the writerLSN on the actual page
-       * then log allocation record, release lock on free space mapper page and quit
-   * always skip pages (while allocating and deallocating) that are write locked by other active mini transactions
-   * maintain database_page_count variable and bump it when you allocate a brand new page, when no pages are available -> to be done with exclusive lock on the manager held
-     * fail if you have reached max page count
+       * if(new page could be a free space mapper page) add 2 new pages to the database, else add 1 new page
+       * latch the last page of the database and its free space mapper page
+       * allocate it and exit
+  * review all the page allocation related functions
  
  * implement utility function to get a parsed log record given the log sequence number, from all the available wales
  * implement complete_mini_transaction function
