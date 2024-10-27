@@ -15,4 +15,13 @@
 // it will release latch on page provided, if it is successfully freed
 int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id);
 
+// below two are _INTERNAL functions to be called without global_lock held
+// they are to be used to be used for allocating a new page for the provided mini transaction
+// below function allocates an existing database page (without increasing database_page_count), that is free and not actively write_locked by any other mini transaction
+// below function should be called with atleast a shared lock held on manager_lock
+void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id);
+// below function allocates a new database page (and a page for its free page if required), expanding the datbase by atmost 2 pages
+// below function should be called with exclusive lock held on manager_lock
+void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id);
+
 #endif

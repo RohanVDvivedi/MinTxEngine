@@ -99,3 +99,13 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 
 	return 1;
 }
+
+void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
+{
+	// TODO
+}
+
+void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
+{
+	// TODO
+}
