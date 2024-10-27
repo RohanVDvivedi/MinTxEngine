@@ -88,6 +88,12 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, free_space_mapper_page, free_space_mapper_page_id);
 
+		// recalculate page checksums, prior to releasing the latches
+		pthread_mutex_unlock(&(mte->global_lock));
+		recalculate_page_checksum(free_space_mapper_page, &(mte->stats));
+		recalculate_page_checksum(page, &(mte->stats));
+		pthread_mutex_lock(&(mte->global_lock));
+
 		// this has to succeed, we already marked it dirty, so was_modified can be set to 0
 		release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
 		release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // was_modified = 0, force_flush = 0
@@ -153,6 +159,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 					void* page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), (*page_id), mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
 					if(page == NULL) // could not lock page at page_id, so abort
 					{
+						// no modifications were done, so no need to recalculate_checksum
 						release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
 						pthread_mutex_unlock(&(mte->global_lock));
 						mt->state = MIN_TX_ABORTED;
@@ -170,6 +177,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 					}
 
 					// unlatch page at page_id
+					// no modifications were done, so no need to recalculate_checksum
 					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // was_modified = 0, force_flush = 0
 					pthread_mutex_unlock(&(mte->global_lock));
 				}
@@ -179,6 +187,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 
 			// unlatch free space mapper page
 			pthread_mutex_lock(&(mte->global_lock));
+			// no modifications were done, so no need to recalculate_checksum
 			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
 			pthread_mutex_unlock(&(mte->global_lock));
 		}
