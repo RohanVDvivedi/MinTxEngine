@@ -160,7 +160,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 						return NULL;
 					}
 
-					// if write locked by NULL or SELF
+					// if write locked by NULL or SELF, we are done
 					mini_transaction* mt_locked_by = get_mini_transaction_that_last_persistent_write_locked_this_page_UNSAFE(mte, page);
 					if(mt_locked_by == NULL || mt_locked_by == mt)
 					{
