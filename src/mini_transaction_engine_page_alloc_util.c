@@ -188,6 +188,7 @@ static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine*
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, free_space_mapper_page, free_space_mapper_page_id);
 
 		// recalculate page checksums, prior to releasing the latches
+		// since we are not releasing the latch on the page with page_id, we may not just yet recalculate its checksum
 		pthread_mutex_unlock(&(mte->global_lock));
 		recalculate_page_checksum(free_space_mapper_page, &(mte->stats));
 		pthread_mutex_lock(&(mte->global_lock));
