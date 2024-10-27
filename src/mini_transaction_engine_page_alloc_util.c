@@ -111,6 +111,15 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 	{
 		{
 			// write latch free space mapper page
+			pthread_mutex_lock(&(mte->global_lock));
+			void* free_space_mapper_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), free_space_mapper_page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+			pthread_mutex_unlock(&(mte->global_lock));
+			if(free_space_mapper_page == NULL) // could not lock free_space_mapper_page, so abort
+			{
+				mt->state = MIN_TX_ABORTED;
+				mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+				return NULL;
+			}
 
 			uint64_t free_space_mapper_bit_index = 0;
 			while(free_space_mapper_bit_index < data_pages_per_extent)
@@ -126,17 +135,34 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 
 				{
 					// write latch page at page_id
+					pthread_mutex_lock(&(mte->global_lock));
+					void* page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), (*page_id), mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+					if(page == NULL) // could not lock page at page_id, so abort
+					{
+						release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+						pthread_mutex_unlock(&(mte->global_lock));
+						mt->state = MIN_TX_ABORTED;
+						mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+						return NULL;
+					}
+					pthread_mutex_unlock(&(mte->global_lock));
 
 					// if write locked by NULL or SELF
 						// allocate page and quit
 
 					// unlatch page at page_id
+					pthread_mutex_lock(&(mte->global_lock));
+					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // was_modified = 0, force_flush = 0
+					pthread_mutex_unlock(&(mte->global_lock));
 				}
 
 				free_space_mapper_bit_index++;
 			}
 
 			// unlatch free space mapper page
+			pthread_mutex_lock(&(mte->global_lock));
+			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+			pthread_mutex_unlock(&(mte->global_lock));
 		}
 
 		// check for overflow and increment
