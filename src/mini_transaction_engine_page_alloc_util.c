@@ -193,6 +193,15 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 	return NULL;
 }
 
+// either succeeds or aborts
+// must be called with exclusive lock on manager lock held, global lock must not be held while calling this function
+// it primarily appends a zero page to the databse and appends a FULL_PAGE_WRITE log record for that page
+// the initial contents of the page are set to content_template
+static int add_new_page_to_database_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, const void* content_template)
+{
+	// TODO
+}
+
 void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
 {
 	// TODO
