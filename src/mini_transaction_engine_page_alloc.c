@@ -81,3 +81,53 @@ int free_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, ui
 
 	return result;
 }
+
+void* get_new_page_with_write_lock_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id_returned)
+{
+	void* new_page = NULL;
+
+	// strategy : 1
+	// allocate a new page firstly by attempting to do it without database expansion
+	{
+		pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS) // mini transaction is not in progress, then quit
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return NULL;
+		}
+		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		pthread_mutex_unlock(&(mte->global_lock));
+
+		// this function needs to be called with shared_lock on manager_lock
+		new_page = allocate_page_without_database_expansion_INTERNAL(mte, mt, page_id_returned);
+
+		pthread_mutex_lock(&(mte->global_lock));
+		shared_unlock(&(mte->manager_lock));
+		pthread_mutex_unlock(&(mte->global_lock));
+	}
+
+	if(new_page != NULL) // if we were successfull, quit
+		return new_page;
+
+	// strategy : 2
+	// allocate a new page secondly by attempting to do it with database expansion
+	{
+		pthread_mutex_lock(&(mte->global_lock));
+		if(mt->state != MIN_TX_IN_PROGRESS) // mini transaction is not in progress, then quit
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return NULL;
+		}
+		exclusive_lock(&(mte->manager_lock), BLOCKING);
+		pthread_mutex_unlock(&(mte->global_lock));
+
+		// this function needs to be called with exclusive_lock on manager_lock
+		new_page = allocate_page_with_database_expansion_INTERNAL(mte, mt, page_id_returned);
+
+		pthread_mutex_lock(&(mte->global_lock));
+		exclusive_unlock(&(mte->manager_lock));
+		pthread_mutex_unlock(&(mte->global_lock));
+	}
+
+	return new_page;
+}
