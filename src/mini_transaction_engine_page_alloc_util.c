@@ -100,6 +100,15 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 	return 1;
 }
 
+
+// below function always succeeds or exit(-1)
+// it returns pointer to the page after success
+// after this function returns you will still hold write latch on the page, but the write latch on the free space mapper page will be released
+static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* free_space_mapper_page, uint64_t free_space_mapper_page_id, void* page, uint64_t page_id)
+{
+
+}
+
 void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
 {
 	// we are calling a free spacemapper page and group of pages following it an extent for the context of this function
@@ -132,6 +141,11 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 					break;
 
 				// if the free_space_mapper_bit_index is set, continue
+				{
+					const void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
+					if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_index))
+						continue;
+				}
 
 				{
 					// write latch page at page_id
@@ -145,13 +159,17 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 						mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
 						return NULL;
 					}
-					pthread_mutex_unlock(&(mte->global_lock));
 
 					// if write locked by NULL or SELF
+					mini_transaction* mt_locked_by = get_mini_transaction_that_last_persistent_write_locked_this_page_UNSAFE(mte, page);
+					if(mt_locked_by == NULL || mt_locked_by == mt)
+					{
+						pthread_mutex_unlock(&(mte->global_lock));
 						// allocate page and quit
+						return allocate_page_holding_write_latch_INTERNAL(mte, mt, free_space_mapper_page, free_space_mapper_page_id, page, (*page_id));
+					}
 
 					// unlatch page at page_id
-					pthread_mutex_lock(&(mte->global_lock));
 					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // was_modified = 0, force_flush = 0
 					pthread_mutex_unlock(&(mte->global_lock));
 				}
