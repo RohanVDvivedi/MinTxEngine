@@ -102,7 +102,51 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 
 void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
 {
-	// TODO
+	// we are calling a free spacemapper page and group of pages following it an extent for the context of this function
+	const uint64_t data_pages_per_extent = is_valid_bits_count_on_free_space_mapper_page(&(mte->stats));
+	const uint64_t total_pages_per_extent = data_pages_per_extent + 1;
+
+	uint64_t free_space_mapper_page_id = 0;
+	while(free_space_mapper_page_id < mte->database_page_count)
+	{
+		{
+			// write latch free space mapper page
+
+			uint64_t free_space_mapper_bit_index = 0;
+			while(free_space_mapper_bit_index < data_pages_per_extent)
+			{
+				// calculate respective page_id, and ensure that it does not overflow
+				if(will_unsigned_sum_overflow(uint64_t, free_space_mapper_page_id, (free_space_mapper_bit_index + 1)))
+					break;
+				(*page_id) = free_space_mapper_page_id + (free_space_mapper_bit_index + 1);
+				if((*page_id) >= mte->database_page_count)
+					break;
+
+				// if the free_space_mapper_bit_index is set, continue
+
+				{
+					// write latch page at page_id
+
+					// if write locked by NULL or SELF
+						// allocate page and quit
+
+					// unlatch page at page_id
+				}
+
+				free_space_mapper_bit_index++;
+			}
+
+			// unlatch free space mapper page
+		}
+
+		// check for overflow and increment
+		if(will_unsigned_sum_overflow(uint64_t, free_space_mapper_page_id, total_pages_per_extent))
+			break;
+		free_space_mapper_page_id += total_pages_per_extent;
+	}
+
+	// we iterated through the entire database and found no page that can be safely allocated
+	return NULL;
 }
 
 void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
