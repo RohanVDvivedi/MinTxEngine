@@ -206,7 +206,7 @@ int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_
 			return 0;
 		}
 
-		// recalculate page checksum, prior to downgrading the latch
+		// recalculate page checksum, prior to downgrading the latch, as the user might have modified the page
 		pthread_mutex_unlock(&(mte->global_lock));
 		recalculate_page_checksum(page, &(mte->stats));
 		pthread_mutex_lock(&(mte->global_lock));
@@ -381,7 +381,7 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 				return 0;
 			}
 
-			// recalculate page checksum, prior to releasing the latch
+			// recalculate page checksum, prior to releasing the latch, as the user might have modified the page
 			pthread_mutex_unlock(&(mte->global_lock));
 			recalculate_page_checksum(page, &(mte->stats));
 			pthread_mutex_lock(&(mte->global_lock));
@@ -425,10 +425,10 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 				return 0;
 			}
 
-			// recalculate page checksum, prior to releasing the latch
+			// recalculate page checksum, prior to releasing the latch, as the user might have modified the page
 			pthread_mutex_unlock(&(mte->global_lock));
 
-			recalculate_page_checksum(page, &(mte->stats));
+			recalculate_page_checksum(page, &(mte->stats)); // free call below will surely free the page and release latch, and if it succeeds it will update checksums, but we are also doing it here just to be carefull, so this line can be commented
 			result = free_write_latched_page_INTERNAL(mte, mt, page, page_id);
 
 			pthread_mutex_lock(&(mte->global_lock));
