@@ -345,7 +345,7 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 
 			pthread_mutex_lock(&(mte->global_lock));
 
-			// on failure do downgrade the lock back
+			// on failure do downgrade the lock back, no need to recalculate the checksum as the pages are as if never modified
 			if(!result)
 				// this must succeed if the prior upgrade call succeeded
 				downgrade_writer_lock_to_reader_lock(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
