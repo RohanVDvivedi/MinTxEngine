@@ -7,25 +7,29 @@
 
 int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id)
 {
+	pthread_mutex_lock(&(mte->global_lock));
 	if(is_free_space_mapper_page(page_id, &(mte->stats)))
 	{
 		mt->state = MIN_TX_ABORTED;
 		mt->abort_error = ILLEGAL_PAGE_ID;
+		pthread_mutex_unlock(&(mte->global_lock));
 		return 0;
 	}
+	pthread_mutex_unlock(&(mte->global_lock));
 
 	// fetch the free space mapper page an bit position that we need to flip
 	uint64_t free_space_mapper_page_id = get_is_valid_bit_page_id_for_page(page_id, &(mte->stats));
 	uint64_t free_space_mapper_bit_pos = get_is_valid_bit_position_for_page(page_id, &(mte->stats));
 	pthread_mutex_lock(&(mte->global_lock));
 	void* free_space_mapper_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), free_space_mapper_page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
-	pthread_mutex_unlock(&(mte->global_lock));
 	if(free_space_mapper_page == NULL) // could not lock free_space_mapper_page, so abort
 	{
 		mt->state = MIN_TX_ABORTED;
 		mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+		pthread_mutex_unlock(&(mte->global_lock));
 		return 0;
 	}
+	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page writes for both the pages, if necessary
 	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
@@ -212,13 +216,14 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 			// write latch free space mapper page
 			pthread_mutex_lock(&(mte->global_lock));
 			void* free_space_mapper_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), free_space_mapper_page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
-			pthread_mutex_unlock(&(mte->global_lock));
 			if(free_space_mapper_page == NULL) // could not lock free_space_mapper_page, so abort
 			{
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+				pthread_mutex_unlock(&(mte->global_lock));
 				return NULL;
 			}
+			pthread_mutex_unlock(&(mte->global_lock));
 
 			uint64_t free_space_mapper_bit_index = 0;
 			while(free_space_mapper_bit_index < data_pages_per_extent)
@@ -245,9 +250,9 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 					{
 						// no modifications were done, so no need to recalculate_checksum
 						release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
-						pthread_mutex_unlock(&(mte->global_lock));
 						mt->state = MIN_TX_ABORTED;
 						mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+						pthread_mutex_unlock(&(mte->global_lock));
 						return NULL;
 					}
 
@@ -293,7 +298,95 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 // this function also fails if you have reached max_page_count available to the user
 static int add_new_page_to_database_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, const void* content_template)
 {
-	// TODO
+	// if the max_page_count has been reached fail this call
+	pthread_mutex_lock(&(mte->global_lock));
+	if(mte->database_page_count == mte->user_stats.max_page_count)
+	{
+		mt->state = MIN_TX_ABORTED;
+		mt->abort_error = OUT_OF_AVAILABLE_PAGE_IDS;
+		pthread_mutex_unlock(&(mte->global_lock));
+		return 0;
+	}
+
+	// grab the new_page_id that this new_page will have
+	uint64_t new_page_id = mte->database_page_count++;
+	// grab write latch on this new page
+	void* new_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), new_page_id, mte->latch_wait_timeout_in_microseconds, 1, 1); // evict_dirty_if_necessary -> AND to be overwritten
+	if(new_page == NULL) // abort if you fail to acquire lock on the new page
+	{
+		mt->state = MIN_TX_ABORTED;
+		mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+		pthread_mutex_unlock(&(mte->global_lock));
+		return 0;
+	}
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	// this only time we will modify the page first and then perform a FULL_PAGE_WRITE, as this is a new page to the database, untracked until now
+	{
+		void* page_content = get_page_contents_for_page(new_page, new_page_id, &(mte->stats));
+		uint32_t page_content_size = get_page_content_size_for_page(new_page_id, &(mte->stats));
+		if(content_template == NULL)
+			memory_set(page_content, 0, page_content_size);
+		else
+			memory_move(page_content, content_template, page_content_size);
+	}
+
+	// construct full page write log record, with writerLSN = INVALID_LOG_SEQUENCE_NUMBER as we are just creating the page
+	log_record fpw_lr = {
+		.type = FULL_PAGE_WRITE,
+		.fpwlr = {
+			.mini_transaction_id = mt->mini_transaction_id,
+			.prev_log_record_LSN = mt->lastLSN,
+			.page_id = new_page_id,
+			.writerLSN = INVALID_LOG_SEQUENCE_NUMBER, // even here we can not give mt->mini_transaction_id as writerLSN as we may just be a reader transaction until we append this log record
+			.page_contents = get_page_contents_for_page(new_page, new_page_id, &(mte->stats)),
+		}
+	};
+
+	// serialize full page write log record
+	uint32_t serialized_fpw_lr_size = 0;
+	const void* serialized_fpw_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
+	if(serialized_fpw_lr == NULL)
+		exit(-1);
+
+	pthread_mutex_lock(&(mte->global_lock));
+
+		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+
+		int wal_error = 0;
+		uint256 log_record_LSN = append_log_record(wale_p, serialized_fpw_lr, serialized_fpw_lr_size, 0, &wal_error);
+		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+			exit(-1);
+
+		// if mt->mini_transaction_id is INVALID, then assign it log_record_LSN. and make it a writer_mini_transaction
+		if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
+		{
+			mt->mini_transaction_id = log_record_LSN;
+
+			// remove mt from mte->reader_mini_transactions
+			remove_from_linkedlist(&(mte->reader_mini_transactions), mt);
+
+			// insert it to mte->writer_mini_transactions
+			insert_in_hashmap(&(mte->writer_mini_transactions), mt);
+		}
+
+		// update lastLSN of the mini transaction
+		mt->lastLSN = log_record_LSN;
+
+		// set pageLSN of the page to the log_record_LSN
+		set_pageLSN_for_page(new_page, log_record_LSN, &(mte->stats));
+
+		// this page is more likely to be allocated again by the calling mini transaction, so it will get write locked with manager_lock being held, so no worries
+
+		// mark the page as dirty in the bufferpool and dirty page table
+		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, new_page, new_page_id);
+
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	// free full page write log record
+	free((void*)serialized_fpw_lr);
+
+	return 1;
 }
 
 void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
