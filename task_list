@@ -1,7 +1,4 @@
 PICKED
- * mini_transaction allotter
-   * wait if there are no element free_mini_transactions_list
-
  * implement complete_mini_transaction function
    * decrements the reference counter of the mini transaction at the end of this function
    * if the mini_tx_id == INVALID, it is a reader transaction, nothing needs to be done
