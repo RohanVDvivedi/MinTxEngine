@@ -107,11 +107,7 @@ int initialize_wal_list(mini_transaction_engine* mte)
 
 	DIR* dr = opendir(dirname);
 	if(dr == NULL)
-	{
-		deinitialize_arraylist(&(mte->wa_list));
-		free(dirname);
-		return 0;
-	}
+		goto FAILURE;
 
 	struct dirent *en;
 	while ((en = readdir(dr)) != NULL) {
@@ -182,12 +178,29 @@ int initialize_wal_list(mini_transaction_engine* mte)
 		}
 	}
 
+	closedir(dr);
+	dr = NULL;
+
 	if(is_empty_arraylist(&(mte->wa_list)))
 		goto FAILURE;
 
 	// sort wal_list by their wale_LSNs_from
 	index_accessed_interface iai = get_index_accessed_interface_for_front_of_arraylist(&(mte->wa_list));
 	quick_sort_iai(&iai, 0, get_element_count_arraylist(&(mte->wa_list)) - 1, &simple_comparator(compare_wal_accessor));
+
+	// make sure that after sorting the wale-s cover the complete range and do not have gaps
+	pthread_mutex_lock(&(mte->global_lock));
+	for(cy_uint i = 1; i < get_element_count_arraylist(&(mte->wa_list)); i++)
+	{
+		wale* prev = &(((wal_accessor*)get_from_front_of_arraylist(&(mte->wa_list), i-1))->wale_handle);
+		wale* curr = &(((wal_accessor*)get_from_front_of_arraylist(&(mte->wa_list), i))->wale_handle);
+		if(get_next_log_sequence_number(prev) != get_first_log_sequence_number(curr))
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			goto FAILURE;
+		}
+	}
+	pthread_mutex_unlock(&(mte->global_lock));
 
 	// add append_only_buffer_count buffers to the last wale in it
 	wal_accessor* wa = (wal_accessor*) get_back_of_arraylist(&(mte->wa_list));
@@ -217,7 +230,8 @@ int initialize_wal_list(mini_transaction_engine* mte)
 	return 1;
 
 	FAILURE :;
-	closedir(dr);
+	if(dr != NULL)
+		closedir(dr);
 	close_all_in_wal_list(&(mte->wa_list));
 	free(dirname);
 	return 0;
