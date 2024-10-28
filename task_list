@@ -1,5 +1,5 @@
 PICKED
- * implement complete_mini_transaction function
+ * implement mte_complete_mini_tx function
    * we may not need next_log_record_to_undo attribute of clr log records
    * decrements the reference counter of the mini transaction at the end of this function
    * if the mini_tx_id == INVALID, it is a reader transaction, nothing needs to be done
@@ -21,6 +21,8 @@ PICKED
      * writerLSN of no pages are to be changed
 
  * exit(-1) the process on an IO error in bufferpool or WALe's callbacks
+ * implement logic to insert 10000 multiples of 10, iterating i from 0 to 9999 (both inclusive), inserting 0 to 99990, and abort where i is also multiple of 23
+ * print the bplus tree in the end to ensure that the test passed
 
  * implement recovery function that gets called every time you initialize the mini transaction engine
   * analyze, redo then mark all active mini transactions to UNDOING_FOR_ABORT with reason being ABORTED_AFTER_CRASH and then call complete_mini_transaction on all active writer transactions
