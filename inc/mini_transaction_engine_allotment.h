@@ -1,6 +1,8 @@
 #ifndef MINI_TRANSACTION_ENGINE_ALLOTMENT_H
 #define MINI_TRANSACTION_ENGINE_ALLOTMENT_H
 
+#include<mini_transaction_engine.h>
+
 // allots a new mini transaction for you to use
 mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_timeout_in_microseconds);
 
