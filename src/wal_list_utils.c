@@ -194,7 +194,7 @@ int initialize_wal_list(mini_transaction_engine* mte)
 	{
 		wale* prev = &(((wal_accessor*)get_from_front_of_arraylist(&(mte->wa_list), i-1))->wale_handle);
 		wale* curr = &(((wal_accessor*)get_from_front_of_arraylist(&(mte->wa_list), i))->wale_handle);
-		if(get_next_log_sequence_number(prev) != get_first_log_sequence_number(curr))
+		if(compare_uint256(get_next_log_sequence_number(prev), get_first_log_sequence_number(curr))) // if they are different then we fail
 		{
 			pthread_mutex_unlock(&(mte->global_lock));
 			goto FAILURE;
@@ -225,7 +225,6 @@ int initialize_wal_list(mini_transaction_engine* mte)
 
 	pthread_mutex_unlock(&(mte->global_lock));
 
-	closedir(dr);
 	free(dirname);
 	return 1;
 
