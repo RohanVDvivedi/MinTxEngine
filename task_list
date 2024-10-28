@@ -1,12 +1,4 @@
 PICKED
- * implement both bufferpool and wale related functions
-   * acquire new page with write lock
-     * if this fails acquire exclusive lock on manager lock
-       * if(new page could be a free space mapper page) add 2 new pages to the database, else add 1 new page
-       * latch the last page of the database and its free space mapper page
-       * allocate it and exit
-  * review all the page allocation related functions
- 
  * implement utility function to get a parsed log record given the log sequence number, from all the available wales
  * implement complete_mini_transaction function
    * if the mini_tx_id == INVALID, it is a reader transaction, nothing needs to be done
@@ -41,29 +33,6 @@ PICKED
 
 Tasks necessary to develop MinTxEngine
  * checkpointing is done by writing the mini transaction table and dirty page table to the WALe as a check point record
- * there has to be a module to allocate and deallocate pages
-   * pages are maintained as bitmap
-   * there N bits can fit in a allocation bitmap page, then it stores is valid bit for that many pages after that
-   * i.e. so our extent size is N+1, where every % N+1-th page is an allocation bitmap page -> 0 being free and 1 being valid
-   * thses bit maps are protected by the corresponding page locks
-   * bitmap pages can not be persistently locked
-   * to allocate
-     * scan all allocation bitmap pages, find is_valid = 0 page id,
-     * write log record suggesting a the allocation for this page id
-     * grab write lock on the actual page, write writer_min_tx_id
-     * set the is_valid bit in the allocation bitmap for page_id
-     * mark both the pages as dirty in dirty page table and also through the call back of Bufferpool
-     * release lock on allocation bitmap page, return the allocated page with write lock to the user
-   * to free
-     * if a the page is not locked, grab write lock on it
-     * if it is already write locked nothing ot be done, if it is read locked attempt to upgrade the lock -> upgrading the write lock may result in abort so handle that
-     * find the corresponding is_valid bitmap page for this page_id
-     * flip the is_valid bit to 0
-     * update the page with write writer_min_tx_id
-     * update the pageLSn of the allocation bitmap page
-     * mark both the pages as dirty in dirty page table and also through the call back of Bufferpool
-     * release lock on both the pages
-   * note here pageLSN is updated on the allocation bitmap page and writer_min_tx_id is written on the actual page (marking its lock by the current mini transaction)
  * check pointing occurs every T minutes
    * there has to be a check pointing reader/writer lock
    * taken by every one in shared mode and the checkpointer as exclusive mode
