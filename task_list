@@ -1,7 +1,5 @@
 PICKED
  * implement utility function to get a unparsed log record given the log sequence number, from all wa_list
- * implement utility function to get a parsed log record given the log sequence number, from all wa_list
-   * if the log record has a mini_transaction_id = INVALID, then set it to logsequence number of the log record, as this is possibly the first log record of this transaction
  * implement utility function to get next log sequence number of a log sequence number, from all wa_list, if it is returned INVALID, then get the next_log_sequence_number and return that instead
  * mini_transaction allotter
    * wait if there are no element free_mini_transactions_list
