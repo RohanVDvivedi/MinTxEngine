@@ -324,7 +324,8 @@ struct log_record
 	};
 
 	const void* parsed_from;
-	// above union may possibly point ot data in the parsed_from attribute
+	uint32_t parsed_from_size;
+	// above union may possibly points to data in the parsed_from attribute
 	// destroyed and freed once it is no longer in use
 };
 

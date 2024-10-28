@@ -535,6 +535,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.palr.page_id = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case PAGE_DEALLOCATION :
@@ -547,6 +548,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.palr.page_id = get_value_from_element_from_tuple(&(lrtd_p->palr_def), STATIC_POSITION(2), log_record_contents).uint_value;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case PAGE_INIT :
@@ -564,6 +566,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			deserialize_tuple_size_def(&(lr.pilr.new_size_def), new_size_def.blob_value, new_size_def.blob_size);
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case PAGE_SET_HEADER :
@@ -580,6 +583,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.pshlr.page_header_size = get_value_from_element_from_tuple(&(lrtd_p->pshlr_def), STATIC_POSITION(3), log_record_contents).blob_size;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case TUPLE_APPEND :
@@ -601,6 +605,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 				lr.talr.new_tuple = new_tuple.blob_value;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case TUPLE_INSERT :
@@ -624,6 +629,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 				lr.tilr.new_tuple = new_tuple.blob_value;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case TUPLE_UPDATE :
@@ -653,6 +659,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 				lr.tulr.new_tuple = new_tuple.blob_value;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case TUPLE_DISCARD :
@@ -676,6 +683,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 				lr.tdlr.old_tuple = old_tuple.blob_value;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case TUPLE_DISCARD_ALL :
@@ -693,6 +701,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.tdalr.old_page_contents = get_value_from_element_from_tuple(&(lrtd_p->tdalr_def), STATIC_POSITION(4), log_record_contents).blob_value;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
@@ -710,6 +719,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.tdttlr.discarded_trailing_tomb_stones_count = get_value_from_element_from_tuple(&(lrtd_p->tdttlr_def), STATIC_POSITION(4), log_record_contents).uint_value;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case TUPLE_SWAP :
@@ -728,6 +738,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.tslr.swap_index2 = get_value_from_element_from_tuple(&(lrtd_p->tslr_def), STATIC_POSITION(5), log_record_contents).uint_value;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
@@ -779,6 +790,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 				lr.tueiplr.new_element = get_user_value_for_type_info(ele_def, new_element.blob_value);
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case PAGE_CLONE :
@@ -797,6 +809,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.pclr.new_page_contents = get_value_from_element_from_tuple(&(lrtd_p->pclr_def), STATIC_POSITION(5), log_record_contents).blob_value;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case PAGE_COMPACTION :
@@ -812,6 +825,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			deserialize_tuple_size_def(&(lr.pcptlr.size_def), size_def.blob_value, size_def.blob_size);
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case FULL_PAGE_WRITE :
@@ -827,6 +841,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.fpwlr.page_contents = get_value_from_element_from_tuple(&(lrtd_p->fpwlr_def), STATIC_POSITION(4), log_record_contents).blob_value;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case COMPENSATION_LOG :
@@ -840,6 +855,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.clr.next_log_record_to_undo = get_value_from_element_from_tuple(&(lrtd_p->clr_def), STATIC_POSITION(3), log_record_contents).large_uint_value;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case ABORT_MINI_TX :
@@ -851,6 +867,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.amtlr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 		case COMPLETE_MINI_TX :
@@ -871,6 +888,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			}
 
 			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
 	}
