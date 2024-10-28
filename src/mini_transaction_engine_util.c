@@ -108,9 +108,33 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 	return success;
 }
 
+#include<wal_list_utils.h>
+
 const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, uint32_t* lr_size)
 {
-	// TODO
+	cy_uint wa_list_index = find_relevant_from_wal_list_UNSAFE(&(mte->wa_list), LSN);
+
+	if(wa_list_index == INVALID_INDEX)
+		return NULL;
+
+	int wal_error = 0;
+	const void* lr =  get_log_record_at(&(((wal_accessor*)get_from_front_of_arraylist(&(mte->wa_list), wa_list_index))->wale_handle), LSN, lr_size, &wal_error);
+
+	switch(wal_error)
+	{
+		case NO_ERROR :
+		default:
+			break;
+		case READ_IO_ERROR :
+		case LOG_RECORD_CORRUPTED :
+		case ALLOCATION_FAILED :
+		{
+			printf("wal_error = %d\n", wal_error);
+			exit(-1);
+		}
+	}
+
+	return lr;
 }
 
 int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_record* lr)
