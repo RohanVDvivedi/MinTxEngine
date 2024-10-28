@@ -5,6 +5,7 @@ PICKED
  * implement utility function to get next log sequence number of a log sequence number, from all wa_list, if it is returned INVALID, then get the next_log_sequence_number and return that instead
  * mini_transaction allotter
    * wait if there are no element free_mini_transactions_list
+
  * implement complete_mini_transaction function
    * decrements the reference counter of the mini transaction at the end of this function
    * if the mini_tx_id == INVALID, it is a reader transaction, nothing needs to be done
