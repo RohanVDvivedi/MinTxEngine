@@ -2,7 +2,10 @@ PICKED
  * implement utility function to get a parsed log record given the log sequence number, from all wa_list
    * if the log record has a mini_transaction_id = INVALID, then set it to logsequence number of the log record, as this is possibly the first log record of this transaction
  * implement utility function to get next log sequence number of a log sequence number, from all wa_list, if it is returned INVALID, then get the next_log_sequence_number and return that instead
+ * mini_transaction allotter
+   * wait if there are no element free_mini_transactions_list
  * implement complete_mini_transaction function
+   * decrements the reference counter of the mini transaction at the end of this function
    * if the mini_tx_id == INVALID, it is a reader transaction, nothing needs to be done
    * if transaction is in IN_PROGRESS state, put COMPLETE_MINI_TX log record and flush all logs 
    * if transaction is in ABORTED state, put ABORT_MINI_TX log record, start undoing from where you left off until you reach COMPLETE_MINI_TX log record
@@ -22,13 +25,13 @@ PICKED
      * writerLSN of no pages are to be changed
 
  * implement recovery function that gets called every time you initialize the mini transaction engine
-  * analyze, redo then mark all active mini transactions to UNDOING_FOR_ABORT with reason being crash and then call complete_mini_transaction on all active writer transactions
- * mini_transaction allotter
-   * wait if there are no element free_mini_transactions_list
-   * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
-   * deinitialize_mini_transaction_engine waits for all mini_transactions to be returned
+  * analyze, redo then mark all active mini transactions to UNDOING_FOR_ABORT with reason being ABORTED_AFTER_CRASH and then call complete_mini_transaction on all active writer transactions
+ * deinitialize_mini_transaction_engine waits for all mini_transactions to be returned
    * also kill the checkpointer thread
- * write test case where you build a bplus tree and then delete the databse file and try reconstructing the complete database using the logs, then compare the database files, or print the bplus tree
+   * set a flag stating marked for shutdown
+   * modifications to mini_transaction allotter
+     * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
+ * write test case where you build a bplus tree and then delete the database file and try reconstructing the complete database using the logs, then compare the database files, or print the bplus tree
  * write test to initialize and print wale_LSNs_from for all wa_list wal_accessors and ensure that they are correctly initialized
  * implement a deinitialize function for mini transaction engine
  * add a flag suggesting shutdown of the mini transaction engine
