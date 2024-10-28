@@ -42,6 +42,11 @@ const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256
 // NOTE for the first log record of a mini transaction the mini_transaction_id is going to be INVALID_LOG_SEQUENCE_NUMBER, so handle it carefully
 int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_record* lr);
 
+// returns the next LSN that will come immediately after the LSN in the parameter
+// this function must be called with global_lock and manager_lock held
+// it will only return LSN to any existing log records
+uint256 get_next_LSN_for_LSN_UNSAFE(mini_transaction_engine* mte, uint256 LSN);
+
 // below function performs all necessary operation required for a full page write
 // this function does everything except taking writer lock on the page
 /*

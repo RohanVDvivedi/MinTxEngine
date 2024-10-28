@@ -113,8 +113,7 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, uint32_t* lr_size)
 {
 	cy_uint wa_list_index = find_relevant_from_wal_list_UNSAFE(&(mte->wa_list), LSN);
-
-	if(wa_list_index == INVALID_INDEX)
+	if(wa_list_index == INVALID_INDEX) // LSN belongs to a very old WAL file
 		return NULL;
 
 	int wal_error = 0;
@@ -127,6 +126,7 @@ const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256
 			break;
 		case READ_IO_ERROR :
 		case LOG_RECORD_CORRUPTED :
+		case HEADER_CORRUPTED :
 		case ALLOCATION_FAILED :
 		{
 			printf("wal_error = %d\n", wal_error);
@@ -147,6 +147,39 @@ int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_
 
 	(*lr) = parse_log_record(&(mte->lrtd), serialized_log_record, serialized_log_record_size);
 	return 1;
+}
+
+uint256 get_next_LSN_for_LSN_UNSAFE(mini_transaction_engine* mte, uint256 LSN)
+{
+	cy_uint wa_list_index = find_relevant_from_wal_list_UNSAFE(&(mte->wa_list), LSN);
+	if(wa_list_index == INVALID_INDEX) // LSN belongs to a very old WAL file
+		return INVALID_LOG_SEQUENCE_NUMBER;
+
+	wale* wale_p = &(((wal_accessor*)get_from_front_of_arraylist(&(mte->wa_list), wa_list_index))->wale_handle);
+
+	// if it is not the most recent wal file, and the LSN equals its last_flushed LSN, then return its next LSN
+	if(wa_list_index != (get_element_count_arraylist(&(mte->wa_list))-1) && 0 == compare_uint256(LSN, get_last_flushed_log_sequence_number(wale_p)))
+		return get_next_log_sequence_number(wale_p);
+
+	int wal_error = 0;
+	uint256 nextLSN = get_next_log_sequence_number_of(wale_p, LSN, &wal_error);
+
+	switch(wal_error)
+	{
+		case NO_ERROR :
+		default:
+			break;
+		case READ_IO_ERROR :
+		case LOG_RECORD_CORRUPTED :
+		case HEADER_CORRUPTED :
+		case ALLOCATION_FAILED :
+		{
+			printf("wal_error = %d\n", wal_error);
+			exit(-1);
+		}
+	}
+
+	return nextLSN;
 }
 
 uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id)
