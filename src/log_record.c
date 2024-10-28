@@ -524,7 +524,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 
 	switch(log_record_type)
 	{
-		default : return (log_record){};
+		default : return (log_record){.type = UNIDENTIFIED, .parsed_from = serialized_log_record, .parsed_from_size = serialized_log_record_size};
 		case PAGE_ALLOCATION :
 		{
 			log_record lr;

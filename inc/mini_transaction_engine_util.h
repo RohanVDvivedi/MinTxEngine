@@ -37,9 +37,9 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 // below are the two functions that can be used to get unparsed and parsed log record
 // these are unsafe functions and must be called with global_lock held, additionally a manager_lock held in either shared or exclusive lock
 // below function returns NULL if no such log record was found
-void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mt, uint256 LSN, uint32_t lr_size);
+const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, uint32_t* lr_size);
 // below function returns 0, if no such log record was found
-int get_parsed_log_record_UNSAFE(mini_transaction_engine* mt, uint256 LSN, log_record* lr);
+int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_record* lr);
 
 // below function performs all necessary operation required for a full page write
 // this function does everything except taking writer lock on the page

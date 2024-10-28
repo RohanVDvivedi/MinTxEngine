@@ -108,8 +108,22 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 	return success;
 }
 
-void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mt, uint256 LSN, uint32_t lr_size);
-int get_parsed_log_record_UNSAFE(mini_transaction_engine* mt, uint256 LSN, log_record* lr);
+const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, uint32_t* lr_size)
+{
+	// TODO
+}
+
+int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_record* lr)
+{
+	uint32_t serialized_log_record_size = 0;
+	const void* serialized_log_record = get_unparsed_log_record_UNSAFE(mte, LSN, &serialized_log_record_size);
+
+	if(serialized_log_record == NULL)
+		return 0;
+
+	(*lr) = parse_log_record(&(mte->lrtd), serialized_log_record, serialized_log_record_size);
+	return 1;
+}
 
 uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id)
 {
