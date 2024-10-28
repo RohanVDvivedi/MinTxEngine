@@ -1,5 +1,4 @@
 PICKED
- * while initialize_wal_list make sure that the first_log_sequence_number of the current wal is equal to the next_log_sequence_number of the previous wal
  * implement utility function to get a unparsed log record given the log sequence number, from all wa_list
  * implement utility function to get a parsed log record given the log sequence number, from all wa_list
    * if the log record has a mini_transaction_id = INVALID, then set it to logsequence number of the log record, as this is possibly the first log record of this transaction
