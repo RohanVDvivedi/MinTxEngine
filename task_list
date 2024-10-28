@@ -1,14 +1,17 @@
 PICKED
- * implement utility function to get a parsed log record given the log sequence number, from all the available wales
+ * implement utility function to get a parsed log record given the log sequence number, from all wa_list
+   * if the log record has a mini_transaction_id = INVALID, then set it to logsequence number of the log record, as this is possibly the first log record of this transaction
+ * implement utility function to get next log sequence number of a log sequence number, from all wa_list, if it is returned INVALID, then get the next_log_sequence_number and return that instead
  * implement complete_mini_transaction function
    * if the mini_tx_id == INVALID, it is a reader transaction, nothing needs to be done
    * if transaction is in IN_PROGRESS state, put COMPLETE_MINI_TX log record and flush all logs 
-   * if transaction is in UNDOING_FOR_ABORT state, put ABORT_MINI_TX log record, start undoing from where you left off un til you reach COMPLETE_MINI_TX log record
+   * if transaction is in ABORTED state, put ABORT_MINI_TX log record, start undoing from where you left off until you reach COMPLETE_MINI_TX log record
      * if lastLSN is a regular modification log record put ABORT_MINI_TX log record and flush all log records
      * if lastLSN is ABORT_MINI_TX, start a loop from its previous log record
      * if lastLSN is CLR, start a loop from is next_log_record_to_undo
      * do it until you read the log record whose prev_log_record_LSN is INVALID
      * then finally put COMPLETE_MINI_TX log record and flush all log records
+
  * implement recovery function that gets called every time you initialize the mini transaction engine
   * analyze, redo then mark all active mini transactions to UNDOING_FOR_ABORT with reason being crash and then call complete_mini_transaction on all active writer transactions
  * mini_transaction allotter
