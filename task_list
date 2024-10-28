@@ -1,5 +1,6 @@
 PICKED
  * implement complete_mini_transaction function
+   * we may not need next_log_record_to_undo attribute of clr log records
    * decrements the reference counter of the mini transaction at the end of this function
    * if the mini_tx_id == INVALID, it is a reader transaction, nothing needs to be done
    * if transaction is in IN_PROGRESS state, put COMPLETE_MINI_TX log record and flush all logs 
