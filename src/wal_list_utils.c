@@ -237,7 +237,7 @@ int initialize_wal_list(mini_transaction_engine* mte)
 	return 0;
 }
 
-cy_uint find_relevant_from_wal_list(arraylist* wa_list, uint256 LSN)
+cy_uint find_relevant_from_wal_list_UNSAFE(arraylist* wa_list, uint256 LSN)
 {
 	if(is_empty_arraylist(wa_list))
 		return INVALID_INDEX;
@@ -245,7 +245,7 @@ cy_uint find_relevant_from_wal_list(arraylist* wa_list, uint256 LSN)
 	return find_preceding_or_equals_in_sorted_iai(&iai, 0, get_element_count_arraylist(wa_list) - 1, &(wal_accessor){.wale_LSNs_from = LSN}, &simple_comparator(compare_wal_accessor));
 }
 
-int drop_oldest_from_wal_list(mini_transaction_engine* mte)
+int drop_oldest_from_wal_list_UNSAFE(mini_transaction_engine* mte)
 {
 	if(is_empty_arraylist(&(mte->wa_list))) // can not drop wal file from empty wa_list
 		return 0;
