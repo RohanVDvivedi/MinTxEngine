@@ -12,7 +12,8 @@ PICKED
      * do it until you read the log record whose prev_log_record_LSN is INVALID
      * then finally put COMPLETE_MINI_TX log record and flush all log records
    * for generating clr records in a loop
-     * always take shared lock on the manager_lock
+     * always take shared lock on the manager_lock inside the loop, for every iteration
+     * generate full page write log record as necessary
      * always take latch in write mode, and wait indefinitely until you get the lock
      * always skip FULL_PAGE_WRITE log records
      * only flip the bit in the PAGE_DE/ALLOCATION log records
