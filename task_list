@@ -11,6 +11,14 @@ PICKED
      * if lastLSN is CLR, start a loop from is next_log_record_to_undo
      * do it until you read the log record whose prev_log_record_LSN is INVALID
      * then finally put COMPLETE_MINI_TX log record and flush all log records
+   * for generating clr records in a loop
+     * always take shared lock on the manager_lock
+     * always take latch in write mode, and wait indefinitely until you get the lock
+     * always skip FULL_PAGE_WRITE log records
+     * only flip the bit in the PAGE_DE/ALLOCATION log records
+     * undo operations to page modifications in reverse, perform compaction and tuple copy and then inserts as and when needed
+     * pageLSN, and mt->lastLSN are always to be set to the lsn of the CLR log record, that we just generated
+     * writerLSN of no pages are to be changed
 
  * implement recovery function that gets called every time you initialize the mini transaction engine
   * analyze, redo then mark all active mini transactions to UNDOING_FOR_ABORT with reason being crash and then call complete_mini_transaction on all active writer transactions
