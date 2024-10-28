@@ -108,6 +108,9 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 	return success;
 }
 
+void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mt, uint256 LSN, uint32_t lr_size);
+int get_parsed_log_record_UNSAFE(mini_transaction_engine* mt, uint256 LSN, log_record* lr);
+
 uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id)
 {
 	// if page size is same as block size, no full page write is required
