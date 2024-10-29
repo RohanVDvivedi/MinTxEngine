@@ -167,6 +167,12 @@ static void append_completion_log_record_and_flush_UNSAFE(mini_transaction_engin
 
 #include<mini_transaction_engine_util.h>
 
+// below function must be called with manager lock held but global lock not held
+static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, const log_record* undo_lr)
+{
+
+}
+
 void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, const void* complete_info, uint32_t complete_info_size)
 {
 	pthread_mutex_lock(&(mte->global_lock));
@@ -239,14 +245,20 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 			if(!get_parsed_log_record_UNSAFE(mte, undo_LSN, &undo_lr))
 				exit(-1);
 
-			undo_lr = get_prev_log_record_LSN(&undo_lr);
+			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
 			pthread_mutex_unlock(&(mte->global_lock));
 
 			// undo undo_lr
-			// TODO
+			undo_log_record_and_append_clr_and_manage_state_INTERNAL(mte, mt, &undo_lr);
+
+			// prepare for next iteration
+			undo_lr = get_prev_log_record_LSN(&undo_lr);
+			destroy_and_free_parsed_log_record(&lr);
 
 			pthread_mutex_lock(&(mte->global_lock));
+
+			shared_unlock(&(mte->manager_lock));
 		}
 	}
 
