@@ -537,6 +537,18 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 
 			pthread_mutex_lock(&(mte->global_lock));
 
+			// now flush the log record so your changes until now can reach disk
+			{
+				wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+
+				int wal_error = 0;
+				uint256 flushedLSN = flush_all_log_records(wale_p, &wal_error);
+				if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER))
+					exit(-1);
+
+				mte->flushedLSN = max_uint256(mte->flushedLSN, flushedLSN);
+			}
+
 			shared_unlock(&(mte->manager_lock));
 		}
 	}
