@@ -216,6 +216,8 @@ static void append_compensation_log_record_INTERNAL(mini_transaction_engine* mte
 	free((void*)serialized_lr);
 }
 
+#include<bitmap.h>
+
 // below function must be called with manager lock held but global lock not held
 static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint256 undo_LSN, const log_record* undo_lr)
 {
@@ -280,7 +282,12 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 
 		// perform undo
 		{
-
+			uint64_t free_space_mapper_bit_pos = get_is_valid_bit_position_for_page(page_id, &(mte->stats));
+			void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
+			if(undo_lr->type == PAGE_ALLOCATION) // allocation set the bit to 1, so now reset it
+				reset_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
+			else
+				set_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
 		}
 
 		// append clr log record
