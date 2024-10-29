@@ -453,16 +453,19 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	}
 
 	{
-		data_type_info* dti = malloc(sizeof_tuple_data_type_info(2));
+		data_type_info* dti = malloc(sizeof_tuple_data_type_info(3));
 		if(dti == NULL)
 			exit(-1);
-		initialize_tuple_data_type_info(dti, "amtlr_def", 0, lrtd->max_log_record_size, 2);
+		initialize_tuple_data_type_info(dti, "amtlr_def", 0, lrtd->max_log_record_size, 3);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
 
 		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
+
+		strcpy(dti->containees[2].field_name, "abort_error");
+		dti->containees[2].type_info = INT_NON_NULLABLE[4];
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd->amtlr_def), dti);
@@ -861,6 +864,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 
 			lr.amtlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
 			lr.amtlr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+			lr.amtlr.abort_error = get_value_from_element_from_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(2), log_record_contents).int_value;
 
 			lr.parsed_from = serialized_log_record;
 			lr.parsed_from_size = serialized_log_record_size;
@@ -1598,6 +1602,9 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->amtlr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
+			if(!set_element_in_tuple(&(lrtd_p->amtlr_def), STATIC_POSITION(2), result + 1, &(user_value){.int_value = lr->amtlr.abort_error}, UINT32_MAX))
+				goto ERROR;
+
 			(*result_size) = get_tuple_size(&(lrtd_p->amtlr_def), result + 1) + 1;
 			return result;
 		}
@@ -1901,6 +1908,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->amtlr.mini_transaction_id); printf("\n");
 			printf("prev_log_record_LSN : "); print_uint256(lr->amtlr.prev_log_record_LSN); printf("\n");
+			printf("abort_error : %d\n", lr->amtlr.abort_error);
 			return;
 		}
 		case COMPLETE_MINI_TX :
