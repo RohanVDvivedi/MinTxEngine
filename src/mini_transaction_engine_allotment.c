@@ -166,9 +166,58 @@ static void append_completion_log_record_and_flush_UNSAFE(mini_transaction_engin
 }
 
 #include<mini_transaction_engine_util.h>
+#include<system_page_header_util.h>
+
+// luckily all clr log records modify only contents on a single page, hence the simplicity of this function
+static void append_compensation_log_record_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint256 undo_of_LSN, void* modified_page, uint64_t modified_page_id)
+{
+	// construct compensation log record
+	log_record lr = {
+		.type = COMPENSATION_LOG,
+		.clr = {
+			.mini_transaction_id = mt->mini_transaction_id,
+			.prev_log_record_LSN = mt->lastLSN,
+			.undo_of_LSN = undo_of_LSN,
+		}
+	};
+
+	// serialize full page write log record
+	uint32_t serialized_lr_size = 0;
+	const void* serialized_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &lr, &serialized_lr_size);
+	if(serialized_lr == NULL)
+		exit(-1);
+
+	pthread_mutex_lock(&(mte->global_lock));
+
+		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+
+		int wal_error = 0;
+		uint256 log_record_LSN = append_log_record(wale_p, serialized_lr, serialized_lr_size, 0, &wal_error);
+		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+			exit(-1);
+
+		// you had to undo a log record then there already exists a log record before it, so the mini transaction already has a mini_transaction_id
+
+		// update lastLSN of the mini transaction
+		mt->lastLSN = log_record_LSN;
+
+		// set pageLSN of the page to the log_record_LSN
+		set_pageLSN_for_page(modified_page, log_record_LSN, &(mte->stats));
+
+		// do not set writerLSN, as we are undoing, we must have write locked the relevant contents on the page
+
+		// mark the page as dirty in the bufferpool and dirty page table
+		// we updated its pageLSN, this page is now considered dirty
+		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, modified_page, modified_page_id);
+
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	// free serialized log record
+	free((void*)serialized_lr);
+}
 
 // below function must be called with manager lock held but global lock not held
-static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, const log_record* undo_lr)
+static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint256 undo_LSN, const log_record* undo_lr)
 {
 	switch(undo_lr->type)
 	{
@@ -209,6 +258,67 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 			TUPLE_UPDATE_ELEMENT_IN_PLACE
 			PAGE_CLONE
 		*/
+	}
+
+	uint64_t page_id = get_page_id_for_log_record(undo_lr);
+
+	if(undo_lr->type == PAGE_ALLOCATION || undo_lr->type == PAGE_DEALLOCATION)
+	{
+		uint64_t free_space_mapper_page_id = get_is_valid_bit_page_id_for_page(page_id, &(mte->stats));
+
+		// loop continuously until you get latch on the page
+		void* free_space_mapper_page = NULL;
+		while(free_space_mapper_page == NULL)
+		{
+			pthread_mutex_lock(&(mte->global_lock));
+			free_space_mapper_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), free_space_mapper_page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+			pthread_mutex_unlock(&(mte->global_lock));
+		}
+
+		// perform full page write if required
+		perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, free_space_mapper_page, free_space_mapper_page_id);
+
+		// perform undo
+		{
+
+		}
+
+		// append clr log record
+		append_compensation_log_record_INTERNAL(mte,mt, undo_LSN, free_space_mapper_page, free_space_mapper_page_id);
+
+		recalculate_page_checksum(free_space_mapper_page, &(mte->stats));
+
+		pthread_mutex_lock(&(mte->global_lock));
+		release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+		pthread_mutex_unlock(&(mte->global_lock));
+	}
+	else
+	{
+		// loop continuously until you get latch on the page
+		void* page = NULL;
+		while(page == NULL)
+		{
+			pthread_mutex_lock(&(mte->global_lock));
+			page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+			pthread_mutex_unlock(&(mte->global_lock));
+		}
+
+		// perform full page write if required
+		perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
+
+		// perform undo
+		{
+
+		}
+
+		// append clr log record
+		append_compensation_log_record_INTERNAL(mte,mt, undo_LSN, page, page_id);
+
+		recalculate_page_checksum(page, &(mte->stats));
+
+		pthread_mutex_lock(&(mte->global_lock));
+		release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+		pthread_mutex_unlock(&(mte->global_lock));
 	}
 }
 
@@ -289,7 +399,7 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 			pthread_mutex_unlock(&(mte->global_lock));
 
 			// undo undo_lr
-			undo_log_record_and_append_clr_and_manage_state_INTERNAL(mte, mt, &undo_lr);
+			undo_log_record_and_append_clr_and_manage_state_INTERNAL(mte, mt, undo_LSN, &undo_lr);
 
 			// prepare for next iteration
 			undo_LSN = get_prev_log_record_LSN_for_log_record(&undo_lr);
