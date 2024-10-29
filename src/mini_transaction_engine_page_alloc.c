@@ -107,7 +107,7 @@ void* get_new_page_with_write_latch_for_mini_tx(mini_transaction_engine* mte, mi
 	}
 
 	if(new_page != NULL) // if we were successfull, quit
-		return new_page;
+		return get_page_contents_for_page(new_page, (*page_id_returned), &(mte->stats));
 
 	// strategy : 2
 	// allocate a new page secondly by attempting to do it with database expansion
@@ -129,5 +129,5 @@ void* get_new_page_with_write_latch_for_mini_tx(mini_transaction_engine* mte, mi
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
-	return new_page;
+	return get_page_contents_for_page(new_page, (*page_id_returned), &(mte->stats));
 }
