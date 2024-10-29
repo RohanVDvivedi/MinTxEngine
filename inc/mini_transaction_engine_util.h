@@ -39,7 +39,7 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 // below function returns NULL if no such log record was found
 const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, uint32_t* lr_size);
 // below function returns 0, if no such log record was found
-// NOTE for the first log record of a mini transaction the mini_transaction_id is going to be INVALID_LOG_SEQUENCE_NUMBER, so handle it carefully
+// NOTE for the first log record of a mini transaction the mini_transaction_id is going to be INVALID_LOG_SEQUENCE_NUMBER, so if this function finds a log_record with mini_transaction_id as INVALID then we set it to the provided LSN
 int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_record* lr);
 
 // returns the next LSN that will come immediately after the LSN in the parameter
