@@ -13,6 +13,7 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 //    then if it is in MINI_TX_UNDOING_FOR_ABORT state then COMPESATION_LOG records are generated from its last log record until we reach the beginning
 //    then a COMPLETE_MINI_TX log record is appended, then put into MINI_TX_COMPLETED state
 // finally the mini transaction reference counter is decremented and returned to be used by someone else
+// this function must be called only on a non-complete mini transaction, and must be called only once, any reuse of the pointer *mt after calling this function is an undefined behaviour
 void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, const void* complete_info, uint32_t complete_info_size);
 
 #endif
