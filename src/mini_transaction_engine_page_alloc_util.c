@@ -244,7 +244,10 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 				{
 					const void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
 					if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_index))
+					{
+						free_space_mapper_bit_index++;
 						continue;
+					}
 				}
 
 				{
