@@ -1,9 +1,11 @@
 PICKED
 
- * exit(-1) the process on an IO error in bufferpool or WALe's callbacks
- * implement undo for TUPLE_UPDATE_ELEMENT_IN_PLACE with edge cases covered
  * implement logic to insert 10000 multiples of 10, iterating i from 0 to 9999 (both inclusive), inserting 0 to 99990, and abort where i is also multiple of 23
  * print the bplus tree in the end to ensure that the test passed
+
+ * exit(-1) the process on an IO error in bufferpool or WALe's callbacks
+   * validate checksum on pages when the pages are being written or read from database file in bufferpool callbacks
+ * implement undo for TUPLE_UPDATE_ELEMENT_IN_PLACE with edge cases covered
 
  * implement recovery function that gets called every time you initialize the mini transaction engine
   * analyze, redo then mark all active mini transactions to UNDOING_FOR_ABORT with reason being ABORTED_AFTER_CRASH and then call complete_mini_transaction on all active writer transactions
