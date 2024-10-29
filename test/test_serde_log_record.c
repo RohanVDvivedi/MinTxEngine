@@ -531,6 +531,7 @@ int main()
 			.cmtlr = {
 				.mini_transaction_id = get_uint256(113),
 				.prev_log_record_LSN = get_uint256(943),
+				.is_aborted = 0,
 				.info = (uint8_t [3]){1,2,3},
 				.info_size = 3,
 			}
