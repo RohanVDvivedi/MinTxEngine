@@ -56,3 +56,8 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 
 	return mt;
 }
+
+void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt)
+{
+	// TODO
+}
