@@ -10,9 +10,6 @@
 
 int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds)
 {
-	if(mte->bufferpool_frame_count == 0 || mte->wale_append_only_buffer_block_count == 0)
-		return 0;
-
 	// initialize everything that does not need resource allocation first
 	mte->database_file_name = database_file_name;
 	pthread_mutex_init(&(mte->global_lock), NULL);
@@ -25,6 +22,9 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	mte->latch_wait_timeout_in_microseconds = latch_wait_timeout_in_microseconds;
 	mte->write_lock_wait_timeout_in_microseconds = write_lock_wait_timeout_in_microseconds;
 	mte->checkpointing_period_in_microseconds = checkpointing_period_in_microseconds;
+
+	if(mte->bufferpool_frame_count == 0 || mte->wale_append_only_buffer_block_count == 0)
+		return 0;
 
 	if(open_block_file(&(mte->database_block_file), mte->database_file_name, O_DIRECT))
 	{
