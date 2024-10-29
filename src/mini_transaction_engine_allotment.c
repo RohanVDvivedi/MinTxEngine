@@ -235,7 +235,18 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 
 		while(!are_equal_uint256(undo_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // keep on doing undo until you do not have any log record to undo
 		{
+			log_record undo_lr;
+			if(!get_parsed_log_record_UNSAFE(mte, undo_LSN, &undo_lr))
+				exit(-1);
 
+			undo_lr = get_prev_log_record_LSN(&undo_lr);
+
+			pthread_mutex_unlock(&(mte->global_lock));
+
+			// undo undo_lr
+			// TODO
+
+			pthread_mutex_lock(&(mte->global_lock));
 		}
 	}
 
