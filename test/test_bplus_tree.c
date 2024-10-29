@@ -25,5 +25,5 @@ int main()
 		exit(-1);
 	}
 	init_pam_for_mini_tx_engine(&mte);
-	//init_pmm_for_mini_tx_engine(&mte);
+	init_pmm_for_mini_tx_engine(&mte);
 }

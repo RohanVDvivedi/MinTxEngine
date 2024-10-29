@@ -117,7 +117,7 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 	return result;
 }
 
-void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const void* hdr, int* abort_error)
+void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const void* hdr)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
@@ -798,7 +798,7 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 	return ;
 }
 
-int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, uint32_t page_size, const tuple_size_def* tpl_sz_d)
+int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
