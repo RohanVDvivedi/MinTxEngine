@@ -377,6 +377,8 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				}
 				case TUPLE_SWAP :
 				{
+					if(!swap_tuples_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tslr.size_def), undo_lr->tslr.swap_index1, undo_lr->tslr.swap_index2))
+						exit(-1);
 					break;
 				}
 				case TUPLE_UPDATE_ELEMENT_IN_PLACE :
