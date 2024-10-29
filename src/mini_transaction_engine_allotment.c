@@ -364,6 +364,16 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				}
 				case TUPLE_DISCARD :
 				{
+					int undone = insert_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), undo_lr->tdlr.discard_index, undo_lr->tdlr.old_tuple);
+					if(!undone)
+					{
+						int memory_allocation_error = 0;
+						run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), &memory_allocation_error);
+						if(memory_allocation_error) // malloc failed for compaction
+							exit(-1);
+						if(!insert_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), undo_lr->tdlr.discard_index, undo_lr->tdlr.old_tuple))
+							exit(-1);
+					}
 					break;
 				}
 				case TUPLE_DISCARD_ALL :
