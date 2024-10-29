@@ -42,14 +42,17 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 		// if there is a free mini_transaction then grab it
 		mt = (mini_transaction*) get_head_of_linkedlist(&(mte->free_mini_transactions_list));
 		remove_head_from_linkedlist(&(mte->free_mini_transactions_list));
-	}
 
-	mt->mini_transaction_id = INVALID_LOG_SEQUENCE_NUMBER;
-	mt->lastLSN = INVALID_LOG_SEQUENCE_NUMBER;
-	mt->state = MIN_TX_IN_PROGRESS;
-	mt->abort_error = 0;
-	mt->reference_counter = 0;
-	initialize_llnode(&(mt->enode));
+		mt->mini_transaction_id = INVALID_LOG_SEQUENCE_NUMBER;
+		mt->lastLSN = INVALID_LOG_SEQUENCE_NUMBER;
+		mt->state = MIN_TX_IN_PROGRESS;
+		mt->abort_error = 0;
+		mt->reference_counter = 0;
+		initialize_llnode(&(mt->enode));
+
+		// in the begining every mini transaction is a reader_mini_transaction
+		insert_head_in_linkedlist(&(mte->reader_mini_transactions), mt);
+	}
 
 	pthread_mutex_unlock(&(mte->global_lock));
 
