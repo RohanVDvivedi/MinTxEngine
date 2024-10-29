@@ -288,9 +288,17 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 			uint64_t free_space_mapper_bit_pos = get_is_valid_bit_position_for_page(page_id, &(mte->stats));
 			void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
 			if(undo_lr->type == PAGE_ALLOCATION) // allocation set the bit to 1, so now reset it
+			{
+				if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos) == 1) // this should never happen if write locks were held
+					exit(-1);
 				reset_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
+			}
 			else
+			{
+				if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos) == 0) // this should never happen if write locks were held
+					exit(-1);
 				set_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
+			}
 		}
 
 		// append clr log record
@@ -330,6 +338,8 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				{
 					void* page_header = get_page_header(page_contents, mte->user_stats.page_size);
 					uint32_t page_header_size = get_page_header_size(page_contents, mte->user_stats.page_size);
+					if(page_header_size != undo_lr->psh_lr.page_header_size) //this should never happen if write locks were held
+						exit(-1);
 					memory_move(page_header, undo_lr->pshlr.old_page_header_contents, page_header_size);
 					break;
 				}
