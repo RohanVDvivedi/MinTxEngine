@@ -30,7 +30,7 @@ void create_uint_bplus_tree(mini_transaction* mt)
 
 	if(mt->abort_error)
 	{
-		printf("aborted %d\n", mt->abort_error);
+		printf("aborted %d while creating\n", mt->abort_error);
 		exit(-1);
 	}
 }
@@ -41,7 +41,7 @@ int insert_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 
 	if(mt->abort_error)
 	{
-		printf("aborted %d\n", mt->abort_error);
+		printf("aborted %d while inserting\n", mt->abort_error);
 		exit(-1);
 	}
 
@@ -54,7 +54,7 @@ int delete_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 
 	if(mt->abort_error)
 	{
-		printf("aborted %d\n", mt->abort_error);
+		printf("aborted %d while deleting\n", mt->abort_error);
 		exit(-1);
 	}
 
@@ -67,7 +67,7 @@ void print_uint_bplus_tree(mini_transaction* mt)
 
 	if(mt->abort_error)
 	{
-		printf("aborted %d\n", mt->abort_error);
+		printf("aborted %d while printing\n", mt->abort_error);
 		exit(-1);
 	}
 }
@@ -78,7 +78,7 @@ void destroy_uint_bplus_tree(mini_transaction* mt)
 
 	if(mt->abort_error)
 	{
-		printf("aborted %d\n", mt->abort_error);
+		printf("aborted %d while destroying\n", mt->abort_error);
 		exit(-1);
 	}
 }
