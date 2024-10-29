@@ -112,9 +112,8 @@ int main()
 	{
 		mini_transaction* mt2 = mte_allot_mini_tx(&mte, 1000000);
 
-		insert_uint_bplus_tree(mt2, 5);
-		insert_uint_bplus_tree(mt2, 6);
-		insert_uint_bplus_tree(mt2, 7);
+		for(uint64_t i = 10000; i >= 100; i--)
+			insert_uint_bplus_tree(mt2, i);
 
 		print_uint_bplus_tree(mt2);
 
@@ -124,14 +123,13 @@ int main()
 	{
 		mini_transaction* mt3 = mte_allot_mini_tx(&mte, 1000000);
 
-		delete_uint_bplus_tree(mt3, 5);
-		delete_uint_bplus_tree(mt3, 6);
-		delete_uint_bplus_tree(mt3, 7);
+		for(uint64_t i = 10000; i >= 100; i--)
+			delete_uint_bplus_tree(mt3, i);
 
 		print_uint_bplus_tree(mt3);
 
 		// abort here
-		mark_aborted_for_mini_tx(&mte, mt3, -55);
+		//mark_aborted_for_mini_tx(&mte, mt3, -55);
 
 		mte_complete_mini_tx(&mte, mt3, NULL, 0);
 	}
@@ -141,7 +139,19 @@ int main()
 
 		print_uint_bplus_tree(mt4);
 
+		destroy_uint_bplus_tree(mt4);
+
 		mte_complete_mini_tx(&mte, mt4, NULL, 0);
+	}
+
+	{
+		mini_transaction* mt5 = mte_allot_mini_tx(&mte, 1000000);
+
+		create_uint_bplus_tree(mt5);
+
+		print_uint_bplus_tree(mt5);
+
+		mte_complete_mini_tx(&mte, mt5, NULL, 0);
 	}
 
 	return 0;
