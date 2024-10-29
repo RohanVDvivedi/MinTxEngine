@@ -417,6 +417,12 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				}
 				case TUPLE_UPDATE_ELEMENT_IN_PLACE :
 				{
+					int undone = set_element_in_tuple_in_place_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tueiplr.tpl_def), undo_lr->tueiplr.tuple_index, undo_lr->tueiplr.element_index, &(undo_lr->tueiplr.old_element));
+					if(!undone)
+					{
+						// TODO : copy the tuple outside, update the old_element in it, set the existing tuple to NULL, insert the modified tuple
+						exit(-1);
+					}
 					break;
 				}
 				case PAGE_CLONE :
