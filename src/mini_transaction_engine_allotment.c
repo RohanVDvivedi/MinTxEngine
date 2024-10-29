@@ -67,6 +67,7 @@ static void append_abortion_log_record_and_flush_UNSAFE(mini_transaction_engine*
 			.amtlr = {
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
+				.abort_error = mt->abort_error,
 			},
 		};
 
@@ -119,6 +120,7 @@ static void append_completion_log_record_and_flush_UNSAFE(mini_transaction_engin
 			.cmtlr = {
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
+				.is_aborted = (mt->state != MIN_TX_IN_PROGRESS), // it is surecly not completed, so any state except MIN_TX_IN_PROGRESS implies an aborted transaction
 				.info = complete_info,
 				.info_size = complete_info_size,
 			},
