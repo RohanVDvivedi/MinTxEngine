@@ -477,8 +477,7 @@ int main()
 			.clr = {
 				.mini_transaction_id = get_uint256(113),
 				.prev_log_record_LSN = get_uint256(943),
-				.undo_of = get_uint256(143),
-				.next_log_record_to_undo = get_uint256(692),
+				.undo_of_LSN = get_uint256(143),
 			}
 		};
 
