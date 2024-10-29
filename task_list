@@ -1,6 +1,7 @@
 PICKED
  * we may not need next_log_record_to_undo attribute of clr log records
  * and we may need abort_error attribute in abort mini tx log record
+ * and we will need is_aborted flag in complete mini transaction log record
 
  * implement mte_complete_mini_tx function
    * decrements the reference counter of the mini transaction at the end of this function
