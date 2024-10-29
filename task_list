@@ -1,5 +1,4 @@
 PICKED
- * we may not need next_log_record_to_undo attribute of clr log records
  * and we may need abort_error attribute in abort mini tx log record
  * and we will need is_aborted flag in complete mini transaction log record
 
