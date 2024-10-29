@@ -113,7 +113,10 @@ int main()
 		mini_transaction* mt2 = mte_allot_mini_tx(&mte, 1000000);
 
 		for(uint64_t i = 10000; i >= 100; i--)
+		{
+			printf("inserting %"PRIu64"\n", i);
 			insert_uint_bplus_tree(mt2, i);
+		}
 
 		print_uint_bplus_tree(mt2);
 
@@ -124,7 +127,10 @@ int main()
 		mini_transaction* mt3 = mte_allot_mini_tx(&mte, 1000000);
 
 		for(uint64_t i = 10000; i >= 100; i--)
+		{
+			printf("deleting %"PRIu64"\n", i);
 			delete_uint_bplus_tree(mt3, i);
+		}
 
 		print_uint_bplus_tree(mt3);
 
