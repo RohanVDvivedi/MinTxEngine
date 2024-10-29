@@ -125,4 +125,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 
 #include<mini_transaction_engine_allotment.h>
 
+// if your mini transaction is huge perform this intermediately to allow more changes to be left in bufferpool
+void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine* mte);
+
 #endif
