@@ -393,4 +393,6 @@ int set_mini_transaction_id_for_log_record(log_record* lr, uint256 mini_transact
 uint256 get_prev_log_record_LSN_for_log_record(const log_record* lr);
 int set_prev_log_record_LSN_for_log_record(log_record* lr, uint256 prev_log_record_LSN);
 
+uint64_t get_page_id_for_log_record(const log_record* lr);
+
 #endif

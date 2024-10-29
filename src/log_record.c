@@ -2209,3 +2209,41 @@ int set_prev_log_record_LSN_for_log_record(log_record* lr, uint256 prev_log_reco
 		}
 	}
 }
+
+uint64_t get_page_id_for_log_record(const log_record* lr)
+{
+	switch(lr->type)
+	{
+		default :
+			return 0;
+		case PAGE_ALLOCATION :
+		case PAGE_DEALLOCATION :
+			return lr->palr.page_id;
+		case PAGE_INIT :
+			return lr->pilr.page_id;
+		case PAGE_SET_HEADER :
+			return lr->pshlr.page_id;
+		case TUPLE_APPEND :
+			return lr->talr.page_id;
+		case TUPLE_INSERT :
+			return lr->tilr.page_id;
+		case TUPLE_UPDATE :
+			return lr->tulr.page_id;
+		case TUPLE_DISCARD :
+			return lr->tdlr.page_id;
+		case TUPLE_DISCARD_ALL :
+			return lr->tdalr.page_id;
+		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+			return lr->tdttlr.page_id;
+		case TUPLE_SWAP :
+			return lr->tslr.page_id;
+		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+			return lr->tueiplr.page_id;
+		case PAGE_CLONE :
+			return lr->pclr.page_id;
+		case PAGE_COMPACTION :
+			return lr->pcptlr.page_id;
+		case FULL_PAGE_WRITE :
+			return lr->fpwlr.page_id;
+	}
+}

@@ -229,10 +229,10 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	}
 
 	// if the mini transaction is in ABORTED state, then append abort log record and turn it into UNDOING_FOR_ABORT state
-	if(mt->state == MINI_TX_ABORTED)
+	if(mt->state == MIN_TX_ABORTED)
 	{
 		append_abortion_log_record_and_flush_UNSAFE(mte, mt);
-		mt->state = MINI_TX_UNDOING_FOR_ABORT;
+		mt->state = MIN_TX_UNDOING_FOR_ABORT;
 	}
 
 	// undo everything you did for this transaction until now except FULL_PAGE_WRITE and PAGE_COMPACTION as their undo is NO-OP
@@ -251,27 +251,27 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 				if(!get_parsed_log_record_UNSAFE(mte, temp, &lr))
 					exit(-1);
 
-				if(lr->type != FULL_PAGE_WRITE)
+				if(lr.type != FULL_PAGE_WRITE)
 					break;
 
-				temp = get_prev_log_record_LSN(&lr);
+				temp = get_prev_log_record_LSN_for_log_record(&lr);
 				destroy_and_free_parsed_log_record(&lr);
 			}
 
-			if(lr->type == ABORT_MINI_TX) // its previous log record is where we start undoing from
+			if(lr.type == ABORT_MINI_TX) // its previous log record is where we start undoing from
 			{
-				undo_LSN = lr->amtlr.prev_log_record_LSN;
+				undo_LSN = lr.amtlr.prev_log_record_LSN;
 				destroy_and_free_parsed_log_record(&lr);
 			}
-			else if(lr->type == COMPENSATION_LOG) // we start from the previous log record of the last log record that was undone
+			else if(lr.type == COMPENSATION_LOG) // we start from the previous log record of the last log record that was undone
 			{
-				temp = lr->clr.undo_of_LSN;
+				temp = lr.clr.undo_of_LSN;
 				destroy_and_free_parsed_log_record(&lr);
 
 				if(!get_parsed_log_record_UNSAFE(mte, temp, &lr))
 					exit(-1);
 
-				undo_of_LSN = get_prev_log_record_LSN(&lr);
+				undo_LSN = get_prev_log_record_LSN_for_log_record(&lr);
 				destroy_and_free_parsed_log_record(&lr);
 			}
 			else // it can not be any other type of log record
@@ -292,8 +292,8 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 			undo_log_record_and_append_clr_and_manage_state_INTERNAL(mte, mt, &undo_lr);
 
 			// prepare for next iteration
-			undo_lr = get_prev_log_record_LSN(&undo_lr);
-			destroy_and_free_parsed_log_record(&lr);
+			undo_LSN = get_prev_log_record_LSN_for_log_record(&undo_lr);
+			destroy_and_free_parsed_log_record(&undo_lr);
 
 			pthread_mutex_lock(&(mte->global_lock));
 
