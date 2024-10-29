@@ -383,4 +383,12 @@ void update_prev_log_record_LSN_in_serialized_log_record(const log_record_tuple_
 
 void print_log_record(const log_record* lr, const mini_transaction_engine_stats* stats);
 
+// common getter setter calls
+
+uint256 get_mini_transaction_id_for_log_record(const log_record* lr);
+int set_mini_transaction_id_for_log_record(log_record* lr, uint256 mini_transaction_id);
+
+uint256 get_prev_log_record_LSN_for_log_record(const log_record* lr);
+int set_prev_log_record_LSN_for_log_record(log_record* lr, uint256 prev_log_record_LSN);
+
 #endif
