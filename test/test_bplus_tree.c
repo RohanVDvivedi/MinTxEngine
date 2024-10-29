@@ -139,7 +139,7 @@ int main()
 		print_uint_bplus_tree(mt3);
 
 		// abort here
-		//mark_aborted_for_mini_tx(&mte, mt3, -55);
+		mark_aborted_for_mini_tx(&mte, mt3, -55);
 
 		mte_complete_mini_tx(&mte, mt3, NULL, 0);
 	}
