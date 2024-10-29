@@ -319,6 +319,9 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 			{
 				case PAGE_INIT :
 				{
+					void* page_contents = get_page_contents_for_page(page, page_id, &(mte->stats));
+					uint32_t page_content_size = get_page_content_size_for_page(page_id, &(mte->stats));
+					memory_move(page_contents, undo_lr->pilr.old_page_contents, page_content_size);
 					break;
 				}
 				case PAGE_SET_HEADER :
@@ -359,6 +362,9 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				}
 				case PAGE_CLONE :
 				{
+					void* page_contents = get_page_contents_for_page(page, page_id, &(mte->stats));
+					uint32_t page_content_size = get_page_content_size_for_page(page_id, &(mte->stats));
+					memory_move(page_contents, undo_lr->pclr.old_page_contents, page_content_size);
 					break;
 				}
 			}
