@@ -218,6 +218,9 @@ static void append_compensation_log_record_INTERNAL(mini_transaction_engine* mte
 
 #include<bitmap.h>
 
+#include<tuple.h>
+#include<page_layout.h>
+
 // below function must be called with manager lock held but global lock not held
 static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint256 undo_LSN, const log_record* undo_lr)
 {
@@ -315,17 +318,19 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 
 		// perform undo
 		{
+			void* page_contents = get_page_contents_for_page(page, page_id, &(mte->stats));
 			switch(undo_lr->type)
 			{
 				case PAGE_INIT :
 				{
-					void* page_contents = get_page_contents_for_page(page, page_id, &(mte->stats));
-					uint32_t page_content_size = get_page_content_size_for_page(page_id, &(mte->stats));
-					memory_move(page_contents, undo_lr->pilr.old_page_contents, page_content_size);
+					memory_move(page_contents, undo_lr->pilr.old_page_contents, mte->user_stats.page_size);
 					break;
 				}
 				case PAGE_SET_HEADER :
 				{
+					void* page_header = get_page_header(page_contents, mte->user_stats.page_size);
+					uint32_t page_header_size = get_page_header_size(page_contents, mte->user_stats.page_size);
+					memory_move(page_header, undo_lr->pshlr.old_page_header_contents, page_header_size);
 					break;
 				}
 				case TUPLE_APPEND :
@@ -362,9 +367,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				}
 				case PAGE_CLONE :
 				{
-					void* page_contents = get_page_contents_for_page(page, page_id, &(mte->stats));
-					uint32_t page_content_size = get_page_content_size_for_page(page_id, &(mte->stats));
-					memory_move(page_contents, undo_lr->pclr.old_page_contents, page_content_size);
+					memory_move(page_contents, undo_lr->pclr.old_page_contents, mte->user_stats.page_size);
 					break;
 				}
 				default : // if you reach here it is a bug
