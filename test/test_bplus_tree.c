@@ -24,29 +24,63 @@ uint64_t root_page_id;
 
 tuple_def record_def;
 
-void create_bplus_tree(mini_transaction* mt)
+void create_uint_bplus_tree(mini_transaction* mt)
 {
 	root_page_id = get_new_bplus_tree(&bpttd, &pam, &pmm, mt, &(mt->abort_error));
+
+	if(mt->abort_error)
+	{
+		printf("aborted\n");
+		exit(-1);
+	}
 }
 
-int insert_bplus_tree(mini_transaction* mt, uint64_t x)
+int insert_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 {
-	return insert_in_bplus_tree(root_page_id, &x, &bpttd, &pam, &pmm, mt, &(mt->abort_error));
+	int res = insert_in_bplus_tree(root_page_id, &x, &bpttd, &pam, &pmm, mt, &(mt->abort_error));
+
+	if(mt->abort_error)
+	{
+		printf("aborted\n");
+		exit(-1);
+	}
+
+	return res;
 }
 
-int delete_bplus_tree(mini_transaction* mt, uint64_t x)
+int delete_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 {
-	return delete_from_bplus_tree(root_page_id, &x, &bpttd, &pam, &pmm, mt, &(mt->abort_error));
+	int res = delete_from_bplus_tree(root_page_id, &x, &bpttd, &pam, &pmm, mt, &(mt->abort_error));
+
+	if(mt->abort_error)
+	{
+		printf("aborted\n");
+		exit(-1);
+	}
+
+	return res;
 }
 
-void print_bplus_tree(mini_transaction* mt)
+void print_uint_bplus_tree(mini_transaction* mt)
 {
 	print_bplus_tree(root_page_id, 0, &bpttd, &pam, mt, &(mt->abort_error));
+
+	if(mt->abort_error)
+	{
+		printf("aborted\n");
+		exit(-1);
+	}
 }
 
-void destroy_bplus_tree(mini_transaction* mt)
+void destroy_uint_bplus_tree(mini_transaction* mt)
 {
 	destroy_bplus_tree(root_page_id, &bpttd, &pam, mt, &(mt->abort_error));
+
+	if(mt->abort_error)
+	{
+		printf("aborted\n");
+		exit(-1);
+	}
 }
 
 int main()
@@ -64,4 +98,52 @@ int main()
 		printf("failed to initialize bplus tree tuple definitions\n");
 		exit(-1);
 	}
+
+	{
+		mini_transaction* mt1 = mte_allot_mini_tx(&mte, 1000000);
+
+		create_uint_bplus_tree(mt1);
+
+		print_uint_bplus_tree(mt1);
+
+		mte_complete_mini_tx(&mte, mt1, NULL, 0);
+	}
+
+	{
+		mini_transaction* mt2 = mte_allot_mini_tx(&mte, 1000000);
+
+		insert_uint_bplus_tree(mt2, 5);
+		insert_uint_bplus_tree(mt2, 6);
+		insert_uint_bplus_tree(mt2, 7);
+
+		print_uint_bplus_tree(mt2);
+
+		mte_complete_mini_tx(&mte, mt2, NULL, 0);
+	}
+
+	{
+		mini_transaction* mt3 = mte_allot_mini_tx(&mte, 1000000);
+
+		delete_uint_bplus_tree(mt3, 5);
+		delete_uint_bplus_tree(mt3, 6);
+		delete_uint_bplus_tree(mt3, 7);
+
+		print_uint_bplus_tree(mt3);
+
+		// abort here
+
+		mte_complete_mini_tx(&mte, mt3, NULL, 0);
+	}
+
+	/*{
+		mini_transaction* mt3 = mte_allot_mini_tx(&mte, 1000000);
+
+		print_bplus_tree(mt3);
+
+		// abort here
+
+		mte_complete_mini_tx(&mte, mt3, NULL, 0);
+	}*/
+
+	return 0;
 }

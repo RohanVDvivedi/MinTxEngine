@@ -123,4 +123,6 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 
 #include<mini_transaction_engine_page_alloc.h>
 
+#include<mini_transaction_engine_allotment.h>
+
 #endif
