@@ -346,15 +346,15 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				case TUPLE_APPEND :
 				{
 					uint32_t tuple_count = get_tuple_count_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->talr.size_def));
-					if(tuple_count == 0)
+					if(tuple_count == 0) //this should never happen if write locks were held
 						exit(-1);
-					if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->talr.size_def), tuple_count - 1))
+					if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->talr.size_def), tuple_count - 1)) //this should never happen if write locks were held
 						exit(-1);
 					break;
 				}
 				case TUPLE_INSERT :
 				{
-					if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tilr.size_def), undo_lr->tilr.insert_index))
+					if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tilr.size_def), undo_lr->tilr.insert_index)) //this should never happen if write locks were held
 						exit(-1);
 					break;
 				}
@@ -369,9 +369,9 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 					{
 						int memory_allocation_error = 0;
 						run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), &memory_allocation_error);
-						if(memory_allocation_error) // malloc failed for compaction
+						if(memory_allocation_error) // malloc failed on compaction
 							exit(-1);
-						if(!insert_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), undo_lr->tdlr.discard_index, undo_lr->tdlr.old_tuple))
+						if(!insert_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), undo_lr->tdlr.discard_index, undo_lr->tdlr.old_tuple)) //this should never happen if write locks were held
 							exit(-1);
 					}
 					break;
@@ -383,11 +383,23 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				}
 				case TUPLE_DISCARD_TRAILING_TOMB_STONES :
 				{
+					for(uint32_t i = 0; i < undo_lr->tdttlr.discarded_trailing_tomb_stones_count; i++)
+					{
+						int undone = append_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tdttlr.size_def), NULL);
+						if(undone)
+							continue;
+						int memory_allocation_error = 0;
+						run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tdttlr.size_def), &memory_allocation_error);
+						if(memory_allocation_error) // malloc failed for compaction
+							exit(-1);
+						if(!append_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tdttlr.size_def), NULL)) //this should never happen if write locks were held
+							exit(-1);
+					}
 					break;
 				}
 				case TUPLE_SWAP :
 				{
-					if(!swap_tuples_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tslr.size_def), undo_lr->tslr.swap_index1, undo_lr->tslr.swap_index2))
+					if(!swap_tuples_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tslr.size_def), undo_lr->tslr.swap_index1, undo_lr->tslr.swap_index2)) //this should never happen if write locks were held
 						exit(-1);
 					break;
 				}
