@@ -291,13 +291,19 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 			if(undo_lr->type == PAGE_ALLOCATION) // allocation set the bit to 1, so now reset it
 			{
 				if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos) == 1) // this should never happen if write locks were held
+				{
+					printf("could not undo PAGE_ALLOCATION\n");
 					exit(-1);
+				}
 				reset_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
 			}
 			else
 			{
 				if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos) == 0) // this should never happen if write locks were held
+				{
+					printf("could not undo PAGE_DEALLOCATION\n");
 					exit(-1);
+				}
 				set_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
 			}
 		}
