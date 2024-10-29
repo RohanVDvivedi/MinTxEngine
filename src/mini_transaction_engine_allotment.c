@@ -367,6 +367,8 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 					memory_move(page_contents, undo_lr->pclr.old_page_contents, page_content_size);
 					break;
 				}
+				default : // if you reach here it is a bug
+					exit(-1);
 			}
 		}
 
