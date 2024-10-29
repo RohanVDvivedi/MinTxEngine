@@ -59,7 +59,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		}
 
 		// initialize wa_list
-		if(!create_new_wal_list(mte))
+		if(!initialize_wal_list(mte))
 		{
 			deinitialize_bufferpool(&(mte->bufferpool_handle));
 			close_block_file(&(mte->database_block_file));
@@ -97,7 +97,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		}
 
 		// initialize wa_list
-		if(!initialize_wal_list(mte))
+		if(!create_new_wal_list(mte))
 		{
 			deinitialize_bufferpool(&(mte->bufferpool_handle));
 			close_block_file(&(mte->database_block_file));
