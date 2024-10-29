@@ -110,7 +110,11 @@ int initialize_wal_list(mini_transaction_engine* mte)
 		goto FAILURE;
 
 	struct dirent *en;
-	while ((en = readdir(dr)) != NULL) {
+	while ((en = readdir(dr)) != NULL)
+	{
+		// skip parent and self directories
+		if(0 == strcmp(en->d_name, "..") || 0 == strcmp(en->d_name, "."))
+			continue;
 		
 		uint256 wale_LSNs_from;
 		if(!if_valid_read_file_name_into_LSN(en->d_name, &wale_LSNs_from)) // there is some random file in logs directory so fail
