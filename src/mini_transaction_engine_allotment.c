@@ -278,6 +278,22 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 		{
 			pthread_mutex_lock(&(mte->global_lock));
 			free_space_mapper_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), free_space_mapper_page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+
+			// if we couldn't acquire a frame then flush wale and try again
+			if(free_space_mapper_page == NULL)
+			{
+				{
+					wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+
+					int wal_error = 0;
+					uint256 flushedLSN = flush_all_log_records(wale_p, &wal_error);
+					if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER))
+						exit(-1);
+
+					mte->flushedLSN = max_uint256(mte->flushedLSN, flushedLSN);
+				}
+			}
+
 			pthread_mutex_unlock(&(mte->global_lock));
 		}
 
@@ -319,6 +335,22 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 		{
 			pthread_mutex_lock(&(mte->global_lock));
 			page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+
+			// if we couldn't acquire a frame then flush wale and try again
+			if(page == NULL)
+			{
+				{
+					wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+
+					int wal_error = 0;
+					uint256 flushedLSN = flush_all_log_records(wale_p, &wal_error);
+					if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER))
+						exit(-1);
+
+					mte->flushedLSN = max_uint256(mte->flushedLSN, flushedLSN);
+				}
+			}
+
 			pthread_mutex_unlock(&(mte->global_lock));
 		}
 
@@ -536,18 +568,6 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 			destroy_and_free_parsed_log_record(&undo_lr);
 
 			pthread_mutex_lock(&(mte->global_lock));
-
-			// now flush the log record so your changes until now can reach disk
-			{
-				wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
-
-				int wal_error = 0;
-				uint256 flushedLSN = flush_all_log_records(wale_p, &wal_error);
-				if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER))
-					exit(-1);
-
-				mte->flushedLSN = max_uint256(mte->flushedLSN, flushedLSN);
-			}
 
 			shared_unlock(&(mte->manager_lock));
 		}
