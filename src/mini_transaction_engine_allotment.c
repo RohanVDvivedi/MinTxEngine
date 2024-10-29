@@ -170,7 +170,45 @@ static void append_completion_log_record_and_flush_UNSAFE(mini_transaction_engin
 // below function must be called with manager lock held but global lock not held
 static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, const log_record* undo_lr)
 {
+	switch(undo_lr->type)
+	{
+		default :
+		{
+			break;
+		}
 
+		// you must never encounter the below 4 types of log records and they can not be undone
+		case UNIDENTIFIED :
+		case COMPENSATION_LOG :
+		case ABORT_MINI_TX :
+		case COMPLETE_MINI_TX :
+		{
+			exit(-1);
+		}
+
+		// the undo of the below 2 types of lof records is just NOP so return early
+		case PAGE_COMPACTION :
+		case FULL_PAGE_WRITE :
+		{
+			return;
+		}
+
+		/*
+		you need to take care of undo for only the below types of log records
+		PAGE_ALLOCATION
+		PAGE_DEALLOCATION
+		PAGE_INIT
+		PAGE_SET_HEADER
+		TUPLE_APPEND
+		TUPLE_INSERT
+		TUPLE_UPDATE
+		TUPLE_DISCARD
+		TUPLE_DISCARD_ALL
+		TUPLE_DISCARD_TRAILING_TOMB_STONES
+		TUPLE_SWAP
+		TUPLE_UPDATE_ELEMENT_IN_PLACE
+		PAGE_CLONE*/
+	}
 }
 
 void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, const void* complete_info, uint32_t complete_info_size)
