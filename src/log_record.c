@@ -1921,3 +1921,282 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 	}
 }
 
+#include<wale.h>
+
+uint256 get_mini_transaction_id_for_log_record(const log_record* lr)
+{
+	switch(lr->type)
+	{
+		default :
+			return INVALID_LOG_SEQUENCE_NUMBER;
+		case PAGE_ALLOCATION :
+		case PAGE_DEALLOCATION :
+			return lr->palr.mini_transaction_id;
+		case PAGE_INIT :
+			return lr->pilr.mini_transaction_id;
+		case PAGE_SET_HEADER :
+			return lr->pshlr.mini_transaction_id;
+		case TUPLE_APPEND :
+			return lr->talr.mini_transaction_id;
+		case TUPLE_INSERT :
+			return lr->tilr.mini_transaction_id;
+		case TUPLE_UPDATE :
+			return lr->tulr.mini_transaction_id;
+		case TUPLE_DISCARD :
+			return lr->tdlr.mini_transaction_id;
+		case TUPLE_DISCARD_ALL :
+			return lr->tdalr.mini_transaction_id;
+		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+			return lr->tdttlr.mini_transaction_id;
+		case TUPLE_SWAP :
+			return lr->tslr.mini_transaction_id;
+		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+			return lr->tueiplr.mini_transaction_id;
+		case PAGE_CLONE :
+			return lr->pclr.mini_transaction_id;
+		case PAGE_COMPACTION :
+			return lr->pcptlr.mini_transaction_id;
+		case FULL_PAGE_WRITE :
+			return lr->fpwlr.mini_transaction_id;
+		case COMPENSATION_LOG :
+			return lr->clr.mini_transaction_id;
+		case ABORT_MINI_TX :
+			return lr->amtlr.mini_transaction_id;
+		case COMPLETE_MINI_TX :
+			return lr->cmtlr.mini_transaction_id;
+	}
+}
+
+int set_mini_transaction_id_for_log_record(log_record* lr, uint256 mini_transaction_id)
+{
+	switch(lr->type)
+	{
+		default :
+			return 0;
+		case PAGE_ALLOCATION :
+		case PAGE_DEALLOCATION :
+		{
+			lr->palr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case PAGE_INIT :
+		{
+			lr->pilr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case PAGE_SET_HEADER :
+		{
+			lr->pshlr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case TUPLE_APPEND :
+		{
+			lr->talr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case TUPLE_INSERT :
+		{
+			lr->tilr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case TUPLE_UPDATE :
+		{
+			lr->tulr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case TUPLE_DISCARD :
+		{
+			lr->tdlr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case TUPLE_DISCARD_ALL :
+		{
+			lr->tdalr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+		{
+			lr->tdttlr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case TUPLE_SWAP :
+		{
+			lr->tslr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+		{
+			lr->tueiplr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case PAGE_CLONE :
+		{
+			lr->pclr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case PAGE_COMPACTION :
+		{
+			lr->pcptlr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case FULL_PAGE_WRITE :
+		{
+			lr->fpwlr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case COMPENSATION_LOG :
+		{
+			lr->clr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case ABORT_MINI_TX :
+		{
+			lr->amtlr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+		case COMPLETE_MINI_TX :
+		{
+			lr->cmtlr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
+	}
+}
+
+uint256 get_prev_log_record_LSN_for_log_record(const log_record* lr)
+{
+	switch(lr->type)
+	{
+		default :
+			return INVALID_LOG_SEQUENCE_NUMBER;
+		case PAGE_ALLOCATION :
+		case PAGE_DEALLOCATION :
+			return lr->palr.prev_log_record_LSN;
+		case PAGE_INIT :
+			return lr->pilr.prev_log_record_LSN;
+		case PAGE_SET_HEADER :
+			return lr->pshlr.prev_log_record_LSN;
+		case TUPLE_APPEND :
+			return lr->talr.prev_log_record_LSN;
+		case TUPLE_INSERT :
+			return lr->tilr.prev_log_record_LSN;
+		case TUPLE_UPDATE :
+			return lr->tulr.prev_log_record_LSN;
+		case TUPLE_DISCARD :
+			return lr->tdlr.prev_log_record_LSN;
+		case TUPLE_DISCARD_ALL :
+			return lr->tdalr.prev_log_record_LSN;
+		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+			return lr->tdttlr.prev_log_record_LSN;
+		case TUPLE_SWAP :
+			return lr->tslr.prev_log_record_LSN;
+		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+			return lr->tueiplr.prev_log_record_LSN;
+		case PAGE_CLONE :
+			return lr->pclr.prev_log_record_LSN;
+		case PAGE_COMPACTION :
+			return lr->pcptlr.prev_log_record_LSN;
+		case FULL_PAGE_WRITE :
+			return lr->fpwlr.prev_log_record_LSN;
+		case COMPENSATION_LOG :
+			return lr->clr.prev_log_record_LSN;
+		case ABORT_MINI_TX :
+			return lr->amtlr.prev_log_record_LSN;
+		case COMPLETE_MINI_TX :
+			return lr->cmtlr.prev_log_record_LSN;
+	}
+}
+
+int set_prev_log_record_LSN_for_log_record(log_record* lr, uint256 prev_log_record_LSN)
+{
+	switch(lr->type)
+	{
+		default :
+			return 0;
+		case PAGE_ALLOCATION :
+		case PAGE_DEALLOCATION :
+		{
+			lr->palr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case PAGE_INIT :
+		{
+			lr->pilr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case PAGE_SET_HEADER :
+		{
+			lr->pshlr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case TUPLE_APPEND :
+		{
+			lr->talr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case TUPLE_INSERT :
+		{
+			lr->tilr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case TUPLE_UPDATE :
+		{
+			lr->tulr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case TUPLE_DISCARD :
+		{
+			lr->tdlr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case TUPLE_DISCARD_ALL :
+		{
+			lr->tdalr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+		{
+			lr->tdttlr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case TUPLE_SWAP :
+		{
+			lr->tslr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+		{
+			lr->tueiplr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case PAGE_CLONE :
+		{
+			lr->pclr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case PAGE_COMPACTION :
+		{
+			lr->pcptlr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case FULL_PAGE_WRITE :
+		{
+			lr->fpwlr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case COMPENSATION_LOG :
+		{
+			lr->clr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case ABORT_MINI_TX :
+		{
+			lr->amtlr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case COMPLETE_MINI_TX :
+		{
+			lr->cmtlr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+	}
+}
