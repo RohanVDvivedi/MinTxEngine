@@ -63,7 +63,7 @@ int delete_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 
 void print_uint_bplus_tree(mini_transaction* mt)
 {
-	print_bplus_tree(root_page_id, 0, &bpttd, &pam, mt, &(mt->abort_error));
+	print_bplus_tree(root_page_id, 1, &bpttd, &pam, mt, &(mt->abort_error));
 
 	if(mt->abort_error)
 	{
@@ -114,7 +114,6 @@ int main()
 
 		for(uint64_t i = 10000; i >= 100; i--)
 		{
-			printf("inserting %"PRIu64"\n", i);
 			insert_uint_bplus_tree(mt2, i);
 
 			if(i % 500 == 0)
@@ -131,7 +130,6 @@ int main()
 
 		for(uint64_t i = 10000; i >= 100; i--)
 		{
-			printf("deleting %"PRIu64"\n", i);
 			delete_uint_bplus_tree(mt3, i);
 
 			if(i % 500 == 0)
