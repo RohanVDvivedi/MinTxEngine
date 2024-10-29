@@ -20,9 +20,34 @@ mini_transaction_engine mte;
 #define CHECKPOINT_PERIOD_US (5 * 60 * 1000000) // 5 minutes
 
 bplus_tree_tuple_defs bpttd;
-uint64_t root;
+uint64_t root_page_id;
 
 tuple_def record_def;
+
+void create_bplus_tree(mini_transaction* mt)
+{
+	root_page_id = get_new_bplus_tree(&bpttd, &pam, &pmm, mt, &(mt->abort_error));
+}
+
+int insert_bplus_tree(mini_transaction* mt, uint64_t x)
+{
+	return insert_in_bplus_tree(root_page_id, &x, &bpttd, &pam, &pmm, mt, &(mt->abort_error));
+}
+
+int delete_bplus_tree(mini_transaction* mt, uint64_t x)
+{
+	return delete_from_bplus_tree(root_page_id, &x, &bpttd, &pam, &pmm, mt, &(mt->abort_error));
+}
+
+void print_bplus_tree(mini_transaction* mt)
+{
+	print_bplus_tree(root_page_id, 0, &bpttd, &pam, mt, &(mt->abort_error));
+}
+
+void destroy_bplus_tree(mini_transaction* mt)
+{
+	destroy_bplus_tree(root_page_id, &bpttd, &pam, mt, &(mt->abort_error));
+}
 
 int main()
 {
