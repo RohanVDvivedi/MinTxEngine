@@ -472,10 +472,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	}
 
 	{
-		data_type_info* dti = malloc(sizeof_tuple_data_type_info(3));
+		data_type_info* dti = malloc(sizeof_tuple_data_type_info(4));
 		if(dti == NULL)
 			exit(-1);
-		initialize_tuple_data_type_info(dti, "cmtlr_def", 0, lrtd->max_log_record_size, 3);
+		initialize_tuple_data_type_info(dti, "cmtlr_def", 0, lrtd->max_log_record_size, 4);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].type_info = &(lrtd->LSN_type);
@@ -483,8 +483,11 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		strcpy(dti->containees[1].field_name, "prev_log_record_LSN");
 		dti->containees[1].type_info = &(lrtd->LSN_type);
 
-		strcpy(dti->containees[2].field_name, "info");
-		dti->containees[2].type_info = &(lrtd->data_in_bytes_type);
+		strcpy(dti->containees[2].field_name, "is_aborted");
+		dti->containees[2].type_info = BIT_FIELD_NON_NULLABLE[1];
+
+		strcpy(dti->containees[3].field_name, "info");
+		dti->containees[3].type_info = &(lrtd->data_in_bytes_type);
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd->cmtlr_def), dti);
@@ -878,7 +881,9 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.cmtlr.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
 			lr.cmtlr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
 
-			user_value info = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(2), log_record_contents);
+			lr.cmtlr.is_aborted = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(2), log_record_contents).bit_field_value;
+
+			user_value info = get_value_from_element_from_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(3), log_record_contents);
 			if(is_user_value_NULL(&info))
 				lr.cmtlr.info = NULL;
 			else
@@ -1628,14 +1633,17 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->cmtlr.prev_log_record_LSN}, UINT32_MAX))
 				goto ERROR;
 
+			if(!set_element_in_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(2), result + 1, &(user_value){.bit_field_value = lr->cmtlr.is_aborted}, UINT32_MAX))
+				goto ERROR;
+
 			if(lr->cmtlr.info == NULL)
 			{
-				if(!set_element_in_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(2), result + 1, NULL_USER_VALUE, UINT32_MAX))
+				if(!set_element_in_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(3), result + 1, NULL_USER_VALUE, UINT32_MAX))
 					goto ERROR;
 			}
 			else
 			{
-				if(!set_element_in_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(2), result + 1, &(user_value){.blob_value = lr->cmtlr.info, .blob_size = lr->cmtlr.info_size}, UINT32_MAX))
+				if(!set_element_in_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(3), result + 1, &(user_value){.blob_value = lr->cmtlr.info, .blob_size = lr->cmtlr.info_size}, UINT32_MAX))
 					goto ERROR;
 			}
 
@@ -1915,6 +1923,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->cmtlr.mini_transaction_id); printf("\n");
 			printf("prev_log_record_LSN : "); print_uint256(lr->cmtlr.prev_log_record_LSN); printf("\n");
+			printf("is_aborted : %d\n", !!(lr->amtlr.is_aborted));
 			printf("info : "); print_blob(lr->cmtlr.info, lr->cmtlr.info_size); printf("\n");
 			return;
 		}
