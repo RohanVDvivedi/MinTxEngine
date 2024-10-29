@@ -315,7 +315,53 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 
 		// perform undo
 		{
-
+			switch(undo_lr->type)
+			{
+				case PAGE_INIT :
+				{
+					break;
+				}
+				case PAGE_SET_HEADER :
+				{
+					break;
+				}
+				case TUPLE_APPEND :
+				{
+					break;
+				}
+				case TUPLE_INSERT :
+				{
+					break;
+				}
+				case TUPLE_UPDATE :
+				{
+					break;
+				}
+				case TUPLE_DISCARD :
+				{
+					break;
+				}
+				case TUPLE_DISCARD_ALL :
+				{
+					break;
+				}
+				case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+				{
+					break;
+				}
+				case TUPLE_SWAP :
+				{
+					break;
+				}
+				case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+				{
+					break;
+				}
+				case PAGE_CLONE :
+				{
+					break;
+				}
+			}
 		}
 
 		// append clr log record
