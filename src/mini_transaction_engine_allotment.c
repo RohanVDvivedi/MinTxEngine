@@ -338,17 +338,24 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				{
 					void* page_header = get_page_header(page_contents, mte->user_stats.page_size);
 					uint32_t page_header_size = get_page_header_size(page_contents, mte->user_stats.page_size);
-					if(page_header_size != undo_lr->psh_lr.page_header_size) //this should never happen if write locks were held
+					if(page_header_size != undo_lr->pshlr.page_header_size) //this should never happen if write locks were held
 						exit(-1);
 					memory_move(page_header, undo_lr->pshlr.old_page_header_contents, page_header_size);
 					break;
 				}
 				case TUPLE_APPEND :
 				{
+					uint32_t tuple_count = get_tuple_count_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->talr.size_def));
+					if(tuple_count == 0)
+						exit(-1);
+					if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->talr.size_def), tuple_count - 1))
+						exit(-1);
 					break;
 				}
 				case TUPLE_INSERT :
 				{
+					if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tilr.size_def), undo_lr->tilr.insert_index))
+						exit(-1);
 					break;
 				}
 				case TUPLE_UPDATE :
@@ -361,6 +368,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				}
 				case TUPLE_DISCARD_ALL :
 				{
+					memory_move(page_contents, undo_lr->tdalr.old_page_contents, mte->user_stats.page_size);
 					break;
 				}
 				case TUPLE_DISCARD_TRAILING_TOMB_STONES :
