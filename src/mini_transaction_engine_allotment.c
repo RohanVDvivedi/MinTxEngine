@@ -551,3 +551,15 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
 }
+
+void mark_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, int abort_error)
+{
+	pthread_mutex_lock(&(mte->global_lock));
+	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+
+	mt->state = MIN_TX_ABORTED;
+	mt->abort_error = abort_error;
+
+	shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+}
