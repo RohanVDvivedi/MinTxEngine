@@ -190,7 +190,54 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 		mt->state = MINI_TX_UNDOING_FOR_ABORT;
 	}
 
-	// undo everything you did for this transaction until now except
+	// undo everything you did for this transaction until now except FULL_PAGE_WRITE and PAGE_COMPACTION as their undo is NO-OP
+	{
+		uint256 undo_LSN; // this attribute tracks the log record to be undone
+
+		// initialize undo_LSN
+		{
+			// fetch the most recent log record
+			log_record lr;
+
+			// fetch the last non full page write log record
+			uint256 temp = mt->lastLSN;
+			while(1)
+			{
+				if(!get_parsed_log_record_UNSAFE(mte, temp, &lr))
+					exit(-1);
+
+				if(lr->type != FULL_PAGE_WRITE)
+					break;
+
+				temp = get_prev_log_record_LSN(&lr);
+				destroy_and_free_parsed_log_record(&lr);
+			}
+
+			if(lr->type == ABORT_MINI_TX) // its previous log record is where we start undoing from
+			{
+				undo_LSN = lr->amtlr.prev_log_record_LSN;
+				destroy_and_free_parsed_log_record(&lr);
+			}
+			else if(lr->type == COMPENSATION_LOG) // we start from the previous log record of the last log record that was undone
+			{
+				temp = lr->clr.undo_of_LSN;
+				destroy_and_free_parsed_log_record(&lr);
+
+				if(!get_parsed_log_record_UNSAFE(mte, temp, &lr))
+					exit(-1);
+
+				undo_of_LSN = get_prev_log_record_LSN(&lr);
+				destroy_and_free_parsed_log_record(&lr);
+			}
+			else // it can not be any other type of log record
+				exit(-1);
+		}
+
+		while(!are_equal_uint256(undo_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // keep on doing undo until you do not have any log record to undo
+		{
+
+		}
+	}
 
 	// mark it completed and exit
 	append_completion_log_record_and_flush_UNSAFE(mte, mt, complete_info, complete_info_size);
