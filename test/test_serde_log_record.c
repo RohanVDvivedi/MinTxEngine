@@ -504,6 +504,7 @@ int main()
 			.amtlr = {
 				.mini_transaction_id = get_uint256(113),
 				.prev_log_record_LSN = get_uint256(943),
+				.abort_error = -55,
 			}
 		};
 
