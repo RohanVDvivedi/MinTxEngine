@@ -47,6 +47,7 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 		mt->lastLSN = INVALID_LOG_SEQUENCE_NUMBER;
 		mt->state = MIN_TX_IN_PROGRESS;
 		mt->abort_error = 0;
+		mt->reference_counter = 1;
 
 		// in the begining every mini transaction is a reader_mini_transaction
 		insert_head_in_linkedlist(&(mte->reader_mini_transactions), mt);
