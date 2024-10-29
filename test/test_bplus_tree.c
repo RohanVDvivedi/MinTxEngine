@@ -131,19 +131,18 @@ int main()
 		print_uint_bplus_tree(mt3);
 
 		// abort here
+		mark_aborted_for_mini_tx(&mte, mt3, -55);
 
 		mte_complete_mini_tx(&mte, mt3, NULL, 0);
 	}
 
-	/*{
-		mini_transaction* mt3 = mte_allot_mini_tx(&mte, 1000000);
+	{
+		mini_transaction* mt4 = mte_allot_mini_tx(&mte, 1000000);
 
-		print_bplus_tree(mt3);
+		print_uint_bplus_tree(mt4);
 
-		// abort here
-
-		mte_complete_mini_tx(&mte, mt3, NULL, 0);
-	}*/
+		mte_complete_mini_tx(&mte, mt4, NULL, 0);
+	}
 
 	return 0;
 }
