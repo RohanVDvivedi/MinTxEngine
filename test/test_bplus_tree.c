@@ -116,6 +116,9 @@ int main()
 		{
 			printf("inserting %"PRIu64"\n", i);
 			insert_uint_bplus_tree(mt2, i);
+
+			if(i % 500 == 0)
+				intermediate_wal_flush_for_mini_transaction_engine(&mte);
 		}
 
 		print_uint_bplus_tree(mt2);
@@ -130,6 +133,9 @@ int main()
 		{
 			printf("deleting %"PRIu64"\n", i);
 			delete_uint_bplus_tree(mt3, i);
+
+			if(i % 500 == 0)
+				intermediate_wal_flush_for_mini_transaction_engine(&mte);
 		}
 
 		print_uint_bplus_tree(mt3);
