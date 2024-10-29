@@ -1,5 +1,7 @@
 #include<callbacks_bufferpool.h>
 
+#include<dirty_page_table_entry.h>
+
 #include<block_io.h>
 
 // page_id * page_size, will only overflow if the 64 bit off_t offset you are trying to read/write overflows, hence no problem here

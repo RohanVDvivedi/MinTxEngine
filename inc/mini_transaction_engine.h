@@ -16,7 +16,6 @@
 #include<log_record.h>
 
 #include<mini_transaction.h>
-#include<dirty_page_table_entry.h>
 
 #include<abort_errors_list.h>
 

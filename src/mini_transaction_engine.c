@@ -1,5 +1,7 @@
 #include<mini_transaction_engine.h>
 
+#include<dirty_page_table_entry.h>
+
 #include<callbacks_bufferpool.h>
 #include<callbacks_wale.h>
 #include<wal_list_utils.h>

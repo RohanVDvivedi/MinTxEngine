@@ -1,5 +1,7 @@
 #include<mini_transaction_engine_util.h>
 
+#include<dirty_page_table_entry.h>
+
 #include<system_page_header_util.h>
 
 void mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mini_transaction_engine* mte, void* page, uint64_t page_id)
