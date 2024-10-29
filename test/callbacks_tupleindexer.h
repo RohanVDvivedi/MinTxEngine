@@ -1,51 +1,51 @@
 #include<page_access_methods.h>
 #include<page_modification_methods.h>
 
-void* get_new_page_with_write_lock(void* context, const void* transaction_id, uint64_t* page_id_returned, int* abort_error)
+void* get_new_page_with_write_lock_mtx(void* context, const void* transaction_id, uint64_t* page_id_returned, int* abort_error)
 {
-	void* result = get_new_page_with_write_latch_for_mini_tx(context, transaction_id, page_id_returned);
+	void* result = get_new_page_with_write_latch_for_mini_tx(context, (void*)transaction_id, page_id_returned);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
-void* acquire_page_with_reader_lock(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
+void* acquire_page_with_reader_lock_mtx(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
 {
-	void* result = acquire_page_with_reader_latch_for_mini_tx(context, transaction_id, page_id);
+	void* result = acquire_page_with_reader_latch_for_mini_tx(context, (void*)transaction_id, page_id);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
-void* acquire_page_with_writer_lock(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
+void* acquire_page_with_writer_lock_mtx(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
 {
-	void* result = acquire_page_with_writer_latch_for_mini_tx(context, transaction_id, page_id);
+	void* result = acquire_page_with_writer_latch_for_mini_tx(context, (void*)transaction_id, page_id);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
-int downgrade_writer_lock_to_reader_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
+int downgrade_writer_lock_to_reader_lock_on_page_mtx(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
 {
-	int result = downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(context, transaction_id, pg_ptr, int opts);
+	int result = downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(context, (void*)transaction_id, pg_ptr);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
-int upgrade_reader_lock_to_writer_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int* abort_error)
+int upgrade_reader_lock_to_writer_lock_on_page_mtx(void* context, const void* transaction_id, void* pg_ptr, int* abort_error)
 {
-	int result = upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(context, transaction_id, pg_ptr);
+	int result = upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(context, (void*)transaction_id, pg_ptr);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
-int release_reader_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
+int release_reader_lock_on_page_mtx(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
 {
-	int result = release_reader_latch_on_page_for_mini_tx(context, transaction_id, pg_ptr, int opts);
+	int result = release_reader_latch_on_page_for_mini_tx(context, (void*)transaction_id, pg_ptr, !!(opts & FREE_PAGE));
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
-int release_writer_lock_on_page(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
+int release_writer_lock_on_page_mtx(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
 {
-	int result = release_writer_latch_on_page_for_mini_tx(context, transaction_id, pg_ptr, int opts);
+	int result = release_writer_latch_on_page_for_mini_tx(context, (void*)transaction_id, pg_ptr, !!(opts & FREE_PAGE));
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
-int free_page(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
+int free_page_mtx(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
 {
-	int result = free_page_for_mini_tx(context, transaction_id, page_id);
+	int result = free_page_for_mini_tx(context, (void*)transaction_id, page_id);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
@@ -55,14 +55,14 @@ page_access_methods pam;
 void init_pam_for_mini_tx_engine(mini_transaction_engine* mte)
 {
 	pam = (page_access_methods){
-		.get_new_page_with_write_lock = get_new_page_with_write_lock,
-		.acquire_page_with_reader_lock = acquire_page_with_reader_lock,
-		.acquire_page_with_writer_lock = acquire_page_with_writer_lock,
-		.downgrade_writer_lock_to_reader_lock_on_page = downgrade_writer_lock_to_reader_lock_on_page,
-		.upgrade_reader_lock_to_writer_lock_on_page = upgrade_reader_lock_to_writer_lock_on_page,
-		.release_reader_lock_on_page = release_reader_lock_on_page,
-		.release_writer_lock_on_page = release_writer_lock_on_page,
-		.free_page = free_page,
+		.get_new_page_with_write_lock = get_new_page_with_write_lock_mtx,
+		.acquire_page_with_reader_lock = acquire_page_with_reader_lock_mtx,
+		.acquire_page_with_writer_lock = acquire_page_with_writer_lock_mtx,
+		.downgrade_writer_lock_to_reader_lock_on_page = downgrade_writer_lock_to_reader_lock_on_page_mtx,
+		.upgrade_reader_lock_to_writer_lock_on_page = upgrade_reader_lock_to_writer_lock_on_page_mtx,
+		.release_reader_lock_on_page = release_reader_lock_on_page_mtx,
+		.release_writer_lock_on_page = release_writer_lock_on_page_mtx,
+		.free_page = free_page_mtx,
 		.pas = (page_access_specs){
 			.page_id_width = mte->user_stats.page_id_width,
 			.page_size = mte->user_stats.page_size,
