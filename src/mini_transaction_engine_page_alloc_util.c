@@ -386,6 +386,14 @@ static int add_new_page_to_database_INTERNAL(mini_transaction_engine* mte, mini_
 		// mark the page as dirty in the bufferpool and dirty page table
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, new_page, new_page_id);
 
+		// recalculate page checksums for the new_page, prior to releasing the latches
+		pthread_mutex_unlock(&(mte->global_lock));
+		recalculate_page_checksum(new_page, &(mte->stats));
+		pthread_mutex_lock(&(mte->global_lock));
+
+		// this has to succeed, we already marked it dirty, so was_modified can be set to 0
+		release_writer_lock_on_page(&(mte->bufferpool_handle), new_page, 0, 0); // was_modified = 0, force_flush = 0
+
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// free full page write log record
@@ -409,7 +417,6 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		if(!is_free_space_mapper_page((*page_id), &(mte->stats))) // if not a free space mapper page, then it is a data page, if so we are done with creating a new data page that can be locked
 			break;
 	}
-
 	uint64_t free_space_mapper_page_id = get_is_valid_bit_page_id_for_page((*page_id), &(mte->stats));
 
 	// get write latch on the page and free space mapper page
@@ -433,6 +440,5 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		return NULL;
 	}
 	pthread_mutex_unlock(&(mte->global_lock));
-
 	return allocate_page_holding_write_latch_INTERNAL(mte, mt, free_space_mapper_page, free_space_mapper_page_id, page, (*page_id));
 }
