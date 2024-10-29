@@ -338,7 +338,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				{
 					void* page_header = get_page_header(page_contents, mte->user_stats.page_size);
 					uint32_t page_header_size = get_page_header_size(page_contents, mte->user_stats.page_size);
-					if(page_header_size != undo_lr->pshlr.page_header_size) //this should never happen if write locks were held
+					if(page_header_size != undo_lr->pshlr.page_header_size) // this should never happen if write locks were held
 						exit(-1);
 					memory_move(page_header, undo_lr->pshlr.old_page_header_contents, page_header_size);
 					break;
@@ -348,18 +348,30 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 					uint32_t tuple_count = get_tuple_count_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->talr.size_def));
 					if(tuple_count == 0) //this should never happen if write locks were held
 						exit(-1);
-					if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->talr.size_def), tuple_count - 1)) //this should never happen if write locks were held
+					if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->talr.size_def), tuple_count - 1)) // this should never happen if write locks were held
 						exit(-1);
 					break;
 				}
 				case TUPLE_INSERT :
 				{
-					if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tilr.size_def), undo_lr->tilr.insert_index)) //this should never happen if write locks were held
+					if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tilr.size_def), undo_lr->tilr.insert_index)) // this should never happen if write locks were held
 						exit(-1);
 					break;
 				}
 				case TUPLE_UPDATE :
 				{
+					int undone = update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tulr.size_def), undo_lr->tulr.update_index, undo_lr->tulr.old_tuple);
+					if(!undone)
+					{
+						if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tulr.size_def), undo_lr->tulr.update_index, NULL)) // this should never happen
+							exit(-1);
+						int memory_allocation_error = 0;
+						run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), &memory_allocation_error);
+						if(memory_allocation_error) // malloc failed on compaction
+							exit(-1);
+						if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tulr.size_def), undo_lr->tulr.update_index, undo_lr->tulr.old_tuple)) // this should never happen if write locks were held
+							exit(-1);
+					}
 					break;
 				}
 				case TUPLE_DISCARD :
@@ -371,7 +383,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 						run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), &memory_allocation_error);
 						if(memory_allocation_error) // malloc failed on compaction
 							exit(-1);
-						if(!insert_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), undo_lr->tdlr.discard_index, undo_lr->tdlr.old_tuple)) //this should never happen if write locks were held
+						if(!insert_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), undo_lr->tdlr.discard_index, undo_lr->tdlr.old_tuple)) // this should never happen if write locks were held
 							exit(-1);
 					}
 					break;
@@ -392,14 +404,14 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 						run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tdttlr.size_def), &memory_allocation_error);
 						if(memory_allocation_error) // malloc failed for compaction
 							exit(-1);
-						if(!append_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tdttlr.size_def), NULL)) //this should never happen if write locks were held
+						if(!append_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tdttlr.size_def), NULL)) // this should never happen if write locks were held
 							exit(-1);
 					}
 					break;
 				}
 				case TUPLE_SWAP :
 				{
-					if(!swap_tuples_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tslr.size_def), undo_lr->tslr.swap_index1, undo_lr->tslr.swap_index2)) //this should never happen if write locks were held
+					if(!swap_tuples_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tslr.size_def), undo_lr->tslr.swap_index1, undo_lr->tslr.swap_index2)) // this should never happen if write locks were held
 						exit(-1);
 					break;
 				}
