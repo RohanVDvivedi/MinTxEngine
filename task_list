@@ -1,25 +1,7 @@
 PICKED
- * implement mte_complete_mini_tx function
-   * decrements the reference counter of the mini transaction at the end of this function
-   * if the mini_tx_id == INVALID, it is a reader transaction, nothing needs to be done
-   * if transaction is in IN_PROGRESS state, put COMPLETE_MINI_TX log record and flush all logs 
-   * if transaction is in ABORTED state, put ABORT_MINI_TX log record, start undoing from where you left off until you reach COMPLETE_MINI_TX log record
-     * if lastLSN is a regular modification log record put ABORT_MINI_TX log record and flush all log records
-     * if lastLSN is ABORT_MINI_TX, start a loop from its previous log record
-     * if lastLSN is CLR, start a loop from is next_log_record_to_undo
-     * do it until you read the log record whose prev_log_record_LSN is INVALID
-     * then finally put COMPLETE_MINI_TX log record and flush all log records
-   * for generating clr records in a loop
-     * always take shared lock on the manager_lock inside the loop, for every iteration
-     * generate full page write log record as necessary
-     * always take latch in write mode, and wait indefinitely until you get the lock
-     * always skip FULL_PAGE_WRITE log records
-     * only flip the bit in the PAGE_DE/ALLOCATION log records
-     * undo operations to page modifications in reverse, perform compaction and tuple copy and then inserts as and when needed
-     * pageLSN, and mt->lastLSN are always to be set to the lsn of the CLR log record, that we just generated
-     * writerLSN of no pages are to be changed
 
  * exit(-1) the process on an IO error in bufferpool or WALe's callbacks
+ * implement undo for TUPLE_UPDATE_ELEMENT_IN_PLACE with edge cases covered
  * implement logic to insert 10000 multiples of 10, iterating i from 0 to 9999 (both inclusive), inserting 0 to 99990, and abort where i is also multiple of 23
  * print the bplus tree in the end to ensure that the test passed
 
