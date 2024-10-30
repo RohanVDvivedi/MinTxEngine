@@ -65,7 +65,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(3));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "palr_def", 0, lrtd->max_log_record_size, 3);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -84,7 +87,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(6));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "pilr_def", 0, lrtd->max_log_record_size, 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -112,7 +118,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(5));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "pshlr_def", 0, lrtd->max_log_record_size, 5);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -137,7 +146,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(5));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "talr_def", 0, lrtd->max_log_record_size, 5);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -162,7 +174,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(6));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "tilr_def", 0, lrtd->max_log_record_size, 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -190,7 +205,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(7));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "tulr_def", 0, lrtd->max_log_record_size, 7);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -221,7 +239,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(6));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "tdlr_def", 0, lrtd->max_log_record_size, 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -249,7 +270,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(5));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "tdalr_def", 0, lrtd->max_log_record_size, 5);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -274,7 +298,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(5));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "tdttlr_def", 0, lrtd->max_log_record_size, 5);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -299,7 +326,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(6));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "tslr_def", 0, lrtd->max_log_record_size, 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -327,7 +357,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(8));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "tueiplr_def", 0, lrtd->max_log_record_size, 8);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -361,7 +394,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(6));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "pclr_def", 0, lrtd->max_log_record_size, 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -389,7 +425,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(4));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "pcptlr_def", 0, lrtd->max_log_record_size, 4);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -436,7 +475,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(3));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "clr_def", 0, lrtd->max_log_record_size, 3);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -455,7 +497,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(3));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "amtlr_def", 0, lrtd->max_log_record_size, 3);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -474,7 +519,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	{
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(4));
 		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
+		}
 		initialize_tuple_data_type_info(dti, "cmtlr_def", 0, lrtd->max_log_record_size, 4);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
@@ -757,9 +805,15 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			int allocation_error = 0;
 			data_type_info* dti = deserialize_type_info(tpl_def.blob_value, tpl_def.blob_size, &allocation_error);
 			if(dti == NULL)
+			{
+				printf("ISSUE :: failure to deserialize a data type info from the log record\n");
 				exit(-1);
+			}
 			if(!initialize_tuple_def(&(lr.tueiplr.tpl_def), dti))
+			{
+				printf("ISSUE :: failure to initialize tuple type info from the log record\n");
 				exit(-1);
+			}
 
 			lr.tueiplr.tuple_index = get_value_from_element_from_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(4), log_record_contents).uint_value;
 

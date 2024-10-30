@@ -49,7 +49,10 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// reset the free_space_mapper_bit_pos on the free_space_mapper_page
 	{
@@ -65,7 +68,10 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 		int wal_error = 0;
 		uint256 log_record_LSN = append_log_record(wale_p, serialized_act_lr, serialized_act_lr_size, 0, &wal_error);
 		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+		{
+			printf("ISSUE :: unable to append log record\n");
 			exit(-1);
+		}
 
 		if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
 		{
@@ -120,11 +126,20 @@ static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine*
 {
 	// ensure correctness of the parameters
 	if(!is_free_space_mapper_page(free_space_mapper_page_id, &(mte->stats)))
+	{
+		printf("ISSUE :: page deemed to be free_space_mapper_page, not a free space mapper page\n");
 		exit(-1);
+	}
 	if(is_free_space_mapper_page(page_id, &(mte->stats)))
+	{
+		printf("ISSUE :: page deemed not to be free_space_mapper_page, is a free space mapper page\n");
 		exit(-1);
+	}
 	if(free_space_mapper_page_id != get_is_valid_bit_page_id_for_page(page_id, &(mte->stats)))
+	{
+		printf("ISSUE :: page_id does not correspond to allocation bit on the provided free_space_mapper_page\n");
 		exit(-1);
+	}
 
 	// perform full page writes if necessary
 	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
@@ -144,7 +159,10 @@ static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine*
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// set to 1 the free_space_mapper_bit_pos on the free_space_mapper_page
 	{
@@ -161,7 +179,10 @@ static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine*
 		int wal_error = 0;
 		uint256 log_record_LSN = append_log_record(wale_p, serialized_act_lr, serialized_act_lr_size, 0, &wal_error);
 		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+		{
+			printf("ISSUE :: unable to append log record\n");
 			exit(-1);
+		}
 
 		if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
 		{
@@ -355,7 +376,10 @@ static int add_new_page_to_database_INTERNAL(mini_transaction_engine* mte, mini_
 	uint32_t serialized_fpw_lr_size = 0;
 	const void* serialized_fpw_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
 	if(serialized_fpw_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize full page write log record\n");
 		exit(-1);
+	}
 
 	pthread_mutex_lock(&(mte->global_lock));
 
@@ -364,7 +388,10 @@ static int add_new_page_to_database_INTERNAL(mini_transaction_engine* mte, mini_
 		int wal_error = 0;
 		uint256 log_record_LSN = append_log_record(wale_p, serialized_fpw_lr, serialized_fpw_lr_size, 0, &wal_error);
 		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+		{
+			printf("ISSUE :: unable to append full page write log record\n");
 			exit(-1);
+		}
 
 		// if mt->mini_transaction_id is INVALID, then assign it log_record_LSN. and make it a writer_mini_transaction
 		if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))

@@ -16,7 +16,10 @@ dirty_page_table_entry* get_new_dirty_page_table_entry()
 {
 	dirty_page_table_entry* dpte = malloc(sizeof(dirty_page_table_entry));
 	if(dpte == NULL)
+	{
+		printf("ISSUE :: unable to allocate memory for dirty page table entry\n");
 		exit(-1);
+	}
 	initialize_llnode(&(dpte->enode));
 	return dpte;
 }

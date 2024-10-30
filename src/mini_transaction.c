@@ -16,7 +16,10 @@ mini_transaction* get_new_mini_transaction()
 {
 	mini_transaction* mt = malloc(sizeof(mini_transaction));
 	if(mt == NULL)
+	{
+		printf("ISSUE :: unable to allocate memory for mini transaction\n");
 		exit(-1);
+	}
 	pthread_cond_init(&(mt->write_lock_wait), NULL);
 	mt->reference_counter = 0;
 	initialize_llnode(&(mt->enode));

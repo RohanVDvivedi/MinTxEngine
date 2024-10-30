@@ -110,7 +110,10 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		return 0;
 
 	if(!initialize_hashmap(&(mte->writer_mini_transactions), ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, mte->bufferpool_frame_count, &simple_hasher(hash_mini_transaction), &simple_comparator(compare_mini_transactions), offsetof(mini_transaction, enode)))
+	{
+		printf("ISSUE :: unable to initialize an internal hashmap\n");
 		exit(-1);
+	}
 	initialize_linkedlist(&(mte->reader_mini_transactions), offsetof(mini_transaction, enode));
 	initialize_linkedlist(&(mte->free_mini_transactions_list), offsetof(mini_transaction, enode));
 	for(uint32_t i = 0; i < mte->bufferpool_frame_count; i++)
@@ -120,7 +123,10 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	}
 
 	if(!initialize_hashmap(&(mte->dirty_page_table), ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, mte->bufferpool_frame_count, &simple_hasher(hash_dirty_page_table_entry), &simple_comparator(compare_dirty_page_table_entries), offsetof(dirty_page_table_entry, enode)))
+	{
+		printf("ISSUE :: unable to initialize an internal hashmap\n");
 		exit(-1);
+	}
 	initialize_linkedlist(&(mte->free_dirty_page_entries_list), offsetof(dirty_page_table_entry, enode));
 	for(uint32_t i = 0; i < mte->bufferpool_frame_count; i++)
 	{

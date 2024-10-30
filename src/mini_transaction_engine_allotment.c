@@ -79,12 +79,18 @@ static void append_abortion_log_record_and_flush_UNSAFE(mini_transaction_engine*
 		uint32_t serialized_lr_size = 0;
 		const void* serialized_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &lr, &serialized_lr_size);
 		if(serialized_lr == NULL)
+		{
+			printf("ISSUE :: unable to serialize log record\n");
 			exit(-1);
+		}
 
 		int wal_error = 0;
 		uint256 log_record_LSN = append_log_record(wale_p, serialized_lr, serialized_lr_size, 0, &wal_error);
 		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+		{
+			printf("ISSUE :: unable to append log record\n");
 			exit(-1);
+		}
 
 		free((void*)serialized_lr);
 
@@ -127,12 +133,18 @@ static void append_completion_log_record_and_flush_UNSAFE(mini_transaction_engin
 		uint32_t serialized_lr_size = 0;
 		const void* serialized_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &lr, &serialized_lr_size);
 		if(serialized_lr == NULL)
+		{
+			printf("ISSUE :: unable to serialize log record\n");
 			exit(-1);
+		}
 
 		int wal_error = 0;
 		uint256 log_record_LSN = append_log_record(wale_p, serialized_lr, serialized_lr_size, 0, &wal_error);
 		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+		{
+			printf("ISSUE :: unable to append log record\n");
 			exit(-1);
+		}
 
 		free((void*)serialized_lr);
 
@@ -172,7 +184,10 @@ static void append_compensation_log_record_INTERNAL(mini_transaction_engine* mte
 	uint32_t serialized_lr_size = 0;
 	const void* serialized_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &lr, &serialized_lr_size);
 	if(serialized_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	pthread_mutex_lock(&(mte->global_lock));
 
@@ -181,7 +196,10 @@ static void append_compensation_log_record_INTERNAL(mini_transaction_engine* mte
 		int wal_error = 0;
 		uint256 log_record_LSN = append_log_record(wale_p, serialized_lr, serialized_lr_size, 0, &wal_error);
 		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+		{
+			printf("ISSUE :: unable to append log record\n");
 			exit(-1);
+		}
 
 		// you had to undo a log record then there already exists a log record before it, so the mini transaction already has a mini_transaction_id
 
@@ -224,6 +242,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 		case ABORT_MINI_TX :
 		case COMPLETE_MINI_TX :
 		{
+			printf("ISSUE :: encountered a log record that can not be undone, wal probably corrupted or existence of a bug in mini transaction engine\n");
 			exit(-1);
 		}
 
@@ -277,13 +296,19 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 			if(undo_lr->type == PAGE_ALLOCATION) // allocation set the bit to 1, so now reset it
 			{
 				if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos) != 1) // this should never happen if write locks were held
+				{
+					printf("ISSUE :: unable to undo page allocation\n");
 					exit(-1);
+				}
 				reset_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
 			}
 			else
 			{
 				if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos) != 0) // this should never happen if write locks were held
+				{
+					printf("ISSUE :: unable to undo page deallocation\n");
 					exit(-1);
+				}
 				set_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
 			}
 		}
@@ -326,7 +351,10 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 					void* page_header = get_page_header(page_contents, mte->user_stats.page_size);
 					uint32_t page_header_size = get_page_header_size(page_contents, mte->user_stats.page_size);
 					if(page_header_size != undo_lr->pshlr.page_header_size) // this should never happen if write locks were held
+					{
+						printf("ISSUE :: unable to undo page set header\n");
 						exit(-1);
+					}
 					memory_move(page_header, undo_lr->pshlr.old_page_header_contents, page_header_size);
 					break;
 				}
@@ -334,15 +362,24 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				{
 					uint32_t tuple_count = get_tuple_count_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->talr.size_def));
 					if(tuple_count == 0) //this should never happen if write locks were held
+					{
+						printf("ISSUE :: will not be able to undo tuple append\n");
 						exit(-1);
+					}
 					if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->talr.size_def), tuple_count - 1)) // this should never happen if write locks were held
+					{
+						printf("ISSUE :: unable to undo tuple append\n");
 						exit(-1);
+					}
 					break;
 				}
 				case TUPLE_INSERT :
 				{
 					if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tilr.size_def), undo_lr->tilr.insert_index)) // this should never happen if write locks were held
+					{
+						printf("ISSUE :: unable to undo tuple insert\n");
 						exit(-1);
+					}
 					break;
 				}
 				case TUPLE_UPDATE :
@@ -351,13 +388,22 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 					if(!undone)
 					{
 						if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tulr.size_def), undo_lr->tulr.update_index, NULL)) // this should never happen
+						{
+							printf("ISSUE :: unable to set NULL to a tuple :: this should vener happen\n");
 							exit(-1);
+						}
 						int memory_allocation_error = 0;
 						run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), &memory_allocation_error);
 						if(memory_allocation_error) // malloc failed on compaction
+						{
+							printf("ISSUE :: unable to undo tuple update, due to failure to callocate memory for page compaction\n");
 							exit(-1);
+						}
 						if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tulr.size_def), undo_lr->tulr.update_index, undo_lr->tulr.old_tuple)) // this should never happen if write locks were held
+						{
+							printf("ISSUE :: unable to undo tuple update\n");
 							exit(-1);
+						}
 					}
 					break;
 				}
@@ -369,9 +415,15 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 						int memory_allocation_error = 0;
 						run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), &memory_allocation_error);
 						if(memory_allocation_error) // malloc failed on compaction
+						{
+							printf("ISSUE :: unable to undo tuple discard, due to failure to callocate memory for page compaction\n");
 							exit(-1);
+						}
 						if(!insert_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), undo_lr->tdlr.discard_index, undo_lr->tdlr.old_tuple)) // this should never happen if write locks were held
+						{
+							printf("ISSUE :: unable to undo tuple discard, even after a compaction\n");
 							exit(-1);
+						}
 					}
 					break;
 				}
@@ -390,16 +442,25 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 						int memory_allocation_error = 0;
 						run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tdttlr.size_def), &memory_allocation_error);
 						if(memory_allocation_error) // malloc failed for compaction
+						{
+							printf("ISSUE :: unable to undo tuple discard trailing tombstones, due to failure to callocate memory for page compaction\n");
 							exit(-1);
+						}
 						if(!append_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tdttlr.size_def), NULL)) // this should never happen if write locks were held
+						{
+							printf("ISSUE :: unable to undo tuple discard trailing tombstones, even after a compaction\n");
 							exit(-1);
+						}
 					}
 					break;
 				}
 				case TUPLE_SWAP :
 				{
 					if(!swap_tuples_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tslr.size_def), undo_lr->tslr.swap_index1, undo_lr->tslr.swap_index2)) // this should never happen if write locks were held
+					{
+						printf("ISSUE :: unable to undo tuple swap\n");
 						exit(-1);
+					}
 					break;
 				}
 				case TUPLE_UPDATE_ELEMENT_IN_PLACE :
@@ -408,6 +469,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 					if(!undone)
 					{
 						// TODO : copy the tuple outside, update the old_element in it, set the existing tuple to NULL, insert the modified tuple
+						printf("TODO :: unhandled case of tuple update element in place\n");
 						exit(-1);
 					}
 					break;
@@ -418,7 +480,10 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 					break;
 				}
 				default : // if you reach here it is a bug
+				{
+					printf("ISSUE :: unable to undo log record of an illegal type, which was already filtered\n");
 					exit(-1);
+				}
 			}
 		}
 

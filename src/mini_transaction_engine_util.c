@@ -131,7 +131,7 @@ const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256
 		case HEADER_CORRUPTED :
 		case ALLOCATION_FAILED :
 		{
-			printf("wal_error = %d\n", wal_error);
+			printf("ISSUE :: wal_error = %d\n", wal_error);
 			exit(-1);
 		}
 	}
@@ -180,7 +180,7 @@ uint256 get_next_LSN_for_LSN_UNSAFE(mini_transaction_engine* mte, uint256 LSN)
 		case HEADER_CORRUPTED :
 		case ALLOCATION_FAILED :
 		{
-			printf("wal_error = %d\n", wal_error);
+			printf("ISSUE :: wal_error = %d\n", wal_error);
 			exit(-1);
 		}
 	}
@@ -196,7 +196,10 @@ void flush_wal_logs_UNSAFE(mini_transaction_engine* mte)
 		int wal_error = 0;
 		uint256 flushedLSN = flush_all_log_records(wale_p, &wal_error);
 		if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER))
+		{
+			printf("ISSUE :: unable to flush log records\n");
 			exit(-1);
+		}
 
 		mte->flushedLSN = max_uint256(mte->flushedLSN, flushedLSN);
 	}
@@ -255,7 +258,10 @@ uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(
 	uint32_t serialized_fpw_lr_size = 0;
 	const void* serialized_fpw_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
 	if(serialized_fpw_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize full page write log record\n");
 		exit(-1);
+	}
 
 	pthread_mutex_lock(&(mte->global_lock));
 
@@ -264,7 +270,10 @@ uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(
 		int wal_error = 0;
 		uint256 log_record_LSN = append_log_record(wale_p, serialized_fpw_lr, serialized_fpw_lr_size, 0, &wal_error);
 		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+		{
+			printf("ISSUE :: unable to append full page write log record\n");
 			exit(-1);
+		}
 
 		// if mt->mini_transaction_id is INVALID, then assign it log_record_LSN. and make it a writer_mini_transaction
 		if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))

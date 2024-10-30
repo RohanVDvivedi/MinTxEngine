@@ -23,7 +23,10 @@ static uint256 log_the_already_applied_log_record_for_mini_transaction_and_manag
 	int wal_error = 0;
 	uint256 log_record_LSN = append_log_record(wale_p, log_record, log_record_size, 0, &wal_error);
 	if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+	{
+		printf("ISSUE :: unable to append log record\n");
 		exit(-1);
+	}
 
 	if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
 	{
@@ -93,7 +96,10 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// apply the actual operation
 	int result = init_page(page_contents, mte->user_stats.page_size, page_header_size, tpl_sz_d);
@@ -163,7 +169,10 @@ void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction*
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// apply the actual operation
 	memory_move(old_page_header_contents, hdr, page_header_size);
@@ -229,7 +238,10 @@ int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// apply the actual operation
 	int result = append_tuple_on_page(page_contents, mte->user_stats.page_size, tpl_sz_d, external_tuple);
@@ -296,7 +308,10 @@ int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// apply the actual operation
 	int result = insert_tuple_on_page(page_contents, mte->user_stats.page_size, tpl_sz_d, index, external_tuple);
@@ -364,7 +379,10 @@ int update_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// apply the actual operation
 	int result = update_tuple_on_page(page_contents, mte->user_stats.page_size, tpl_sz_d, index, external_tuple);
@@ -431,7 +449,10 @@ int discard_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transac
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// apply the actual operation
 	int result = discard_tuple_on_page(page_contents, mte->user_stats.page_size, tpl_sz_d, index);
@@ -497,7 +518,10 @@ void discard_all_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_t
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// apply the actual operation
 	discard_all_tuples_on_page(page_contents, mte->user_stats.page_size, tpl_sz_d);
@@ -563,7 +587,10 @@ uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engin
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// apply the actual operation
 	uint32_t result = discard_trailing_tomb_stones_on_page(page_contents, mte->user_stats.page_size, tpl_sz_d);
@@ -630,7 +657,10 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// apply the actual operation
 	int result = swap_tuples_on_page(page_contents, mte->user_stats.page_size, tpl_sz_d, i1, i2);
@@ -707,7 +737,10 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// apply the actual operation
 	int result = set_element_in_tuple_in_place_on_page(page_contents, mte->user_stats.page_size, tpl_d, tuple_index, element_index, value);
@@ -774,7 +807,10 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// apply the actual operation
 	clone_page(page_contents, mte->user_stats.page_size, tpl_sz_d, page_contents_src);
@@ -839,7 +875,10 @@ int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 	uint32_t serialized_act_lr_size = 0;
 	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
+	{
+		printf("ISSUE :: unable to serialize log record\n");
 		exit(-1);
+	}
 
 	// apply the actual operation
 	int memory_allocation_error = 0;
