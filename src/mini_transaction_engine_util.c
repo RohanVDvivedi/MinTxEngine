@@ -37,7 +37,8 @@ mini_transaction* get_mini_transaction_that_last_persistent_write_locked_this_pa
 	mini_transaction* mt = (mini_transaction*)find_equals_in_hashmap(&(mte->writer_mini_transactions), &(mini_transaction){.mini_transaction_id = writerLSN});
 	if(mt == NULL)
 		return NULL;
-
+	if(mt->state == MIN_TX_COMPLETED) // if a mini transaction is in completed state then it can not have locked the page
+		return NULL;
 	return mt;
 }
 
@@ -101,6 +102,8 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 				write_lock_wait_timeout_in_microseconds_LEFT -= microseconds_elapsed;
 		}
 	}
+
+	printf("%d %d\n", (mt->state != MIN_TX_COMPLETED), !wait_error);
 
 	// collect the result as, decrement_mini_transaction_reference_counter_UNSAFE() may destroy it
 	int success = (mt->state == MIN_TX_COMPLETED);
