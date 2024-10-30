@@ -1978,7 +1978,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 			printf("mini_transaction_id : "); print_uint256(lr->cmtlr.mini_transaction_id); printf("\n");
 			printf("prev_log_record_LSN : "); print_uint256(lr->cmtlr.prev_log_record_LSN); printf("\n");
 			printf("is_aborted : %d\n", !!(lr->cmtlr.is_aborted));
-			printf("info : "); print_blob(lr->cmtlr.info, lr->cmtlr.info_size); printf("\n");
+			printf("info : "); if(lr->cmtlr.info) print_blob(lr->cmtlr.info, lr->cmtlr.info_size); else printf("NULL"); printf("\n");
 			return;
 		}
 	}
