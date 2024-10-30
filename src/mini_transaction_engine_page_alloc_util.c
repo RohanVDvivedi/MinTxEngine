@@ -432,7 +432,7 @@ static int add_new_page_to_database_INTERNAL(mini_transaction_engine* mte, mini_
 	return 1;
 }
 
-void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
+void* allocate_page_with_database_expansion_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
 {
 	while(1) // keep on adding pages until the last one is a free space mapper page, this loop will atmost run for 2 iterations
 	{

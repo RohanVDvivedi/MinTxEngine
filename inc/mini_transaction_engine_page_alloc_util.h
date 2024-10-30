@@ -21,7 +21,7 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 // below function should be called with atleast a shared lock held on manager_lock
 void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id);
 // below function allocates a new database page (and a page for its free page if required), expanding the datbase by atmost 2 pages
-// below function should be called with exclusive lock held on manager_lock
-void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id);
+// below function should be called with shared lock held on manager_lock and global mutex held
+void* allocate_page_with_database_expansion_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id);
 
 #endif
