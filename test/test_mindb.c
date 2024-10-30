@@ -453,8 +453,77 @@ int main2()
 	return 0;
 }
 
+#include<executor.h>
+
+#define JOBS_COUNT 10000
+#define WORKER_COUNT 20
+
+void* perform_insert(void* param)
+{
+	uint64_t p = *(uint64_t*)(param);
+
+	mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+	insert_uint_bplus_tree(mt, p);
+
+	if(p % 20 == 0)
+		mark_aborted_for_mini_tx(&mte, mt, -55);
+
+	mte_complete_mini_tx(&mte, mt, NULL, 0);
+
+	return NULL;
+}
+
+int main3()
+{
+	if(!initialize_mini_transaction_engine(&mte, "testbpt.db", SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
+	{
+		printf("failed to initialize mini transaction engine\n");
+		exit(-1);
+	}
+	init_pam_for_mini_tx_engine(&mte);
+	init_pmm_for_mini_tx_engine(&mte);
+	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
+	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, (positional_accessor []){SELF}, (compare_direction[]){ASC}, 1))
+	{
+		printf("failed to initialize bplus tree tuple definitions\n");
+		exit(-1);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+		create_uint_bplus_tree(mt);
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	executor* exe = new_executor(FIXED_THREAD_COUNT_EXECUTOR, WORKER_COUNT, JOBS_COUNT, 1000000, NULL, NULL, NULL);
+	uint64_t input[JOBS_COUNT];
+
+	for(uint32_t i = 0; i < JOBS_COUNT; i++)
+	{
+		input[i] = (((uint64_t)rand()) % JOBS_COUNT);
+		submit_job_executor(exe, perform_insert, input + i, NULL, NULL, 1000000);
+	}
+
+	shutdown_executor(exe, 0);
+	wait_for_all_executor_workers_to_complete(exe);
+	delete_executor(exe);
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+		print_uint_bplus_tree(mt);
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	/*printf("PRINTING LOGS\n");
+	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
+
+	return 0;
+}
+
 int main()
 {
 	//main1();
-	main2();
+	//main2();
+	main3();
 }
