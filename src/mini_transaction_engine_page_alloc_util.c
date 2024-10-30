@@ -332,7 +332,7 @@ static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_
 	{
 		mt->state = MIN_TX_ABORTED;
 		mt->abort_error = OUT_OF_AVAILABLE_PAGE_IDS;
-		return 0;
+		return NULL;
 	}
 
 	// grab the new_page_id that this new_page will have
@@ -343,7 +343,7 @@ static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_
 	{
 		mt->state = MIN_TX_ABORTED;
 		mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
-		return 0;
+		return NULL;
 	}
 
 	// this only time we will modify the page first and then perform a FULL_PAGE_WRITE, as this is a new page to the database, untracked until now
