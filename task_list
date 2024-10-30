@@ -1,8 +1,5 @@
 PICKED
 
- * build a utility function to flush wale logs of the latest wale
-   * refactor the code everywhere to use this UNSAFE function to flush logs
- * build a utility function to latch pages with a flush if required
  * all exit(-1) get their own print statements to describe what is the bug
 
  * implement logic to insert 10000 multiples of 10, iterating i from 0 to 9999 (both inclusive), inserting 0 to 99990, and abort where i is also multiple of 23
