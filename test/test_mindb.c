@@ -16,8 +16,8 @@ mini_transaction_engine mte;
 #define BUFFERPOOL_BUFFERS 100
 #define WALE_BUFFERS 10
 
-#define LATCH_WAIT_TIMEOUT_US 3000000
-#define LOCK_WAIT_TIMEOUT_US  3000000
+#define LATCH_WAIT_TIMEOUT_US 10000000
+#define LOCK_WAIT_TIMEOUT_US  10000000
 #define CHECKPOINT_PERIOD_US (5 * 60 * 1000000) // 5 minutes
 
 uint64_t root_page_id;
@@ -458,8 +458,8 @@ int main2()
 
 #include<executor.h>
 
-#define JOBS_COUNT 100
-#define WORKER_COUNT 20
+#define JOBS_COUNT 2
+#define WORKER_COUNT 2
 
 void* perform_insert(void* param)
 {
@@ -498,6 +498,8 @@ int main3()
 		create_uint_bplus_tree(mt);
 		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
+
+	printf("-->%"PRIu_cy_uint"\n", get_element_count_hashmap(&(mte.writer_mini_transactions)));
 
 	executor* exe = new_executor(FIXED_THREAD_COUNT_EXECUTOR, WORKER_COUNT, JOBS_COUNT + 32, 1000000, NULL, NULL, NULL);
 	uint64_t input[JOBS_COUNT];
