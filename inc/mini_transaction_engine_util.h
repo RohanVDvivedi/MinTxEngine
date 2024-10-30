@@ -32,7 +32,7 @@ void decrement_mini_transaction_reference_counter_UNSAFE(mini_transaction_engine
 // returns 1 if min_tx was completed, else returns 0
 // a return value of 0, may be due to a dead lock, so you may need to abort if this function returns 0
 // this function must be called with global_lock and manager_lock held
-int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt);
+int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, uint64_t *write_lock_wait_timeout_in_microseconds_LEFT);
 
 // below are the two functions that can be used to get unparsed and parsed log record
 // these are unsafe functions and must be called with global_lock held, additionally a manager_lock held in either shared or exclusive lock

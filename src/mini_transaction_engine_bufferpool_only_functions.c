@@ -45,7 +45,7 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 		}
 
 		void* latched_page = NULL;
-		int wait_attempts = 3;
+		uint64_t write_lock_wait_timeout_in_microseconds_LEFT = mte->write_lock_wait_timeout_in_microseconds;
 		while(1)
 		{
 			// attempt to acquire latch on this page with page_id
@@ -66,16 +66,15 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 			release_reader_lock_on_page(&(mte->bufferpool_handle), latched_page);
 			latched_page = NULL;
 
-			if(wait_attempts == 0) // no wait attempts left
+			if(write_lock_wait_timeout_in_microseconds_LEFT == 0) // no wait attempts left
 			{
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = PLAUSIBLE_DEADLOCK;
 				break;
 			}
-			wait_attempts--;
 
 			// wait for completion of a mt_locked_by mini transaction
-			if(!wait_for_mini_transaction_completion_UNSAFE(mte, mt_locked_by))
+			if(!wait_for_mini_transaction_completion_UNSAFE(mte, mt_locked_by, &write_lock_wait_timeout_in_microseconds_LEFT))
 			{
 				// comes here when we time out, this could be because of a PLAUSIBLE_DEADLOCK
 				mt->state = MIN_TX_ABORTED;
@@ -137,7 +136,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 		}
 
 		void* latched_page = NULL;
-		int wait_attempts = 3;
+		uint64_t write_lock_wait_timeout_in_microseconds_LEFT = mte->write_lock_wait_timeout_in_microseconds;
 		while(1)
 		{
 			// attempt to acquire latch on this page with page_id
@@ -159,16 +158,15 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 			release_writer_lock_on_page(&(mte->bufferpool_handle), latched_page, 0, 0); // was_modified = 0, force_flush = 0 -> so that global lock is not released while we are working
 			latched_page = NULL;
 
-			if(wait_attempts == 0) // no wait attempts left
+			if(write_lock_wait_timeout_in_microseconds_LEFT == 0) // no wait attempts left
 			{
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = PLAUSIBLE_DEADLOCK;
 				break;
 			}
-			wait_attempts--;
 
 			// wait for completion of a mt_locked_by mini transaction
-			if(!wait_for_mini_transaction_completion_UNSAFE(mte, mt_locked_by))
+			if(!wait_for_mini_transaction_completion_UNSAFE(mte, mt_locked_by, &write_lock_wait_timeout_in_microseconds_LEFT))
 			{
 				// comes here when we time out, this could be because of a PLAUSIBLE_DEADLOCK
 				mt->state = MIN_TX_ABORTED;
