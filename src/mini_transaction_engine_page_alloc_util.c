@@ -21,7 +21,7 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 	uint64_t free_space_mapper_page_id = get_is_valid_bit_page_id_for_page(page_id, &(mte->stats));
 	uint64_t free_space_mapper_bit_pos = get_is_valid_bit_position_for_page(page_id, &(mte->stats));
 	pthread_mutex_lock(&(mte->global_lock));
-	void* free_space_mapper_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), free_space_mapper_page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+	void* free_space_mapper_page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, free_space_mapper_page_id, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
 	if(free_space_mapper_page == NULL) // could not lock free_space_mapper_page, so abort
 	{
 		mt->state = MIN_TX_ABORTED;
@@ -220,7 +220,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 		{
 			// write latch free space mapper page
 			pthread_mutex_lock(&(mte->global_lock));
-			void* free_space_mapper_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), free_space_mapper_page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+			void* free_space_mapper_page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, free_space_mapper_page_id, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
 			if(free_space_mapper_page == NULL) // could not lock free_space_mapper_page, so abort
 			{
 				mt->state = MIN_TX_ABORTED;
@@ -253,7 +253,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 				{
 					// write latch page at page_id
 					pthread_mutex_lock(&(mte->global_lock));
-					void* page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), (*page_id), mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+					void* page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, (*page_id), 1, 0); // evict_dirty_if_necessary -> not to be overwritten
 					if(page == NULL) // could not lock page at page_id, so abort
 					{
 						// no modifications were done, so no need to recalculate_checksum
@@ -319,7 +319,7 @@ static int add_new_page_to_database_INTERNAL(mini_transaction_engine* mte, mini_
 	// grab the new_page_id that this new_page will have
 	uint64_t new_page_id = mte->database_page_count++;
 	// grab write latch on this new page
-	void* new_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), new_page_id, mte->latch_wait_timeout_in_microseconds, 1, 1); // evict_dirty_if_necessary -> AND to be overwritten
+	void* new_page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, new_page_id, 1, 1); // evict_dirty_if_necessary -> AND to be overwritten
 	if(new_page == NULL) // abort if you fail to acquire lock on the new page
 	{
 		mt->state = MIN_TX_ABORTED;
@@ -424,7 +424,7 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 
 	// get write latch on the page and free space mapper page
 	pthread_mutex_lock(&(mte->global_lock));
-	void* page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), (*page_id), mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+	void* page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, (*page_id), 1, 0); // evict_dirty_if_necessary -> not to be overwritten
 	if(page == NULL) // abort if you fail to acquire lock on the page
 	{
 		mt->state = MIN_TX_ABORTED;
@@ -432,7 +432,7 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		pthread_mutex_unlock(&(mte->global_lock));
 		return NULL;
 	}
-	void* free_space_mapper_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), free_space_mapper_page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+	void* free_space_mapper_page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, free_space_mapper_page_id, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
 	if(free_space_mapper_page == NULL) // abort if you fail to acquire lock on the free_space_mapper_page
 	{
 		// no modifications to page were made yet, so no need to recalculate_checksum

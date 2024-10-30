@@ -1,5 +1,7 @@
 #include<mini_transaction_engine.h>
 
+#include<mini_transaction_engine_util.h>
+
 #include<dirty_page_table_entry.h>
 
 #include<callbacks_bufferpool.h>

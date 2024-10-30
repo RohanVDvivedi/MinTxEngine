@@ -49,7 +49,7 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 		while(1)
 		{
 			// attempt to acquire latch on this page with page_id
-			latched_page = acquire_page_with_reader_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, 1); // evict_dirty_if_necessary
+			latched_page = acquire_page_with_reader_latch_N_flush_wal_if_necessary_UNSAFE(mte, page_id, 1); // evict_dirty_if_necessary
 			if(latched_page == NULL)
 			{
 				mt->state = MIN_TX_ABORTED;
@@ -137,7 +137,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 		while(1)
 		{
 			// attempt to acquire latch on this page with page_id
-			latched_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+			latched_page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, page_id, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
 			if(latched_page == NULL)
 			{
 				mt->state = MIN_TX_ABORTED;

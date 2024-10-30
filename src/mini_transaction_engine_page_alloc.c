@@ -45,7 +45,7 @@ int free_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, ui
 			return 0;
 		}
 
-		void* page_to_free = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+		void* page_to_free = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, page_id, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
 		if(page_to_free == NULL)
 		{
 			mt->state = MIN_TX_ABORTED;

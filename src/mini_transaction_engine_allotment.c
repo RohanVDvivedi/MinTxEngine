@@ -1,5 +1,8 @@
 #include<mini_transaction_engine_allotment.h>
 
+#include<mini_transaction_engine_util.h>
+#include<system_page_header_util.h>
+
 mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_timeout_in_microseconds)
 {
 	pthread_mutex_lock(&(mte->global_lock));
@@ -152,9 +155,6 @@ static void append_completion_log_record_and_flush_UNSAFE(mini_transaction_engin
 	flush_wal_logs_UNSAFE(mte);
 }
 
-#include<mini_transaction_engine_util.h>
-#include<system_page_header_util.h>
-
 // luckily all clr log records modify only contents on a single page, hence the simplicity of this function
 static void append_compensation_log_record_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint256 undo_of_LSN, void* modified_page, uint64_t modified_page_id)
 {
@@ -263,12 +263,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 		while(free_space_mapper_page == NULL)
 		{
 			pthread_mutex_lock(&(mte->global_lock));
-			free_space_mapper_page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), free_space_mapper_page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
-
-			// if we couldn't acquire a frame then flush wale and try again
-			if(free_space_mapper_page == NULL)
-				flush_wal_logs_UNSAFE(mte);
-
+			free_space_mapper_page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, free_space_mapper_page_id, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
 			pthread_mutex_unlock(&(mte->global_lock));
 		}
 
@@ -309,12 +304,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 		while(page == NULL)
 		{
 			pthread_mutex_lock(&(mte->global_lock));
-			page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
-
-			// if we couldn't acquire a frame then flush wale and try again
-			if(page == NULL)
-				flush_wal_logs_UNSAFE(mte);
-
+			page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, page_id, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
 			pthread_mutex_unlock(&(mte->global_lock));
 		}
 
