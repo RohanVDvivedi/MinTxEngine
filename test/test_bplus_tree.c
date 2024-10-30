@@ -5,6 +5,7 @@
 #include<callbacks_tupleindexer.h>
 
 #include<bplus_tree.h>
+#include<hash_table.h>
 
 mini_transaction_engine mte;
 
@@ -19,10 +20,13 @@ mini_transaction_engine mte;
 #define LOCK_WAIT_TIMEOUT_US 30000
 #define CHECKPOINT_PERIOD_US (5 * 60 * 1000000) // 5 minutes
 
-bplus_tree_tuple_defs bpttd;
 uint64_t root_page_id;
 
 tuple_def record_def;
+
+// tests for bplus tree
+
+bplus_tree_tuple_defs bpttd;
 
 void create_uint_bplus_tree(mini_transaction* mt)
 {
@@ -83,7 +87,7 @@ void destroy_uint_bplus_tree(mini_transaction* mt)
 	}
 }
 
-int main()
+int main1()
 {
 	if(!initialize_mini_transaction_engine(&mte, "testbpt.db", SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
 	{
@@ -196,4 +200,263 @@ int main()
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
 
 	return 0;
+}
+
+hash_table_tuple_defs httd;
+
+uint64_t hash_func(const void* data, uint32_t data_size)
+{
+	uint64_t res;
+	memory_move(&res, data, 4);
+	return res;
+}
+
+void create_uint_hash_table(mini_transaction* mt)
+{
+	root_page_id = get_new_hash_table(10, &httd, &pam, &pmm, mt, &(mt->abort_error));
+
+	if(mt->abort_error)
+	{
+		printf("aborted %d while creating\n", mt->abort_error);
+		exit(-1);
+	}
+}
+
+int insert_uint_hash_table(mini_transaction* mt, uint64_t x)
+{
+	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, &x, &httd, &pam, &pmm, mt, &(mt->abort_error));
+	if(mt->abort_error)
+	{
+		printf("aborted %d while inserting\n", mt->abort_error);
+		exit(-1);
+	}
+
+	int res = insert_in_hash_table_iterator(hti, &x, mt, &(mt->abort_error));
+	if(mt->abort_error)
+	{
+		printf("aborted %d while inserting\n", mt->abort_error);
+		exit(-1);
+	}
+
+	hash_table_vaccum_params htvp;
+	delete_hash_table_iterator(hti, &htvp, mt, &(mt->abort_error));
+	if(mt->abort_error)
+	{
+		printf("aborted %d while inserting\n", mt->abort_error);
+		exit(-1);
+	}
+
+	perform_vaccum_hash_table(root_page_id, &htvp, 1, &httd, &pam, &pmm, mt, &(mt->abort_error));
+	if(mt->abort_error)
+	{
+		printf("aborted %d while vaccumming after insert\n", mt->abort_error);
+		exit(-1);
+	}
+
+	return res;
+}
+
+int delete_uint_hash_table(mini_transaction* mt, uint64_t x)
+{
+	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, &x, &httd, &pam, &pmm, mt, &(mt->abort_error));
+	if(mt->abort_error)
+	{
+		printf("aborted %d while deleting\n", mt->abort_error);
+		exit(-1);
+	}
+
+	int res = 0;
+
+	if(!is_curr_bucket_empty_for_hash_table_iterator(hti))
+	{
+		const void* curr = get_tuple_hash_table_iterator(hti);
+		while(curr != NULL)
+		{
+			uint64_t t;
+			memory_move(&t, curr, sizeof(uint64_t));
+
+			if(t == x)
+			{
+				res += remove_from_hash_table_iterator(hti, mt, &(mt->abort_error));
+				if(mt->abort_error)
+				{
+					printf("aborted %d while deleting\n", mt->abort_error);
+					exit(-1);
+				}
+			}
+
+
+			if(!next_hash_table_iterator(hti, 0, mt, &(mt->abort_error)))
+			{
+				if(mt->abort_error)
+				{
+					printf("aborted %d while deleting\n", mt->abort_error);
+					exit(-1);
+				}
+				break;
+			}
+
+			curr = get_tuple_hash_table_iterator(hti);
+		}
+	}
+
+	hash_table_vaccum_params htvp;
+	delete_hash_table_iterator(hti, &htvp, mt, &(mt->abort_error));
+	if(mt->abort_error)
+	{
+		printf("aborted %d while deleting\n", mt->abort_error);
+		exit(-1);
+	}
+
+	perform_vaccum_hash_table(root_page_id, &htvp, 1, &httd, &pam, &pmm, mt, &(mt->abort_error));
+	if(mt->abort_error)
+	{
+		printf("aborted %d while vaccumming after delete\n", mt->abort_error);
+		exit(-1);
+	}
+
+	return res;
+}
+
+void print_uint_hash_table(mini_transaction* mt)
+{
+	print_hash_table(root_page_id, &httd, &pam, mt, &(mt->abort_error));
+
+	if(mt->abort_error)
+	{
+		printf("aborted %d while printing\n", mt->abort_error);
+		exit(-1);
+	}
+}
+
+void destroy_uint_hash_table(mini_transaction* mt)
+{
+	destroy_hash_table(root_page_id, &httd, &pam, mt, &(mt->abort_error));
+
+	if(mt->abort_error)
+	{
+		printf("aborted %d while destroying\n", mt->abort_error);
+		exit(-1);
+	}
+}
+
+int main2()
+{
+	if(!initialize_mini_transaction_engine(&mte, "testbpt.db", SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
+	{
+		printf("failed to initialize mini transaction engine\n");
+		exit(-1);
+	}
+	init_pam_for_mini_tx_engine(&mte);
+	init_pmm_for_mini_tx_engine(&mte);
+	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
+	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, (positional_accessor []){SELF}, 1, hash_func))
+	{
+		printf("failed to initialize hash table tuple definitions\n");
+		exit(-1);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		create_uint_hash_table(mt);
+
+		print_uint_hash_table(mt);
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		for(uint64_t i = 10000; i >= 100; i--)
+		{
+			insert_uint_hash_table(mt, i);
+
+			if(i % 500 == 0)
+				intermediate_wal_flush_for_mini_transaction_engine(&mte);
+		}
+
+		print_uint_hash_table(mt);
+
+		// abort here
+		//mark_aborted_for_mini_tx(&mte, mt, -55);
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		print_uint_hash_table(mt);
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		for(uint64_t i = 10000; i >= 100; i--)
+		{
+			delete_uint_hash_table(mt, i);
+
+			if(i % 500 == 0)
+				intermediate_wal_flush_for_mini_transaction_engine(&mte);
+		}
+
+		print_uint_hash_table(mt);
+
+		// abort here
+		//mark_aborted_for_mini_tx(&mte, mt, -55);
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		print_uint_hash_table(mt);
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		destroy_uint_hash_table(mt);
+
+		// abort here
+		//mark_aborted_for_mini_tx(&mte, mt, -55);
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	/*{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		print_uint_hash_table(mt);
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}*/
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		create_uint_hash_table(mt);
+
+		print_uint_hash_table(mt);
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	/*printf("PRINTING LOGS\n");
+	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
+
+	return 0;
+}
+
+int main()
+{
+	//main1();
+	main2();
 }
