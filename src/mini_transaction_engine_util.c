@@ -103,8 +103,6 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 		}
 	}
 
-	printf("%d %d\n", (mt->state != MIN_TX_COMPLETED), !wait_error);
-
 	// collect the result as, decrement_mini_transaction_reference_counter_UNSAFE() may destroy it
 	int success = (mt->state == MIN_TX_COMPLETED);
 
