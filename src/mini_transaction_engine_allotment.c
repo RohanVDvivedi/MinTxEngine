@@ -508,8 +508,8 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
 	{
 		mt->state = MIN_TX_COMPLETED;
-		decrement_mini_transaction_reference_counter_UNSAFE(mte, mt);
 		pthread_cond_broadcast(&(mt->write_lock_wait));
+		decrement_mini_transaction_reference_counter_UNSAFE(mte, mt);
 
 		shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
@@ -523,8 +523,8 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	{
 		append_completion_log_record_and_flush_UNSAFE(mte, mt, complete_info, complete_info_size);
 		mt->state = MIN_TX_COMPLETED;
-		decrement_mini_transaction_reference_counter_UNSAFE(mte, mt);
 		pthread_cond_broadcast(&(mt->write_lock_wait));
+		decrement_mini_transaction_reference_counter_UNSAFE(mte, mt);
 
 		shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
@@ -611,8 +611,8 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	// mark it completed and exit
 	append_completion_log_record_and_flush_UNSAFE(mte, mt, complete_info, complete_info_size);
 	mt->state = MIN_TX_COMPLETED;
-	decrement_mini_transaction_reference_counter_UNSAFE(mte, mt);
 	pthread_cond_broadcast(&(mt->write_lock_wait));
+	decrement_mini_transaction_reference_counter_UNSAFE(mte, mt);
 
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
