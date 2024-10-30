@@ -461,6 +461,7 @@ int main2()
 #define JOBS_COUNT 10000
 #define WORKER_COUNT 30
 
+pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 int duplicates_encountered = 0;
 int aborts_done = 0;
 
@@ -473,11 +474,17 @@ void* perform_insert(void* param)
 	int res = insert_uint_bplus_tree(mt, p);
 
 	if(res == 0)
+	{
+		pthread_mutex_lock(&mtx);
 		duplicates_encountered++;
+		pthread_mutex_unlock(&mtx);
+	}
 
 	if(p % 20 == 0)
 	{
+		pthread_mutex_lock(&mtx);
 		aborts_done++;
+		pthread_mutex_unlock(&mtx);
 		mark_aborted_for_mini_tx(&mte, mt, -55);
 	}
 
