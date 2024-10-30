@@ -16,8 +16,8 @@ mini_transaction_engine mte;
 #define BUFFERPOOL_BUFFERS 100
 #define WALE_BUFFERS 10
 
-#define LATCH_WAIT_TIMEOUT_US 10000000
-#define LOCK_WAIT_TIMEOUT_US  10000000
+#define LATCH_WAIT_TIMEOUT_US   30000
+#define LOCK_WAIT_TIMEOUT_US  2000000
 #define CHECKPOINT_PERIOD_US (5 * 60 * 1000000) // 5 minutes
 
 uint64_t root_page_id;
@@ -216,7 +216,7 @@ uint64_t hash_func(const void* data, uint32_t data_size)
 
 void create_uint_hash_table(mini_transaction* mt)
 {
-	root_page_id = get_new_hash_table(10, &httd, &pam, &pmm, mt, &(mt->abort_error));
+	root_page_id = get_new_hash_table(1000, &httd, &pam, &pmm, mt, &(mt->abort_error));
 
 	if(mt->abort_error)
 	{
