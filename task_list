@@ -1,5 +1,7 @@
 PICKED
 
+ * add utility function to debuf print wal file
+
  * implement logic to insert 10000 multiples of 10, iterating i from 0 to 9999 (both inclusive), inserting 0 to 99990, and abort where i is also multiple of 23
  * print the bplus tree in the end to ensure that the test passed
 
