@@ -60,9 +60,9 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 
 static void append_abortion_log_record_and_flush_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt)
 {
-	wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
-
 	{
+		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+
 		log_record lr = {
 			.type = ABORT_MINI_TX,
 			.amtlr = {
@@ -101,21 +101,14 @@ static void append_abortion_log_record_and_flush_UNSAFE(mini_transaction_engine*
 		mt->lastLSN = log_record_LSN;
 	}
 
-	{
-		int wal_error = 0;
-		uint256 flushedLSN = flush_all_log_records(wale_p, &wal_error);
-		if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER))
-			exit(-1);
-
-		mte->flushedLSN = max_uint256(mte->flushedLSN, flushedLSN);
-	}
+	flush_wal_logs_UNSAFE(mte);
 }
 
 static void append_completion_log_record_and_flush_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, const void* complete_info, uint32_t complete_info_size)
 {
-	wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
-
 	{
+		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+
 		log_record lr = {
 			.type = COMPLETE_MINI_TX,
 			.cmtlr = {
@@ -156,14 +149,7 @@ static void append_completion_log_record_and_flush_UNSAFE(mini_transaction_engin
 		mt->lastLSN = log_record_LSN;
 	}
 
-	{
-		int wal_error = 0;
-		uint256 flushedLSN = flush_all_log_records(wale_p, &wal_error);
-		if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER))
-			exit(-1);
-
-		mte->flushedLSN = max_uint256(mte->flushedLSN, flushedLSN);
-	}
+	flush_wal_logs_UNSAFE(mte);
 }
 
 #include<mini_transaction_engine_util.h>
@@ -281,18 +267,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 
 			// if we couldn't acquire a frame then flush wale and try again
 			if(free_space_mapper_page == NULL)
-			{
-				{
-					wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
-
-					int wal_error = 0;
-					uint256 flushedLSN = flush_all_log_records(wale_p, &wal_error);
-					if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER))
-						exit(-1);
-
-					mte->flushedLSN = max_uint256(mte->flushedLSN, flushedLSN);
-				}
-			}
+				flush_wal_logs_UNSAFE(mte);
 
 			pthread_mutex_unlock(&(mte->global_lock));
 		}
@@ -338,18 +313,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 
 			// if we couldn't acquire a frame then flush wale and try again
 			if(page == NULL)
-			{
-				{
-					wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
-
-					int wal_error = 0;
-					uint256 flushedLSN = flush_all_log_records(wale_p, &wal_error);
-					if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER))
-						exit(-1);
-
-					mte->flushedLSN = max_uint256(mte->flushedLSN, flushedLSN);
-				}
-			}
+				flush_wal_logs_UNSAFE(mte);
 
 			pthread_mutex_unlock(&(mte->global_lock));
 		}

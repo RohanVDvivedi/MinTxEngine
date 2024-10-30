@@ -138,16 +138,7 @@ void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine*
 	pthread_mutex_lock(&(mte->global_lock));
 	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
-	{
-		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
-
-		int wal_error = 0;
-		uint256 flushedLSN = flush_all_log_records(wale_p, &wal_error);
-		if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER))
-			exit(-1);
-
-		mte->flushedLSN = max_uint256(mte->flushedLSN, flushedLSN);
-	}
+	flush_wal_logs_UNSAFE(mte);
 
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
