@@ -284,16 +284,17 @@ int delete_uint_hash_table(mini_transaction* mt, uint64_t x)
 					exit(-1);
 				}
 			}
-
-
-			if(!next_hash_table_iterator(hti, 0, mt, &(mt->abort_error)))
+			else
 			{
-				if(mt->abort_error)
+				if(!next_hash_table_iterator(hti, 0, mt, &(mt->abort_error)))
 				{
-					printf("aborted %d while deleting\n", mt->abort_error);
-					exit(-1);
+					if(mt->abort_error)
+					{
+						printf("aborted %d while deleting\n", mt->abort_error);
+						exit(-1);
+					}
+					break;
 				}
-				break;
 			}
 
 			curr = get_tuple_hash_table_iterator(hti);
