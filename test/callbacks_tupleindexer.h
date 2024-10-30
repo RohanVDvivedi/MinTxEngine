@@ -3,20 +3,26 @@
 
 void* get_new_page_with_write_lock_mtx(void* context, const void* transaction_id, uint64_t* page_id_returned, int* abort_error)
 {
+	printf("LOL11\n");
 	void* result = get_new_page_with_write_latch_for_mini_tx(context, (void*)transaction_id, page_id_returned);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
+	printf("LOL2 %p %"PRIu64"\n", result, *page_id_returned);
 	return result;
 }
 void* acquire_page_with_reader_lock_mtx(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
 {
+	printf("LOL12\n");
 	void* result = acquire_page_with_reader_latch_for_mini_tx(context, (void*)transaction_id, page_id);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
+	printf("LOL2 %p %"PRIu64"\n", result, page_id);
 	return result;
 }
 void* acquire_page_with_writer_lock_mtx(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
 {
+	printf("LOL13\n");
 	void* result = acquire_page_with_writer_latch_for_mini_tx(context, (void*)transaction_id, page_id);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
+	printf("LOL2 %p %"PRIu64"\n", result, page_id);
 	return result;
 }
 int downgrade_writer_lock_to_reader_lock_on_page_mtx(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)

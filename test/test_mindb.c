@@ -16,8 +16,8 @@ mini_transaction_engine mte;
 #define BUFFERPOOL_BUFFERS 100
 #define WALE_BUFFERS 10
 
-#define LATCH_WAIT_TIMEOUT_US 3000
-#define LOCK_WAIT_TIMEOUT_US 30000
+#define LATCH_WAIT_TIMEOUT_US 3000000
+#define LOCK_WAIT_TIMEOUT_US  3000000
 #define CHECKPOINT_PERIOD_US (5 * 60 * 1000000) // 5 minutes
 
 uint64_t root_page_id;
@@ -504,7 +504,7 @@ int main3()
 
 	for(uint32_t i = 0; i < JOBS_COUNT; i++)
 	{
-		input[i] = (((uint64_t)rand()) % (JOBS_COUNT + 13));
+		input[i] = (((uint64_t)rand()) % (JOBS_COUNT+13));
 		submit_job_executor(exe, perform_insert, input+i, NULL, NULL, 1000000);
 	}
 
