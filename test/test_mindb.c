@@ -458,8 +458,8 @@ int main2()
 
 #include<executor.h>
 
-#define JOBS_COUNT 100
-#define WORKER_COUNT 20
+#define JOBS_COUNT 10000
+#define WORKER_COUNT 30
 
 int duplicates_encountered = 0;
 int aborts_done = 0;
