@@ -499,8 +499,6 @@ int main3()
 		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
 
-	printf("-->%"PRIu_cy_uint"\n", get_element_count_hashmap(&(mte.writer_mini_transactions)));
-
 	executor* exe = new_executor(FIXED_THREAD_COUNT_EXECUTOR, WORKER_COUNT, JOBS_COUNT + 32, 1000000, NULL, NULL, NULL);
 	uint64_t input[JOBS_COUNT];
 

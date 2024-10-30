@@ -3,66 +3,50 @@
 
 void* get_new_page_with_write_lock_mtx(void* context, const void* transaction_id, uint64_t* page_id_returned, int* abort_error)
 {
-	printf("LOL11\n");
 	void* result = get_new_page_with_write_latch_for_mini_tx(context, (void*)transaction_id, page_id_returned);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
-	printf("LOL2 %p %"PRIu64"\n", result, *page_id_returned);
 	return result;
 }
 void* acquire_page_with_reader_lock_mtx(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
 {
-	printf("LOL12\n");
 	void* result = acquire_page_with_reader_latch_for_mini_tx(context, (void*)transaction_id, page_id);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
-	printf("LOL2 %p %"PRIu64"\n", result, page_id);
 	return result;
 }
 void* acquire_page_with_writer_lock_mtx(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
 {
-	printf("LOL13\n");
 	void* result = acquire_page_with_writer_latch_for_mini_tx(context, (void*)transaction_id, page_id);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
-	printf("LOL2 %p %"PRIu64"\n", result, page_id);
 	return result;
 }
 int downgrade_writer_lock_to_reader_lock_on_page_mtx(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
 {
-	printf("LOL14\n");
 	int result = downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(context, (void*)transaction_id, pg_ptr);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
-	printf("LOL2\n");
 	return result;
 }
 int upgrade_reader_lock_to_writer_lock_on_page_mtx(void* context, const void* transaction_id, void* pg_ptr, int* abort_error)
 {
-	printf("LOL15\n");
 	int result = upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(context, (void*)transaction_id, pg_ptr);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
-	printf("LOL2\n");
 	return result;
 }
 int release_reader_lock_on_page_mtx(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
 {
-	printf("LOL16\n");
 	int result = release_reader_latch_on_page_for_mini_tx(context, (void*)transaction_id, pg_ptr, !!(opts & FREE_PAGE));
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
-	printf("LOL2\n");
 	return result;
 }
 int release_writer_lock_on_page_mtx(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
 {
-	printf("LOL17\n");
 	int result = release_writer_latch_on_page_for_mini_tx(context, (void*)transaction_id, pg_ptr, !!(opts & FREE_PAGE));
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
-	printf("LOL2\n");
 	return result;
 }
 int free_page_mtx(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
 {
-	printf("LOL18\n");
 	int result = free_page_for_mini_tx(context, (void*)transaction_id, page_id);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
-	printf("LOL2\n");
 	return result;
 }
 
@@ -93,84 +77,72 @@ void init_pam_for_mini_tx_engine(mini_transaction_engine* mte)
 
 int init_page_mtx(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, uint32_t page_header_size, const tuple_size_def* tpl_sz_d, int* abort_error)
 {
-	printf("LOL21\n");
 	int result = init_page_for_mini_tx(context, (void*)transaction_id, ppage.page, page_header_size, tpl_sz_d);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
 void set_page_header_mtx(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const void* hdr, int* abort_error)
 {
-	printf("LOL22\n");
 	set_page_header_for_mini_tx(context, (void*)transaction_id, ppage.page, hdr);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return ;
 }
 int append_tuple_on_page_mtx(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, const void* external_tuple, int* abort_error)
 {
-	printf("LOL23\n");
 	int result = append_tuple_on_page_for_mini_tx(context, (void*)transaction_id, ppage.page, tpl_sz_d, external_tuple);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
 int insert_tuple_on_page_mtx(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple, int* abort_error)
 {
-	printf("LOL24\n");
 	int result = insert_tuple_on_page_for_mini_tx(context, (void*)transaction_id, ppage.page, tpl_sz_d, index, external_tuple);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
 int update_tuple_on_page_mtx(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple, int* abort_error)
 {
-	printf("LOL25\n");
 	int result = update_tuple_on_page_for_mini_tx(context, (void*)transaction_id, ppage.page, tpl_sz_d, index, external_tuple);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
 int discard_tuple_on_page_mtx(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t index, int* abort_error)
 {
-	printf("LOL26\n");
 	int result = discard_tuple_on_page_for_mini_tx(context, (void*)transaction_id, ppage.page, tpl_sz_d, index);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
 void discard_all_tuples_on_page_mtx(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, int* abort_error)
 {
-	printf("LOL27\n");
 	discard_all_tuples_on_page_for_mini_tx(context, (void*)transaction_id, ppage.page, tpl_sz_d);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return ;
 }
 uint32_t discard_trailing_tomb_stones_on_page_mtx(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, int* abort_error)
 {
-	printf("LOL28\n");
 	uint32_t result = discard_trailing_tomb_stones_on_page_for_mini_tx(context, (void*)transaction_id, ppage.page, tpl_sz_d);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
 int swap_tuples_on_page_mtx(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, uint32_t i1, uint32_t i2, int* abort_error)
 {
-	printf("LOL29\n");
 	int result = swap_tuples_on_page_for_mini_tx(context, (void*)transaction_id, ppage.page, tpl_sz_d, i1, i2);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
 int set_element_in_tuple_in_place_on_page_mtx(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const user_value* value, int* abort_error)
 {
-	printf("LOL210\n");
 	int result = set_element_in_tuple_in_place_on_page_for_mini_tx(context, (void*)transaction_id, ppage.page, tpl_d, tuple_index, element_index, value);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
 }
 void clone_page_mtx(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, persistent_page ppage_src, int* abort_error)
 {
-	printf("LOL211\n");
 	clone_page_for_mini_tx(context, (void*)transaction_id, ppage.page, tpl_sz_d, ppage_src.page);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return ;
 }
 int run_page_compaction_mtx(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, const tuple_size_def* tpl_sz_d, int* abort_error)
 {
-	printf("LOL212\n");
 	int result = run_page_compaction_for_mini_tx(context, (void*)transaction_id, ppage.page, tpl_sz_d);
 	(*abort_error) = ((mini_transaction*)transaction_id)->abort_error;
 	return result;
