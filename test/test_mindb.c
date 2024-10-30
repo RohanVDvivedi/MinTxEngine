@@ -458,8 +458,10 @@ int main2()
 
 #include<executor.h>
 
-#define JOBS_COUNT 2
-#define WORKER_COUNT 2
+#define JOBS_COUNT 100
+#define WORKER_COUNT 20
+
+int duplicates_encountered = 0;
 
 void* perform_insert(void* param)
 {
@@ -467,7 +469,10 @@ void* perform_insert(void* param)
 
 	mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
-	insert_uint_bplus_tree(mt, p);
+	int res = insert_uint_bplus_tree(mt, p);
+
+	if(res == 0)
+		duplicates_encountered++;
 
 	if(p % 20 == 0)
 		mark_aborted_for_mini_tx(&mte, mt, -55);
@@ -512,14 +517,16 @@ int main3()
 	wait_for_all_executor_workers_to_complete(exe);
 	delete_executor(exe);
 
+	printf("duplicates_encountered = %d\n", duplicates_encountered);
+
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 		print_uint_bplus_tree(mt);
 		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
 
-	/*printf("PRINTING LOGS\n");
-	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
+	printf("PRINTING LOGS\n");
+	debug_print_wal_logs_for_mini_transaction_engine(&mte);
 
 	return 0;
 }
