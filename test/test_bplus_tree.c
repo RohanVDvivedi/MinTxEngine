@@ -174,13 +174,13 @@ int main()
 		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
 
-	{
+	/*{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
 		print_uint_bplus_tree(mt);
 
 		mte_complete_mini_tx(&mte, mt, NULL, 0);
-	}
+	}*/
 
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
