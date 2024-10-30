@@ -458,7 +458,7 @@ int main2()
 
 #include<executor.h>
 
-#define JOBS_COUNT 10000
+#define JOBS_COUNT 0
 #define WORKER_COUNT 20
 
 void* perform_insert(void* param)
@@ -499,12 +499,12 @@ int main3()
 		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
 
-	executor* exe = new_executor(FIXED_THREAD_COUNT_EXECUTOR, WORKER_COUNT, JOBS_COUNT, 1000000, NULL, NULL, NULL);
+	executor* exe = new_executor(FIXED_THREAD_COUNT_EXECUTOR, WORKER_COUNT, JOBS_COUNT + 32, 1000000, NULL, NULL, NULL);
 	uint64_t input[JOBS_COUNT];
 
 	for(uint32_t i = 0; i < JOBS_COUNT; i++)
 	{
-		input[i] = (((uint64_t)rand()) % JOBS_COUNT);
+		input[i] = (((uint64_t)rand()) % (JOBS_COUNT + 13));
 		submit_job_executor(exe, perform_insert, input+i, NULL, NULL, 1000000);
 	}
 
