@@ -1,7 +1,7 @@
 #include<page_access_methods.h>
 #include<page_modification_methods.h>
 
-#define GENERATE_TRACE
+//#define GENERATE_TRACE
 
 void* get_new_page_with_write_lock_mtx(void* context, const void* transaction_id, uint64_t* page_id_returned, int* abort_error)
 {
