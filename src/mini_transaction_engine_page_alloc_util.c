@@ -321,19 +321,17 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 }
 
 // either succeeds or aborts
-// must be called with exclusive lock on manager lock held, global lock must not be held while calling this function
+// must be called with shared lock on manager lock held and the global lock
 // it primarily appends a zero page to the database and appends a FULL_PAGE_WRITE log record for that page
 // the initial contents of the page are set to content_template, if the content_template is NULL, we reset all bits on the page
 // this function also fails if you have reached max_page_count available to the user
-static int add_new_page_to_database_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, const void* content_template)
+static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, const void* content_template)
 {
 	// if the max_page_count has been reached fail this call
-	pthread_mutex_lock(&(mte->global_lock));
 	if(mte->database_page_count == mte->user_stats.max_page_count)
 	{
 		mt->state = MIN_TX_ABORTED;
 		mt->abort_error = OUT_OF_AVAILABLE_PAGE_IDS;
-		pthread_mutex_unlock(&(mte->global_lock));
 		return 0;
 	}
 
@@ -345,10 +343,8 @@ static int add_new_page_to_database_INTERNAL(mini_transaction_engine* mte, mini_
 	{
 		mt->state = MIN_TX_ABORTED;
 		mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
-		pthread_mutex_unlock(&(mte->global_lock));
 		return 0;
 	}
-	pthread_mutex_unlock(&(mte->global_lock));
 
 	// this only time we will modify the page first and then perform a FULL_PAGE_WRITE, as this is a new page to the database, untracked until now
 	{
@@ -381,8 +377,7 @@ static int add_new_page_to_database_INTERNAL(mini_transaction_engine* mte, mini_
 		exit(-1);
 	}
 
-	pthread_mutex_lock(&(mte->global_lock));
-
+	{
 		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
 
 		int wal_error = 0;
@@ -415,60 +410,88 @@ static int add_new_page_to_database_INTERNAL(mini_transaction_engine* mte, mini_
 
 		// mark the page as dirty in the bufferpool and dirty page table
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, new_page, new_page_id);
-
-		// recalculate page checksums for the new_page, prior to releasing the latches
-		pthread_mutex_unlock(&(mte->global_lock));
-		recalculate_page_checksum(new_page, &(mte->stats));
-		pthread_mutex_lock(&(mte->global_lock));
-
-		// this has to succeed, we already marked it dirty, so was_modified can be set to 0
-		release_writer_lock_on_page(&(mte->bufferpool_handle), new_page, 0, 0); // was_modified = 0, force_flush = 0
-
-	pthread_mutex_unlock(&(mte->global_lock));
+	}
 
 	// free full page write log record
 	free((void*)serialized_fpw_lr);
 
-	return 1;
+	return new_page;
 }
 
 void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
 {
-	while(1) // keep on adding pages until the last one is a free space mapper page, this loop will atmost run for 2 iterations
-	{
-		// add a zero page, right at the end of the database
-		if(!add_new_page_to_database_INTERNAL(mte, mt, NULL))
-			return NULL;
-
-		pthread_mutex_lock(&(mte->global_lock));
-		(*page_id) = mte->database_page_count - 1;
-		pthread_mutex_unlock(&(mte->global_lock));
-
-		if(!is_free_space_mapper_page((*page_id), &(mte->stats))) // if not a free space mapper page, then it is a data page, if so we are done with creating a new data page that can be locked
-			break;
-	}
-	uint64_t free_space_mapper_page_id = get_is_valid_bit_page_id_for_page((*page_id), &(mte->stats));
-
-	// get write latch on the page and free space mapper page
 	pthread_mutex_lock(&(mte->global_lock));
-	void* page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, (*page_id), 1, 0); // evict_dirty_if_necessary -> not to be overwritten
-	if(page == NULL) // abort if you fail to acquire lock on the page
+
+	// make sure that there is room for atleast 1 page
+	if(mte->database_page_count == mte->user_stats.max_page_count)
 	{
 		mt->state = MIN_TX_ABORTED;
-		mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+		mt->abort_error = OUT_OF_AVAILABLE_PAGE_IDS;
 		pthread_mutex_unlock(&(mte->global_lock));
-		return NULL;
+		return 0;
 	}
-	void* free_space_mapper_page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, free_space_mapper_page_id, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
-	if(free_space_mapper_page == NULL) // abort if you fail to acquire lock on the free_space_mapper_page
+
+	void* free_space_mapper_page = NULL;
+	uint64_t free_space_mapper_page_id;
+
+	void* page = NULL;
+
+	if(!is_free_space_mapper_page(mte->database_page_count, &(mte->stats))) // if the new page_id will be a free space mapper page, then we need to create 2 pages
 	{
-		// no modifications to page were made yet, so no need to recalculate_checksum
-		release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // was_modified = 0, force_flush = 0
-		mt->state = MIN_TX_ABORTED;
-		mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
-		pthread_mutex_unlock(&(mte->global_lock));
-		return NULL;
+		(*page_id) = mte->database_page_count;
+
+		// first grab latch on the free space mapper page
+		free_space_mapper_page_id = get_is_valid_bit_page_id_for_page((*page_id), &(mte->stats));
+		free_space_mapper_page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, free_space_mapper_page_id, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+		if(free_space_mapper_page == NULL)
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+			pthread_mutex_unlock(&(mte->global_lock));
+			return NULL;
+		}
+
+		void* page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
+		if(page == NULL) // abort error is already set, so nothing to be done
+		{
+			// no modifications to free_space_mapper_page were made yet, so no need to recalculate_checksum
+			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+			pthread_mutex_unlock(&(mte->global_lock));
+			return NULL;
+		}
 	}
+	else
+	{
+		// make sure that you can add 2 new pages
+		if(mte->user_stats.max_page_count - mte->database_page_count < 2)
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = OUT_OF_AVAILABLE_PAGE_IDS;
+			pthread_mutex_unlock(&(mte->global_lock));
+			return 0;
+		}
+
+		free_space_mapper_page_id = mte->database_page_count;
+		void* free_space_mapper_page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
+		if(free_space_mapper_page == NULL)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			return NULL;
+		}
+
+		(*page_id) = mte->database_page_count;
+		void* page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
+		if(page == NULL) // abort error is already set, so nothing to be done
+		{
+			// recalculate_checksum of free space mapper page
+			recalculate_page_checksum(free_space_mapper_page, &(mte->stats));
+			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+			pthread_mutex_unlock(&(mte->global_lock));
+			return NULL;
+		}
+	}
+
 	pthread_mutex_unlock(&(mte->global_lock));
+
 	return allocate_page_holding_write_latch_INTERNAL(mte, mt, free_space_mapper_page, free_space_mapper_page_id, page, (*page_id));
 }
