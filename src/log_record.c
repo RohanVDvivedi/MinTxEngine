@@ -1814,7 +1814,7 @@ static void print_blob(const void* data, uint32_t data_size)
 {
 	if(data == NULL)
 	{
-		printf("LOLL");
+		printf("NULL");
 		return;
 	}
 	for(uint32_t i = 0; i < data_size; i++)
