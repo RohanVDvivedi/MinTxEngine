@@ -165,7 +165,7 @@ void debug_print_wal_logs_for_mini_transaction_engine(mini_transaction_engine* m
 		if(!get_parsed_log_record_UNSAFE(mte, t, &lr))
 			break;
 
-		print_log_record(&lr, &(mte->stats));
+		print_log_record(&lr, &(mte->stats));printf("\n");
 
 		destroy_and_free_parsed_log_record(&lr);
 
