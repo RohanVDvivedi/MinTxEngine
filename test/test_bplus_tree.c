@@ -122,6 +122,9 @@ int main()
 
 		print_uint_bplus_tree(mt2);
 
+		// abort here
+		mark_aborted_for_mini_tx(&mte, mt2, -55);
+
 		mte_complete_mini_tx(&mte, mt2, NULL, 0);
 	}
 
@@ -139,7 +142,7 @@ int main()
 		print_uint_bplus_tree(mt3);
 
 		// abort here
-		mark_aborted_for_mini_tx(&mte, mt3, -55);
+		//mark_aborted_for_mini_tx(&mte, mt3, -55);
 
 		mte_complete_mini_tx(&mte, mt3, NULL, 0);
 	}
