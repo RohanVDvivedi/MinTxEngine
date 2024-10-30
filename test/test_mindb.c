@@ -462,6 +462,7 @@ int main2()
 #define WORKER_COUNT 20
 
 int duplicates_encountered = 0;
+int aborts_done = 0;
 
 void* perform_insert(void* param)
 {
@@ -475,7 +476,10 @@ void* perform_insert(void* param)
 		duplicates_encountered++;
 
 	if(p % 20 == 0)
+	{
+		aborts_done++;
 		mark_aborted_for_mini_tx(&mte, mt, -55);
+	}
 
 	mte_complete_mini_tx(&mte, mt, NULL, 0);
 
@@ -518,6 +522,7 @@ int main3()
 	delete_executor(exe);
 
 	printf("duplicates_encountered = %d\n", duplicates_encountered);
+	printf("aborts_done = %d\n", aborts_done);
 
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
