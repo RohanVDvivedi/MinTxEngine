@@ -100,81 +100,96 @@ int main()
 	}
 
 	{
-		mini_transaction* mt1 = mte_allot_mini_tx(&mte, 1000000);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
-		create_uint_bplus_tree(mt1);
+		create_uint_bplus_tree(mt);
 
-		print_uint_bplus_tree(mt1);
+		print_uint_bplus_tree(mt);
 
-		mte_complete_mini_tx(&mte, mt1, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
 
 	{
-		mini_transaction* mt2 = mte_allot_mini_tx(&mte, 1000000);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
 		for(uint64_t i = 10000; i >= 100; i--)
 		{
-			insert_uint_bplus_tree(mt2, i);
+			insert_uint_bplus_tree(mt, i);
 
 			if(i % 500 == 0)
 				intermediate_wal_flush_for_mini_transaction_engine(&mte);
 		}
 
-		print_uint_bplus_tree(mt2);
+		print_uint_bplus_tree(mt);
 
 		// abort here
-		//mark_aborted_for_mini_tx(&mte, mt2, -55);
+		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt2, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
 
 	{
-		mini_transaction* mt4 = mte_allot_mini_tx(&mte, 1000000);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
-		print_uint_bplus_tree(mt4);
+		print_uint_bplus_tree(mt);
 
-		destroy_uint_bplus_tree(mt4);
-
-		mte_complete_mini_tx(&mte, mt4, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
 
 	{
-		mini_transaction* mt3 = mte_allot_mini_tx(&mte, 1000000);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
 		for(uint64_t i = 10000; i >= 100; i--)
 		{
-			delete_uint_bplus_tree(mt3, i);
+			delete_uint_bplus_tree(mt, i);
 
 			if(i % 500 == 0)
 				intermediate_wal_flush_for_mini_transaction_engine(&mte);
 		}
 
-		print_uint_bplus_tree(mt3);
+		print_uint_bplus_tree(mt);
 
 		// abort here
-		//mark_aborted_for_mini_tx(&mte, mt3, -55);
+		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt3, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
 
 	{
-		mini_transaction* mt4 = mte_allot_mini_tx(&mte, 1000000);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
-		print_uint_bplus_tree(mt4);
+		print_uint_bplus_tree(mt);
 
-		destroy_uint_bplus_tree(mt4);
-
-		mte_complete_mini_tx(&mte, mt4, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
 
 	{
-		mini_transaction* mt5 = mte_allot_mini_tx(&mte, 1000000);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
-		create_uint_bplus_tree(mt5);
+		destroy_uint_bplus_tree(mt);
 
-		print_uint_bplus_tree(mt5);
+		// abort here
+		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt5, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		print_uint_bplus_tree(mt);
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		create_uint_bplus_tree(mt);
+
+		print_uint_bplus_tree(mt);
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
 
 	return 0;
