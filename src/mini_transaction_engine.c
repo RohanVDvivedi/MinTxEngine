@@ -151,3 +151,28 @@ void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine*
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
 }
+
+void debug_print_wal_logs_for_mini_transaction_engine(mini_transaction_engine* mte)
+{
+	pthread_mutex_lock(&(mte->global_lock));
+	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+
+	uint256 t = ((wal_accessor*)get_front_of_arraylist(&(mte->wa_list)))->wale_LSNs_from;
+
+	while(!are_equal_uint256(t, INVALID_LOG_SEQUENCE_NUMBER))
+	{
+		log_record lr;
+		if(!get_parsed_log_record_UNSAFE(mte, t, &lr))
+			break;
+
+		print_log_record(&lr, &(mte->stats));
+
+		destroy_and_free_parsed_log_record(&lr);
+
+		t = get_next_LSN_for_LSN_UNSAFE(mte, t);
+	}
+
+	shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+
+}
