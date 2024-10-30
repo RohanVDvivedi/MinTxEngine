@@ -472,7 +472,7 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		}
 
 		free_space_mapper_page_id = mte->database_page_count;
-		void* free_space_mapper_page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
+		free_space_mapper_page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
 		if(free_space_mapper_page == NULL)
 		{
 			pthread_mutex_unlock(&(mte->global_lock));
