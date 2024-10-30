@@ -24,6 +24,9 @@ uint64_t root_page_id;
 
 tuple_def record_def;
 
+positional_accessor KEY_POS[1] = {SELF};
+compare_direction CMP_DIR[1] = {ASC};
+
 // tests for bplus tree
 
 bplus_tree_tuple_defs bpttd;
@@ -97,7 +100,7 @@ int main1()
 	init_pam_for_mini_tx_engine(&mte);
 	init_pmm_for_mini_tx_engine(&mte);
 	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
-	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, (positional_accessor []){SELF}, (compare_direction[]){ASC}, 1))
+	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, 1))
 	{
 		printf("failed to initialize bplus tree tuple definitions\n");
 		exit(-1);
@@ -348,7 +351,7 @@ int main2()
 	init_pam_for_mini_tx_engine(&mte);
 	init_pmm_for_mini_tx_engine(&mte);
 	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
-	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, (positional_accessor []){SELF}, 1, hash_func))
+	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, 1, hash_func))
 	{
 		printf("failed to initialize hash table tuple definitions\n");
 		exit(-1);
@@ -484,7 +487,7 @@ int main3()
 	init_pam_for_mini_tx_engine(&mte);
 	init_pmm_for_mini_tx_engine(&mte);
 	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
-	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, (positional_accessor []){SELF}, (compare_direction[]){ASC}, 1))
+	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, 1))
 	{
 		printf("failed to initialize bplus tree tuple definitions\n");
 		exit(-1);
@@ -502,7 +505,7 @@ int main3()
 	for(uint32_t i = 0; i < JOBS_COUNT; i++)
 	{
 		input[i] = (((uint64_t)rand()) % JOBS_COUNT);
-		submit_job_executor(exe, perform_insert, input + i, NULL, NULL, 1000000);
+		submit_job_executor(exe, perform_insert, input+i, NULL, NULL, 1000000);
 	}
 
 	shutdown_executor(exe, 0);
