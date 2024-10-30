@@ -1,10 +1,5 @@
 PICKED
 
- * multi threaded task of 20 threads
-   * insert 10000 random integers -> abort every multiple of 3
-   * delete  5000 integers all multiples of 2 -> abort every multiple of 6
-   * final result should print first 10000 integers - multiples of 3 - multiples of 2 + multiples of 6
-
  * implement undo for TUPLE_UPDATE_ELEMENT_IN_PLACE with edge cases covered
 
  * implement recovery function that gets called every time you initialize the mini transaction engine
@@ -14,8 +9,6 @@ PICKED
    * set a flag stating marked for shutdown
    * modifications to mini_transaction allotter
      * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
- * write test case where you build a bplus tree and then delete the database file and try reconstructing the complete database using the logs, then compare the database files, or print the bplus tree
- * write test to initialize and print wale_LSNs_from for all wa_list wal_accessors and ensure that they are correctly initialized
  * implement a deinitialize function for mini transaction engine
  * add a flag suggesting shutdown of the mini transaction engine
  * fail all new calls if the shut_down flag is set, and wait for shutdown by taking a manager exclusive lock
@@ -24,6 +17,14 @@ PICKED
    * add a checkpoint log record
    * calculate the minimum visible LSN and remove log files that are no longer visible
    * count the number of pages that can be truncated in database file (free space mapper page always truncatable, data pages truncatable if free and not write locked) and truncate this file
+
+TESTS
+  * multi threaded task of 20 threads
+   * insert 10000 random integers -> abort every multiple of 3
+   * delete  5000 integers all multiples of 2 -> abort every multiple of 6
+   * final result should print first 10000 integers - multiples of 3 - multiples of 2 + multiples of 6
+  * write test case where you build a bplus tree and then delete the database file and try reconstructing the complete database using the logs, then compare the database files, or print the bplus tree
+  * write test to initialize and print wale_LSNs_from for all wa_list wal_accessors and ensure that they are correctly initialized
 
  FAR FUTURE 
  * remove headers not required for public api from publicly installed headers
