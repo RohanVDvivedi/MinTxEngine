@@ -451,7 +451,7 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 			return NULL;
 		}
 
-		void* page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
+		page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
 		if(page == NULL) // abort error is already set, so nothing to be done
 		{
 			// no modifications to free_space_mapper_page were made yet, so no need to recalculate_checksum
@@ -480,7 +480,7 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		}
 
 		(*page_id) = mte->database_page_count;
-		void* page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
+		page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
 		if(page == NULL) // abort error is already set, so nothing to be done
 		{
 			// recalculate_checksum of free space mapper page
