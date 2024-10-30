@@ -202,6 +202,28 @@ void flush_wal_logs_UNSAFE(mini_transaction_engine* mte)
 	}
 }
 
+void* acquire_page_with_reader_latch_N_flush_wal_if_necessary_UNSAFE(mini_transaction_engine* mte, uint64_t page_id, int evict_dirty_if_necessary)
+{
+	void* page = acquire_page_with_reader_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, evict_dirty_if_necessary);
+	if(page != NULL)
+		return page;
+
+	flush_wal_logs_UNSAFE(mte);
+
+	return acquire_page_with_reader_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, evict_dirty_if_necessary);
+}
+
+void* acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mini_transaction_engine* mte, uint64_t page_id, int evict_dirty_if_necessary, int to_be_overwritten)
+{
+	void* page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, evict_dirty_if_necessary, to_be_overwritten);
+	if(page != NULL)
+		return page;
+
+	flush_wal_logs_UNSAFE(mte);
+
+	return acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, evict_dirty_if_necessary, to_be_overwritten);
+}
+
 uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id)
 {
 	// if page size is same as block size, no full page write is required

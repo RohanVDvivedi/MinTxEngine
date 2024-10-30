@@ -52,6 +52,13 @@ uint256 get_next_LSN_for_LSN_UNSAFE(mini_transaction_engine* mte, uint256 LSN);
 // this function is unsafe and must be called with global_lock and manager_lock held
 void flush_wal_logs_UNSAFE(mini_transaction_engine* mte);
 
+// it first performs acquire page latch, if that fails it will flush wall logs and tries again
+// this function is unsafe and must be called with global_lock and manager_lock held
+void* acquire_page_with_reader_latch_N_flush_wal_if_necessary_UNSAFE(mini_transaction_engine* mte, uint64_t page_id, int evict_dirty_if_necessary);
+// it first performs acquire page latch, if that fails it will flush wall logs and tries again
+// this function is unsafe and must be called with global_lock and manager_lock held
+void* acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mini_transaction_engine* mte, uint64_t page_id, int evict_dirty_if_necessary, int to_be_overwritten);
+
 // below function performs all necessary operation required for a full page write
 // this function does everything except taking writer lock on the page
 /*
