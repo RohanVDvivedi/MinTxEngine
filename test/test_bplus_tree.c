@@ -270,12 +270,9 @@ int delete_uint_hash_table(mini_transaction* mt, uint64_t x)
 	if(!is_curr_bucket_empty_for_hash_table_iterator(hti))
 	{
 		const void* curr = get_tuple_hash_table_iterator(hti);
-		while(curr != NULL)
+		while(1)
 		{
-			uint64_t t;
-			memory_move(&t, curr, sizeof(uint64_t));
-
-			if(t == x)
+			if(curr != NULL) // i.e. key matches
 			{
 				res += remove_from_hash_table_iterator(hti, mt, &(mt->abort_error));
 				if(mt->abort_error)
@@ -286,15 +283,15 @@ int delete_uint_hash_table(mini_transaction* mt, uint64_t x)
 			}
 			else
 			{
-				if(!next_hash_table_iterator(hti, 0, mt, &(mt->abort_error)))
+				int next_res = next_hash_table_iterator(hti, 0, mt, &(mt->abort_error));
+				if(mt->abort_error)
 				{
-					if(mt->abort_error)
-					{
-						printf("aborted %d while deleting\n", mt->abort_error);
-						exit(-1);
-					}
-					break;
+					printf("aborted %d while deleting\n", mt->abort_error);
+					exit(-1);
 				}
+
+				if(next_res == 0)
+					break;
 			}
 
 			curr = get_tuple_hash_table_iterator(hti);
