@@ -66,8 +66,12 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 			release_reader_lock_on_page(&(mte->bufferpool_handle), latched_page);
 			latched_page = NULL;
 
-			if(wait_attempts == 0)
+			if(wait_attempts == 0) // no wait attempts left
+			{
+				mt->state = MIN_TX_ABORTED;
+				mt->abort_error = PLAUSIBLE_DEADLOCK;
 				break;
+			}
 			wait_attempts--;
 
 			// wait for completion of a mt_locked_by mini transaction
@@ -155,8 +159,12 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 			release_writer_lock_on_page(&(mte->bufferpool_handle), latched_page, 0, 0); // was_modified = 0, force_flush = 0 -> so that global lock is not released while we are working
 			latched_page = NULL;
 
-			if(wait_attempts == 0)
+			if(wait_attempts == 0) // no wait attempts left
+			{
+				mt->state = MIN_TX_ABORTED;
+				mt->abort_error = PLAUSIBLE_DEADLOCK;
 				break;
+			}
 			wait_attempts--;
 
 			// wait for completion of a mt_locked_by mini transaction
