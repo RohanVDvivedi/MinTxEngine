@@ -504,14 +504,26 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 
 	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
-	if(mt->state == MIN_TX_IN_PROGRESS)
+	// if it is a reader mini transaction, no matter what state it is in, there is nothing to be done
+	if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
 	{
-		// if it is a successfull writer mini transaction (i.e. has a mini transaction id), then append a complete mini transaction log record and flush all log records to make them persistent
-		if(!are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
-			append_completion_log_record_and_flush_UNSAFE(mte, mt, complete_info, complete_info_size);
-
 		mt->state = MIN_TX_COMPLETED;
 		decrement_mini_transaction_reference_counter_UNSAFE(mte, mt);
+
+		shared_unlock(&(mte->manager_lock));
+		pthread_mutex_unlock(&(mte->global_lock));
+		return ;
+	}
+
+	// only proceed further if it is a writer
+
+	// if it is a successfull writer mini transaction, then append a complete mini transaction log record and flush all log records to make them persistent
+	if(mt->state == MIN_TX_IN_PROGRESS)
+	{
+		append_completion_log_record_and_flush_UNSAFE(mte, mt, complete_info, complete_info_size);
+		mt->state = MIN_TX_COMPLETED;
+		decrement_mini_transaction_reference_counter_UNSAFE(mte, mt);
+
 		shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
 		return ;
@@ -597,8 +609,8 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	// mark it completed and exit
 	append_completion_log_record_and_flush_UNSAFE(mte, mt, complete_info, complete_info_size);
 	mt->state = MIN_TX_COMPLETED;
-
 	decrement_mini_transaction_reference_counter_UNSAFE(mte, mt);
+
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
 }
@@ -608,12 +620,8 @@ void mark_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt
 	pthread_mutex_lock(&(mte->global_lock));
 	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
-	// you can only abort a writer mini transaction
-	if(!are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
-	{
-		mt->state = MIN_TX_ABORTED;
-		mt->abort_error = abort_error;
-	}
+	mt->state = MIN_TX_ABORTED;
+	mt->abort_error = abort_error;
 
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
