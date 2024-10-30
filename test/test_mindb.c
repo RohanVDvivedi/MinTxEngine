@@ -458,7 +458,7 @@ int main2()
 
 #include<executor.h>
 
-#define JOBS_COUNT 0
+#define JOBS_COUNT 100
 #define WORKER_COUNT 20
 
 void* perform_insert(void* param)
