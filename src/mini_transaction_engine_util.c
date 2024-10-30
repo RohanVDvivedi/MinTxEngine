@@ -188,6 +188,20 @@ uint256 get_next_LSN_for_LSN_UNSAFE(mini_transaction_engine* mte, uint256 LSN)
 	return nextLSN;
 }
 
+void flush_wal_logs_UNSAFE(mini_transaction_engine* mte)
+{
+	{
+		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+
+		int wal_error = 0;
+		uint256 flushedLSN = flush_all_log_records(wale_p, &wal_error);
+		if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER))
+			exit(-1);
+
+		mte->flushedLSN = max_uint256(mte->flushedLSN, flushedLSN);
+	}
+}
+
 uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id)
 {
 	// if page size is same as block size, no full page write is required
