@@ -2,6 +2,9 @@
 
 #include<block_io.h>
 
+#include<stdlib.h>
+#include<stdio.h>
+
 int read_blocks_for_wale(const void* block_io_ops_handle, void* dest, uint64_t block_id, uint64_t block_count)
 {
 	int res = read_blocks_from_block_file(((block_file*)block_io_ops_handle), dest, block_id, block_count);
