@@ -123,9 +123,19 @@ int main()
 		print_uint_bplus_tree(mt2);
 
 		// abort here
-		mark_aborted_for_mini_tx(&mte, mt2, -55);
+		//mark_aborted_for_mini_tx(&mte, mt2, -55);
 
 		mte_complete_mini_tx(&mte, mt2, NULL, 0);
+	}
+
+	{
+		mini_transaction* mt4 = mte_allot_mini_tx(&mte, 1000000);
+
+		print_uint_bplus_tree(mt4);
+
+		destroy_uint_bplus_tree(mt4);
+
+		mte_complete_mini_tx(&mte, mt4, NULL, 0);
 	}
 
 	{
