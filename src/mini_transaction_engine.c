@@ -25,7 +25,9 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	mte->write_lock_wait_timeout_in_microseconds = write_lock_wait_timeout_in_microseconds;
 	mte->checkpointing_period_in_microseconds = checkpointing_period_in_microseconds;
 
-	if(mte->bufferpool_frame_count == 0 || mte->wale_append_only_buffer_block_count == 0)
+	// with less than 2 buffers in bufferpool you can not redo all types of log records
+	// with less than 1 buffer in append only buffers of writer WALe, no log records can be appended
+	if(mte->bufferpool_frame_count < 2 || mte->wale_append_only_buffer_block_count < 1)
 		return 0;
 
 	if(open_block_file(&(mte->database_block_file), mte->database_file_name, O_DIRECT))
