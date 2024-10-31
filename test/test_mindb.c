@@ -20,7 +20,7 @@ mini_transaction_engine mte;
 #define LOCK_WAIT_TIMEOUT_US  2000000
 #define CHECKPOINT_PERIOD_US (5 * 60 * 1000000) // 5 minutes
 
-const char* db_filename = "test.db"
+const char* db_filename = "test.db";
 
 uint64_t root_page_id;
 
@@ -445,7 +445,7 @@ int main2(uint64_t bucket_count)
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
-		create_uint_hash_table(mt);
+		create_uint_hash_table(mt, bucket_count);
 
 		print_uint_hash_table(mt);
 
