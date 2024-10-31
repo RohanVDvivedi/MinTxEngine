@@ -47,10 +47,10 @@ int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_
 // it will only return LSN to any existing log records
 uint256 get_next_LSN_for_LSN_UNSAFE(mini_transaction_engine* mte, uint256 LSN);
 
-// performs a flush for the wal logs of the database and updated flushedLSN
-// this allows bufferpool pages to reach disk
+// performs a flush for the wal logs of the database and updats flushedLSN
+// this allows bufferpool pages to reach disk, so it will then wake up all waiters
 // this function is unsafe and must be called with global_lock and manager_lock held
-void flush_wal_logs_UNSAFE(mini_transaction_engine* mte);
+void flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mini_transaction_engine* mte);
 
 // it first performs acquire page latch, if that fails it will flush wall logs and tries again
 // this function is unsafe and must be called with global_lock and manager_lock held

@@ -188,7 +188,7 @@ uint256 get_next_LSN_for_LSN_UNSAFE(mini_transaction_engine* mte, uint256 LSN)
 	return nextLSN;
 }
 
-void flush_wal_logs_UNSAFE(mini_transaction_engine* mte)
+void flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mini_transaction_engine* mte)
 {
 	{
 		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
@@ -202,6 +202,9 @@ void flush_wal_logs_UNSAFE(mini_transaction_engine* mte)
 		}
 
 		mte->flushedLSN = max_uint256(mte->flushedLSN, flushedLSN);
+
+		// since now flushedLSN is incremented, there could be dirty frames that can be flushed to disk so wake up all waiters
+		wake_up_all_waiting_for_frame(&(mte->bufferpool_handle));
 	}
 }
 
@@ -214,7 +217,7 @@ void* acquire_page_with_reader_latch_N_flush_wal_if_necessary_UNSAFE(mini_transa
 
 	// if it fails bufferpool is probably full, so flush wal log records and try again
 
-	flush_wal_logs_UNSAFE(mte);
+	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
 
 	return acquire_page_with_reader_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, evict_dirty_if_necessary);
 }
@@ -228,7 +231,7 @@ void* acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mini_transa
 
 	// if it fails bufferpool is probably full, so flush wal log records and try again
 
-	flush_wal_logs_UNSAFE(mte);
+	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
 
 	return acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, evict_dirty_if_necessary, to_be_overwritten);
 }

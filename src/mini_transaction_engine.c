@@ -146,7 +146,7 @@ void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine*
 	pthread_mutex_lock(&(mte->global_lock));
 	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
-	flush_wal_logs_UNSAFE(mte);
+	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
 
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));

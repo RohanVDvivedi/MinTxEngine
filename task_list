@@ -1,7 +1,5 @@
 PICKED
 
- * need a bufferpool function to wake up waiting_threads
-
  * implement undo for TUPLE_UPDATE_ELEMENT_IN_PLACE with edge cases covered
 
  * implement recovery function that gets called every time you initialize the mini transaction engine
