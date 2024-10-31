@@ -20,6 +20,8 @@ mini_transaction_engine mte;
 #define LOCK_WAIT_TIMEOUT_US  2000000
 #define CHECKPOINT_PERIOD_US (5 * 60 * 1000000) // 5 minutes
 
+const char* db_filename = "test.db"
+
 uint64_t root_page_id;
 
 tuple_def record_def;
@@ -92,7 +94,7 @@ void destroy_uint_bplus_tree(mini_transaction* mt)
 
 int main1()
 {
-	if(!initialize_mini_transaction_engine(&mte, "testbpt.db", SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
+	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
 	{
 		printf("failed to initialize mini transaction engine\n");
 		exit(-1);
@@ -214,7 +216,7 @@ uint64_t hash_func(const void* data, uint32_t data_size)
 	return res;
 }
 
-void create_uint_hash_table(mini_transaction* mt)
+void create_uint_hash_table(mini_transaction* mt, uint64_t bucket_count)
 {
 	root_page_id = get_new_hash_table(1000, &httd, &pam, &pmm, mt, &(mt->abort_error));
 
@@ -341,9 +343,9 @@ void destroy_uint_hash_table(mini_transaction* mt)
 	}
 }
 
-int main2()
+int main2(uint64_t bucket_count)
 {
-	if(!initialize_mini_transaction_engine(&mte, "testbpt.db", SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
+	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
 	{
 		printf("failed to initialize mini transaction engine\n");
 		exit(-1);
@@ -360,7 +362,7 @@ int main2()
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
-		create_uint_hash_table(mt);
+		create_uint_hash_table(mt, bucket_count);
 
 		print_uint_hash_table(mt);
 
@@ -495,7 +497,7 @@ void* perform_insert(void* param)
 
 int main3()
 {
-	if(!initialize_mini_transaction_engine(&mte, "testbpt.db", SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
+	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
 	{
 		printf("failed to initialize mini transaction engine\n");
 		exit(-1);
@@ -546,6 +548,7 @@ int main3()
 int main()
 {
 	//main1();
-	//main2();
+	//main2(5);  	// linked_page_list heavy hash_table
+	//main2(2000);	// array_table heavy hash_table
 	main3();
 }
