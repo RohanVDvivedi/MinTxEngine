@@ -16,7 +16,7 @@ mini_transaction_engine mte;
 #define BUFFERPOOL_BUFFERS 100
 #define WALE_BUFFERS 10
 
-#define LATCH_WAIT_TIMEOUT_US 2000000
+#define LATCH_WAIT_TIMEOUT_US   30000
 #define LOCK_WAIT_TIMEOUT_US  2000000
 #define CHECKPOINT_PERIOD_US (5 * 60 * 1000000) // 5 minutes
 
