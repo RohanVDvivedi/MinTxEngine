@@ -39,11 +39,9 @@ TESTS
 Tasks necessary to develop MinTxEngine
  * checkpointing is done by writing the mini transaction table and dirty page table to the WALe as a check point record
  * check pointing occurs every T minutes
-   * there has to be a check pointing reader/writer lock
-   * taken by every one in shared mode and the checkpointer as exclusive mode
    * a checkpoint log record is written
    * discard any WALe files whose log records are not visible/required by anyone
-   * truncate the Bufferpool file if the last extent is all is_valid = 0 bits
+   * truncate the database file, if the last page is either a free space mapper page OR is a free page from a committed - not active mini transaction
  * atlast there is a recovery function that must be called as the first line of your application, it recovers from crash
  * add a disk pager module that is allocation module plus Bufferpool + No logging page modification methods + a truncate functionality
    * to be used by transaction and lock table, i.e. non persistent storage of the database for higher level fuinctions
