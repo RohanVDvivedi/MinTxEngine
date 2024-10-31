@@ -123,8 +123,8 @@ int main1()
 		{
 			insert_uint_bplus_tree(mt, i);
 
-			if(i % 500 == 0)
-				intermediate_wal_flush_for_mini_transaction_engine(&mte);
+			/*if(i % 500 == 0)
+				intermediate_wal_flush_for_mini_transaction_engine(&mte);*/
 		}
 
 		print_uint_bplus_tree(mt);
@@ -150,8 +150,8 @@ int main1()
 		{
 			delete_uint_bplus_tree(mt, i);
 
-			if(i % 500 == 0)
-				intermediate_wal_flush_for_mini_transaction_engine(&mte);
+			/*if(i % 500 == 0)
+				intermediate_wal_flush_for_mini_transaction_engine(&mte);*/
 		}
 
 		print_uint_bplus_tree(mt);
@@ -374,8 +374,8 @@ int main2()
 		{
 			insert_uint_hash_table(mt, i);
 
-			if(i % 500 == 0)
-				intermediate_wal_flush_for_mini_transaction_engine(&mte);
+			/*if(i % 500 == 0)
+				intermediate_wal_flush_for_mini_transaction_engine(&mte);*/
 		}
 
 		print_uint_hash_table(mt);
@@ -401,8 +401,8 @@ int main2()
 		{
 			delete_uint_hash_table(mt, i);
 
-			if(i % 500 == 0)
-				intermediate_wal_flush_for_mini_transaction_engine(&mte);
+			/*if(i % 500 == 0)
+				intermediate_wal_flush_for_mini_transaction_engine(&mte);*/
 		}
 
 		print_uint_hash_table(mt);
@@ -545,7 +545,7 @@ int main3()
 
 int main()
 {
-	//main1();
+	main1();
 	//main2();
-	main3();
+	//main3();
 }
