@@ -2,21 +2,24 @@ PICKED
 
  * implement undo for TUPLE_UPDATE_ELEMENT_IN_PLACE with edge cases covered
 
- * implement recovery function that gets called every time you initialize the mini transaction engine
-  * analyze, redo then mark all active mini transactions to UNDOING_FOR_ABORT with reason being ABORTED_AFTER_CRASH and then call complete_mini_transaction on all active writer transactions
- * deinitialize_mini_transaction_engine waits for all mini_transactions to be returned
-   * also kill the checkpointer thread
-   * set a flag stating marked for shutdown
-   * modifications to mini_transaction allotter
-     * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
- * implement a deinitialize function for mini transaction engine
- * add a flag suggesting shutdown of the mini transaction engine
- * fail all new calls if the shut_down flag is set, and wait for shutdown by taking a manager exclusive lock
  * implement checkpointing and management tasks to be done periodically
+   * grab exclusive lock on the manager lock
    * if wale file is full create a new one and add it to wa_list
    * add a checkpoint log record
    * calculate the minimum visible LSN and remove log files that are no longer visible
    * count the number of pages that can be truncated in database file (free space mapper page always truncatable, data pages truncatable if free and not write locked) and truncate this file
+ * implement recovery function that gets called every time you initialize the mini transaction engine
+  * follow aries
+    * analyze from the most recent checkpoint log record, if none exists no need to load the contents of checkpoint record
+    * redo from the oldest dirty page table's recLSN
+    * then mark all active mini transactions to UNDOING_FOR_ABORT with reason being ABORTED_AFTER_CRASH
+    * then call mte_complete_mini_tx on all active writer transactions
+ * deinitialize_mini_transaction_engine
+   * waits for all mini_transactions to be returned
+   * also kill the checkpointer thread
+   * set a flag stating marked for shutdown
+   * modifications to mini_transaction allotter
+     * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
 
 TESTS
   * multi threaded task of 20 threads
