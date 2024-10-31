@@ -537,8 +537,8 @@ int main3()
 		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
 
-	printf("PRINTING LOGS\n");
-	debug_print_wal_logs_for_mini_transaction_engine(&mte);
+	/*printf("PRINTING LOGS\n");
+	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
 
 	return 0;
 }
