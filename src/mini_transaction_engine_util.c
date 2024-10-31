@@ -208,7 +208,7 @@ void flush_wal_logs_UNSAFE(mini_transaction_engine* mte)
 void* acquire_page_with_reader_latch_N_flush_wal_if_necessary_UNSAFE(mini_transaction_engine* mte, uint64_t page_id, int evict_dirty_if_necessary)
 {
 	// first attempt to grab latch immediately and quit
-	void* page = acquire_page_with_reader_lock(&(mte->bufferpool_handle), page_id, 1, evict_dirty_if_necessary);
+	void* page = acquire_page_with_reader_lock(&(mte->bufferpool_handle), page_id, 0, evict_dirty_if_necessary);
 	if(page != NULL)
 		return page;
 
@@ -222,7 +222,7 @@ void* acquire_page_with_reader_latch_N_flush_wal_if_necessary_UNSAFE(mini_transa
 void* acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mini_transaction_engine* mte, uint64_t page_id, int evict_dirty_if_necessary, int to_be_overwritten)
 {
 	// first attempt to grab latch immediately and quit
-	void* page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, 1, evict_dirty_if_necessary, to_be_overwritten);
+	void* page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, 0, evict_dirty_if_necessary, to_be_overwritten);
 	if(page != NULL)
 		return page;
 
