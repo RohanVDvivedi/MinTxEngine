@@ -70,7 +70,7 @@ static void append_abortion_log_record_and_flush_INTERNAL(mini_transaction_engin
 	}
 
 	// return value
-	uint256 abortion_log_record_LSN = INVALID_LOG_SEQUENCE_NUMBER;
+	uint256 log_record_LSN = INVALID_LOG_SEQUENCE_NUMBER;
 
 	{
 		log_record lr = {
@@ -97,7 +97,7 @@ static void append_abortion_log_record_and_flush_INTERNAL(mini_transaction_engin
 			wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
 
 			int wal_error = 0;
-			abortion_log_record_LSN = append_log_record(wale_p, serialized_lr, serialized_lr_size, 0, &wal_error);
+			log_record_LSN = append_log_record(wale_p, serialized_lr, serialized_lr_size, 0, &wal_error);
 			if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
 			{
 				printf("ISSUE :: unable to append log record\n");
@@ -120,7 +120,7 @@ static void append_abortion_log_record_and_flush_INTERNAL(mini_transaction_engin
 	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
 	pthread_mutex_unlock(&(mte->global_lock));
 
-	return abortion_log_record_LSN;
+	return log_record_LSN;
 }
 
 static uint256 append_completion_log_record_and_flush_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, const void* complete_info, uint32_t complete_info_size)
@@ -132,7 +132,7 @@ static uint256 append_completion_log_record_and_flush_INTERNAL(mini_transaction_
 	}
 
 	// return value
-	uint256 completion_log_record_LSN = INVALID_LOG_SEQUENCE_NUMBER;
+	uint256 log_record_LSN = INVALID_LOG_SEQUENCE_NUMBER;
 
 	{
 		log_record lr = {
@@ -161,7 +161,7 @@ static uint256 append_completion_log_record_and_flush_INTERNAL(mini_transaction_
 			wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
 
 			int wal_error = 0;
-			completion_log_record_LSN = append_log_record(wale_p, serialized_lr, serialized_lr_size, 0, &wal_error);
+			log_record_LSN = append_log_record(wale_p, serialized_lr, serialized_lr_size, 0, &wal_error);
 			if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
 			{
 				printf("ISSUE :: unable to append log record\n");
@@ -183,7 +183,7 @@ static uint256 append_completion_log_record_and_flush_INTERNAL(mini_transaction_
 	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
 	pthread_mutex_unlock(&(mte->global_lock));
 
-	return completion_log_record_LSN;
+	return log_record_LSN;
 }
 
 // luckily all clr log records modify only contents on a single page, hence the simplicity of this function
