@@ -488,7 +488,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 							const void* on_page_tuple = get_nth_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tueiplr.tpl_def.size_def), undo_lr->tueiplr.tuple_index);
 
 							// clone it into new tuple
-							void* new_tuple = malloc(mte->user_stats.page_size);
+							new_tuple = malloc(mte->user_stats.page_size);
 							if(new_tuple == NULL)
 							{
 								printf("ISSUE :: unable to undo tuple update element in place, memory allocation for new tuple failed\n");
