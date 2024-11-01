@@ -482,7 +482,7 @@ void* perform_insert(void* param)
 		pthread_mutex_unlock(&mtx);
 	}
 
-	if(p % 20 == 0)
+	if((9 <= (p % 23)) && ((p % 23) <= 12))
 	{
 		pthread_mutex_lock(&mtx);
 		aborts_done++;
