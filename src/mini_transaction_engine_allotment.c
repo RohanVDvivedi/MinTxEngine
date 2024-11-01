@@ -721,6 +721,10 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 
 int mark_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, int abort_error)
 {
+	// abort_error can not be non-negative
+	if(abort_error >= 0)
+		return 0;
+
 	pthread_mutex_lock(&(mte->global_lock));
 	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
@@ -738,4 +742,18 @@ int mark_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
 	return 1;
+}
+
+int is_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt)
+{
+	pthread_mutex_lock(&(mte->global_lock));
+	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+
+	int abort_error = 0;
+	if(mt->state == MIN_TX_ABORTED || mt->state == MIN_TX_UNDOING_FOR_ABORT)
+		abort_error = mt->abort_error;
+
+	shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+	return abort_error;
 }
