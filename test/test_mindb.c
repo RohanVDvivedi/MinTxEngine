@@ -35,22 +35,24 @@ bplus_tree_tuple_defs bpttd;
 
 void create_uint_bplus_tree(mini_transaction* mt)
 {
-	root_page_id = get_new_bplus_tree(&bpttd, &pam, &pmm, mt, &(mt->abort_error));
+	int abort_error = 0;
+	root_page_id = get_new_bplus_tree(&bpttd, &pam, &pmm, mt, &abort_error);
 
-	if(mt->abort_error)
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while creating\n", mt->abort_error);
+		printf("aborted %d while creating\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 }
 
 int insert_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 {
-	int res = insert_in_bplus_tree(root_page_id, &x, &bpttd, &pam, &pmm, mt, &(mt->abort_error));
+	int abort_error = 0;
+	int res = insert_in_bplus_tree(root_page_id, &x, &bpttd, &pam, &pmm, mt, &abort_error);
 
-	if(mt->abort_error)
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while inserting\n", mt->abort_error);
+		printf("aborted %d while inserting\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 
@@ -59,11 +61,12 @@ int insert_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 
 int delete_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 {
-	int res = delete_from_bplus_tree(root_page_id, &x, &bpttd, &pam, &pmm, mt, &(mt->abort_error));
+	int abort_error = 0;
+	int res = delete_from_bplus_tree(root_page_id, &x, &bpttd, &pam, &pmm, mt, &abort_error);
 
-	if(mt->abort_error)
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while deleting\n", mt->abort_error);
+		printf("aborted %d while deleting\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 
@@ -72,22 +75,24 @@ int delete_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 
 void print_uint_bplus_tree(mini_transaction* mt)
 {
-	print_bplus_tree(root_page_id, 1, &bpttd, &pam, mt, &(mt->abort_error));
+	int abort_error = 0;
+	print_bplus_tree(root_page_id, 1, &bpttd, &pam, mt, &abort_error);
 
-	if(mt->abort_error)
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while printing\n", mt->abort_error);
+		printf("aborted %d while printing\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 }
 
 void destroy_uint_bplus_tree(mini_transaction* mt)
 {
-	destroy_bplus_tree(root_page_id, &bpttd, &pam, mt, &(mt->abort_error));
+	int abort_error = 0;
+	destroy_bplus_tree(root_page_id, &bpttd, &pam, mt, &abort_error);
 
-	if(mt->abort_error)
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while destroying\n", mt->abort_error);
+		printf("aborted %d while destroying\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 }
@@ -218,43 +223,45 @@ uint64_t hash_func(const void* data, uint32_t data_size)
 
 void create_uint_hash_table(mini_transaction* mt, uint64_t bucket_count)
 {
-	root_page_id = get_new_hash_table(1000, &httd, &pam, &pmm, mt, &(mt->abort_error));
+	int abort_error = 0;
+	root_page_id = get_new_hash_table(1000, &httd, &pam, &pmm, mt, &abort_error);
 
-	if(mt->abort_error)
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while creating\n", mt->abort_error);
+		printf("aborted %d while creating\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 }
 
 int insert_uint_hash_table(mini_transaction* mt, uint64_t x)
 {
-	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, &x, &httd, &pam, &pmm, mt, &(mt->abort_error));
-	if(mt->abort_error)
+	int abort_error = 0;
+	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, &x, &httd, &pam, &pmm, mt, &abort_error);
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while inserting\n", mt->abort_error);
+		printf("aborted %d while inserting\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 
-	int res = insert_in_hash_table_iterator(hti, &x, mt, &(mt->abort_error));
-	if(mt->abort_error)
+	int res = insert_in_hash_table_iterator(hti, &x, mt, &abort_error);
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while inserting\n", mt->abort_error);
+		printf("aborted %d while inserting\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 
 	hash_table_vaccum_params htvp;
-	delete_hash_table_iterator(hti, &htvp, mt, &(mt->abort_error));
-	if(mt->abort_error)
+	delete_hash_table_iterator(hti, &htvp, mt, &abort_error);
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while inserting\n", mt->abort_error);
+		printf("aborted %d while inserting\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 
-	perform_vaccum_hash_table(root_page_id, &htvp, 1, &httd, &pam, &pmm, mt, &(mt->abort_error));
-	if(mt->abort_error)
+	perform_vaccum_hash_table(root_page_id, &htvp, 1, &httd, &pam, &pmm, mt, &abort_error);
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while vaccumming after insert\n", mt->abort_error);
+		printf("aborted %d while vaccumming after insert\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 
@@ -263,10 +270,11 @@ int insert_uint_hash_table(mini_transaction* mt, uint64_t x)
 
 int delete_uint_hash_table(mini_transaction* mt, uint64_t x)
 {
-	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, &x, &httd, &pam, &pmm, mt, &(mt->abort_error));
-	if(mt->abort_error)
+	int abort_error = 0;
+	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, &x, &httd, &pam, &pmm, mt, &abort_error);
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while deleting\n", mt->abort_error);
+		printf("aborted %d while deleting\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 
@@ -279,19 +287,19 @@ int delete_uint_hash_table(mini_transaction* mt, uint64_t x)
 		{
 			if(curr != NULL) // i.e. key matches
 			{
-				res += remove_from_hash_table_iterator(hti, mt, &(mt->abort_error));
-				if(mt->abort_error)
+				res += remove_from_hash_table_iterator(hti, mt, &abort_error);
+				if(is_aborted_for_mini_tx(&mte, mt))
 				{
-					printf("aborted %d while deleting\n", mt->abort_error);
+					printf("aborted %d while deleting\n", get_abort_error_for_mini_tx(&mte, mt));
 					exit(-1);
 				}
 			}
 			else
 			{
-				int next_res = next_hash_table_iterator(hti, 0, mt, &(mt->abort_error));
-				if(mt->abort_error)
+				int next_res = next_hash_table_iterator(hti, 0, mt, &abort_error);
+				if(is_aborted_for_mini_tx(&mte, mt))
 				{
-					printf("aborted %d while deleting\n", mt->abort_error);
+					printf("aborted %d while deleting\n", get_abort_error_for_mini_tx(&mte, mt));
 					exit(-1);
 				}
 
@@ -304,17 +312,17 @@ int delete_uint_hash_table(mini_transaction* mt, uint64_t x)
 	}
 
 	hash_table_vaccum_params htvp;
-	delete_hash_table_iterator(hti, &htvp, mt, &(mt->abort_error));
-	if(mt->abort_error)
+	delete_hash_table_iterator(hti, &htvp, mt, &abort_error);
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while deleting\n", mt->abort_error);
+		printf("aborted %d while deleting\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 
-	perform_vaccum_hash_table(root_page_id, &htvp, 1, &httd, &pam, &pmm, mt, &(mt->abort_error));
-	if(mt->abort_error)
+	perform_vaccum_hash_table(root_page_id, &htvp, 1, &httd, &pam, &pmm, mt, &abort_error);
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while vaccumming after delete\n", mt->abort_error);
+		printf("aborted %d while vaccumming after delete\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 
@@ -323,22 +331,24 @@ int delete_uint_hash_table(mini_transaction* mt, uint64_t x)
 
 void print_uint_hash_table(mini_transaction* mt)
 {
-	print_hash_table(root_page_id, &httd, &pam, mt, &(mt->abort_error));
+	int abort_error = 0;
+	print_hash_table(root_page_id, &httd, &pam, mt, &abort_error);
 
-	if(mt->abort_error)
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while printing\n", mt->abort_error);
+		printf("aborted %d while printing\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 }
 
 void destroy_uint_hash_table(mini_transaction* mt)
 {
-	destroy_hash_table(root_page_id, &httd, &pam, mt, &(mt->abort_error));
+	int abort_error = 0;
+	destroy_hash_table(root_page_id, &httd, &pam, mt, &abort_error);
 
-	if(mt->abort_error)
+	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while destroying\n", mt->abort_error);
+		printf("aborted %d while destroying\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 }
