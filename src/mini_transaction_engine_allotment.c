@@ -402,7 +402,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 							exit(-1);
 						}
 						int memory_allocation_error = 0;
-						run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), &memory_allocation_error);
+						run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tulr.size_def), &memory_allocation_error);
 						if(memory_allocation_error) // malloc failed on compaction
 						{
 							printf("ISSUE :: unable to undo tuple update, due to failure to callocate memory for page compaction\n");
