@@ -567,9 +567,9 @@ void main0()
 	init_pam_for_mini_tx_engine(&mte);
 	init_pmm_for_mini_tx_engine(&mte);
 
-	data_type_info str = get_variable_length_string_type("", 100);
+	data_type_info str = get_variable_length_string_type("", SYSTEM_PAGE_SIZE);
 	data_type_info* tup = malloc(sizeof_tuple_data_type_info(2));
-	initialize_tuple_data_type_info((tup), "tuple", 1, 128, 2);
+	initialize_tuple_data_type_info((tup), "tuple", 1, SYSTEM_PAGE_SIZE, 2);
 	strcpy(tup->containees[0].field_name, "a");
 	tup->containees[0].type_info = &str;
 	strcpy(tup->containees[1].field_name, "b");
