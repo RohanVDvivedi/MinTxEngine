@@ -61,7 +61,7 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 	return mt;
 }
 
-static void append_abortion_log_record_and_flush_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt)
+static uint256 append_abortion_log_record_and_flush_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt)
 {
 	if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
 	{
