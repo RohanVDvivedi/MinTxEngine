@@ -25,7 +25,8 @@ TESTS
   * write test to initialize and print wale_LSNs_from for all wa_list wal_accessors and ensure that they are correctly initialized
 
  NOTES
-  * mini transaction commit does not have to make its changes permanent, so no wal flushing is necessary until it is the last operation of the transaction
+  * mini transaction commit does not have to make its changes permanent, so no wal flushing is necessary until it is the last mini transaction operation of the transaction
+  * flushing of abort_mini_tx log record is necessary as you can read changes of its prior log records that are to be undine until the abort log record of minitransaction is flushed
   * flushing wal makes up the use amount of the latency of the operation of the mini transaction engine, for main1 test case in test_mindb, flushing wal after every operation jumps the latency from 0.2 seconds 50 seconds
     * current main3 execution time is 13 seconds with 30 threads, by not flushing mini transactions you can bring it down, provind a flag in the mte_complete_mini_tx function that siggests if the changes are permanent
     * find ways to not make mini transactions permanent, while save us 250 folds of latency improvement in a snap
