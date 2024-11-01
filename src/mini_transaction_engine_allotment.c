@@ -565,7 +565,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 	}
 }
 
-void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, const void* complete_info, uint32_t complete_info_size)
+uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, const void* complete_info, uint32_t complete_info_size)
 {
 	pthread_mutex_lock(&(mte->global_lock));
 
@@ -580,7 +580,7 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 
 		shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
-		return ;
+		return INVALID_LOG_SEQUENCE_NUMBER;
 	}
 
 	// only proceed further if it is a writer
@@ -590,7 +590,7 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	{
 		// state change must happen only after logging it, the correct ordering it below
 		pthread_mutex_unlock(&(mte->global_lock));
-		append_completion_log_record_and_flush_INTERNAL(mte, mt, complete_info, complete_info_size);
+		uint256 completion_log_record_LSN = append_completion_log_record_and_flush_INTERNAL(mte, mt, complete_info, complete_info_size);
 		pthread_mutex_lock(&(mte->global_lock));
 		mt->state = MIN_TX_COMPLETED;
 		pthread_cond_broadcast(&(mt->write_lock_wait));
@@ -598,7 +598,7 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 
 		shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
-		return ;
+		return completion_log_record_LSN;
 	}
 
 	// if the mini transaction is in ABORTED state, then append abort log record and turn it into UNDOING_FOR_ABORT state
@@ -708,7 +708,7 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	// mark it completed and exit
 	// state change must happen only after logging it, the correct ordering it below
 	pthread_mutex_unlock(&(mte->global_lock));
-	append_completion_log_record_and_flush_INTERNAL(mte, mt, complete_info, complete_info_size);
+	uint256 completion_log_record_LSN = append_completion_log_record_and_flush_INTERNAL(mte, mt, complete_info, complete_info_size);
 	pthread_mutex_lock(&(mte->global_lock));
 	mt->state = MIN_TX_COMPLETED;
 	pthread_cond_broadcast(&(mt->write_lock_wait));
@@ -716,6 +716,7 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
+	return completion_log_record_LSN;
 }
 
 void mark_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, int abort_error)
