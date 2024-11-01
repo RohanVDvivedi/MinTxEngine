@@ -61,7 +61,7 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 	return mt;
 }
 
-static void append_abortion_log_record_and_flush_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt)
+static void append_abortion_log_record_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt)
 {
 	{
 		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
@@ -538,7 +538,7 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	if(mt->state == MIN_TX_ABORTED)
 	{
 		// state change must happen only after logging it, the correct ordering it below
-		append_abortion_log_record_and_flush_UNSAFE(mte, mt);
+		append_abortion_log_record_UNSAFE(mte, mt);
 		mt->state = MIN_TX_UNDOING_FOR_ABORT;
 	}
 
