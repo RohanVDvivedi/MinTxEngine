@@ -545,8 +545,97 @@ int main3()
 	return 0;
 }
 
+#include<string.h>
+#include<page_layout.h>
+
+void construct_tuple(char* tuple, const tuple_def* tpl_def, const char* a, uint64_t b)
+{
+	init_tuple(tpl_def, tuple);
+	if(a != NULL) // if NULL leave it NULL
+		set_element_in_tuple(tpl_def, STATIC_POSITION(0), tuple, &(user_value){.string_value = a, .string_size = strlen(a)}, UINT32_MAX);
+	if(b != -1) // if -1 leave it NULL
+		set_element_in_tuple(tpl_def, STATIC_POSITION(1), tuple, &(user_value){.uint_value = b}, UINT32_MAX);
+}
+
+void main0()
+{
+	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
+	{
+		printf("failed to initialize mini transaction engine\n");
+		exit(-1);
+	}
+	init_pam_for_mini_tx_engine(&mte);
+	init_pmm_for_mini_tx_engine(&mte);
+
+	data_type_info str = get_variable_length_string_type("", 100);
+	data_type_info* tup = malloc(sizeof_tuple_data_type_info(2));
+	initialize_tuple_data_type_info((tup), "tuple", 1, 128, 2);
+	strcpy(tup->containees[0].field_name, "a");
+	tup->containees[0].type_info = &str;
+	strcpy(tup->containees[1].field_name, "b");
+	tup->containees[1].type_info = UINT_NULLABLE[5];
+
+	initialize_tuple_def(&record_def, tup);
+
+	uint64_t page_id = 0;
+	void* page = NULL;
+	char tuple[SYSTEM_PAGE_SIZE];
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		page = get_new_page_with_write_latch_for_mini_tx(&mte, mt, &page_id);
+
+		init_page_for_mini_tx(&mte, mt, page, 5, &(record_def.size_def));
+
+		construct_tuple(tuple, &record_def, "Rohan Vipulkumar Dvivedi", 1996);
+		append_tuple_on_page_for_mini_tx(&mte, mt, page, &(record_def.size_def), tuple);
+
+		construct_tuple(tuple, &record_def, "Rupa Vipulkumar Dvivedi", 1966);
+		append_tuple_on_page_for_mini_tx(&mte, mt, page, &(record_def.size_def), tuple);
+
+		printf("intialization\n");
+		print_page(page, mte.user_stats.page_size, &record_def);
+
+		release_writer_latch_on_page_for_mini_tx(&mte, mt, page, 0);
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+		page = acquire_page_with_writer_latch_for_mini_tx(&mte, mt, page_id);
+
+		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 0, STATIC_POSITION(0), &(user_value){.string_value = "Rohan Dvivedi", .string_size = strlen("Rohan Dvivedi")});
+		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 0, STATIC_POSITION(1), &(user_value){.uint_value = (2024 - 1996)});
+		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 1, STATIC_POSITION(0), &(user_value){.string_value = "Rupa Dvivedi", .string_size = strlen("Rupa Dvivedi")});
+		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 1, STATIC_POSITION(1), &(user_value){.uint_value = (2024 - 1966)});
+
+		printf("printing after update\n");
+		print_page(page, mte.user_stats.page_size, &record_def);
+
+
+		printf("aborting\n");
+		mark_aborted_for_mini_tx(&mte, mt, -55);
+		release_writer_latch_on_page_for_mini_tx(&mte, mt, page, 0);
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+		page = acquire_page_with_reader_latch_for_mini_tx(&mte, mt, page_id);
+
+		print_page(page, mte.user_stats.page_size, &record_def);
+
+		release_reader_latch_on_page_for_mini_tx(&mte, mt, page, 0);
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	free(tup);
+}
+
 int main()
 {
+	//main0();
 	//main1();
 	//main2(5);  	// linked_page_list heavy hash_table
 	//main2(2000);	// array_table heavy hash_table
