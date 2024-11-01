@@ -20,10 +20,7 @@ PICKED
      * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
 
 TESTS
-  * multi threaded task of 20 threads
-   * insert 10000 random integers -> abort every multiple of 3
-   * delete  5000 integers all multiples of 2 -> abort every multiple of 6
-   * final result should print first 10000 integers - multiples of 3 - multiples of 2 + multiples of 6
+  * main1, main2 and main3 with variable length tuples
   * write test case where you build a bplus tree and then delete the database file and try reconstructing the complete database using the logs, then compare the database files, or print the bplus tree
   * write test to initialize and print wale_LSNs_from for all wa_list wal_accessors and ensure that they are correctly initialized
 
