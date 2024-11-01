@@ -22,6 +22,12 @@ PICKED
    * modifications to mini_transaction allotter
      * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
 
+  * PAGE_ALLOCATION OPTIMIZATION
+  * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
+    * like a separate faster allocation case which checks these free space mapper pages first, then fall backs to current code
+    * also update this cache when a new page is allocated or freed
+    * this cache should be randomized to randomly select pages for allocation
+
 TESTS
   * main1, main2 and main3 with variable length tuples
   * write test case where you build a bplus tree and then delete the database file and try reconstructing the complete database using the logs, then compare the database files, or print the bplus tree
