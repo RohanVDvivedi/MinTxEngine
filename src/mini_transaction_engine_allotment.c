@@ -63,6 +63,12 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 
 static void append_abortion_log_record_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt)
 {
+	if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
+	{
+		printf("ISSUE :: attempting to log abort log record for a reader mini transaction\n");
+		exit(-1);
+	}
+
 	{
 		log_record lr = {
 			.type = ABORT_MINI_TX,
@@ -95,17 +101,7 @@ static void append_abortion_log_record_INTERNAL(mini_transaction_engine* mte, mi
 				exit(-1);
 			}
 
-			// if mt->mini_transaction_id is INVALID, then assign it log_record_LSN. and make it a writer_mini_transaction
-			if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
-			{
-				mt->mini_transaction_id = log_record_LSN;
-
-				// remove mt from mte->reader_mini_transactions
-				remove_from_linkedlist(&(mte->reader_mini_transactions), mt);
-
-				// insert it to mte->writer_mini_transactions
-				insert_in_hashmap(&(mte->writer_mini_transactions), mt);
-			}
+			// if already ensured that it is a writer mini transaction, so it already has a mini_transaction_id
 
 			// update lastLSN of the mini transaction
 			mt->lastLSN = log_record_LSN;
@@ -121,11 +117,15 @@ static void append_abortion_log_record_INTERNAL(mini_transaction_engine* mte, mi
 	// if we crash before logging it is still an abort but with an abort_error = ABORTED_AFTER_CRASH
 }
 
-static void append_completion_log_record_and_flush_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, const void* complete_info, uint32_t complete_info_size)
+static void append_completion_log_record_and_flush_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, const void* complete_info, uint32_t complete_info_size)
 {
+	if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
 	{
-		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+		printf("ISSUE :: attempting to log completion log record for a reader mini transaction\n");
+		exit(-1);
+	}
 
+	{
 		log_record lr = {
 			.type = COMPLETE_MINI_TX,
 			.cmtlr = {
@@ -146,33 +146,33 @@ static void append_completion_log_record_and_flush_UNSAFE(mini_transaction_engin
 			exit(-1);
 		}
 
-		int wal_error = 0;
-		uint256 log_record_LSN = append_log_record(wale_p, serialized_lr, serialized_lr_size, 0, &wal_error);
-		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+		pthread_mutex_lock(&(mte->global_lock));
+
 		{
-			printf("ISSUE :: unable to append log record\n");
-			exit(-1);
+			wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+
+			int wal_error = 0;
+			uint256 log_record_LSN = append_log_record(wale_p, serialized_lr, serialized_lr_size, 0, &wal_error);
+			if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+			{
+				printf("ISSUE :: unable to append log record\n");
+				exit(-1);
+			}
+
+			// if already ensured that it is a writer mini transaction, so it already has a mini_transaction_id
+
+			// update lastLSN of the mini transaction
+			mt->lastLSN = log_record_LSN;
 		}
+
+		pthread_mutex_unlock(&(mte->global_lock));
 
 		free((void*)serialized_lr);
-
-		// if mt->mini_transaction_id is INVALID, then assign it log_record_LSN. and make it a writer_mini_transaction
-		if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
-		{
-			mt->mini_transaction_id = log_record_LSN;
-
-			// remove mt from mte->reader_mini_transactions
-			remove_from_linkedlist(&(mte->reader_mini_transactions), mt);
-
-			// insert it to mte->writer_mini_transactions
-			insert_in_hashmap(&(mte->writer_mini_transactions), mt);
-		}
-
-		// update lastLSN of the mini transaction
-		mt->lastLSN = log_record_LSN;
 	}
 
+	pthread_mutex_lock(&(mte->global_lock));
 	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
+	pthread_mutex_unlock(&(mte->global_lock));
 }
 
 // luckily all clr log records modify only contents on a single page, hence the simplicity of this function
@@ -530,7 +530,9 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	if(mt->state == MIN_TX_IN_PROGRESS)
 	{
 		// state change must happen only after logging it, the correct ordering it below
-		append_completion_log_record_and_flush_UNSAFE(mte, mt, complete_info, complete_info_size);
+		pthread_mutex_unlock(&(mte->global_lock));
+		append_completion_log_record_and_flush_INTERNAL(mte, mt, complete_info, complete_info_size);
+		pthread_mutex_lock(&(mte->global_lock));
 		mt->state = MIN_TX_COMPLETED;
 		pthread_cond_broadcast(&(mt->write_lock_wait));
 		decrement_mini_transaction_reference_counter_UNSAFE(mte, mt);
@@ -646,7 +648,9 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 
 	// mark it completed and exit
 	// state change must happen only after logging it, the correct ordering it below
-	append_completion_log_record_and_flush_UNSAFE(mte, mt, complete_info, complete_info_size);
+	pthread_mutex_unlock(&(mte->global_lock));
+	append_completion_log_record_and_flush_INTERNAL(mte, mt, complete_info, complete_info_size);
+	pthread_mutex_lock(&(mte->global_lock));
 	mt->state = MIN_TX_COMPLETED;
 	pthread_cond_broadcast(&(mt->write_lock_wait));
 	decrement_mini_transaction_reference_counter_UNSAFE(mte, mt);
