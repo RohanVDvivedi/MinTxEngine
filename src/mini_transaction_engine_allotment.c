@@ -396,9 +396,9 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 					int undone = update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tulr.size_def), undo_lr->tulr.update_index, undo_lr->tulr.old_tuple);
 					if(!undone)
 					{
-						if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tulr.size_def), undo_lr->tulr.update_index, NULL)) // this should never happen
+						if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tulr.size_def), undo_lr->tulr.update_index, NULL)) // this should never fail
 						{
-							printf("ISSUE :: unable to set NULL to a tuple :: this should vener happen\n");
+							printf("ISSUE :: unable to set NULL to a tuple :: this should never happen\n");
 							exit(-1);
 						}
 						int memory_allocation_error = 0;
@@ -425,7 +425,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 						run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), &memory_allocation_error);
 						if(memory_allocation_error) // malloc failed on compaction
 						{
-							printf("ISSUE :: unable to undo tuple discard, due to failure to callocate memory for page compaction\n");
+							printf("ISSUE :: unable to undo tuple discard, due to failure to allocate memory for page compaction\n");
 							exit(-1);
 						}
 						if(!insert_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tdlr.size_def), undo_lr->tdlr.discard_index, undo_lr->tdlr.old_tuple)) // this should never happen if write locks were held
@@ -474,12 +474,60 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				}
 				case TUPLE_UPDATE_ELEMENT_IN_PLACE :
 				{
+					if(NULL == get_nth_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tueiplr.tpl_def.size_def), undo_lr->tueiplr.tuple_index))
+					{
+						printf("ISSUE :: unable to undo tuple update element in place, tuple itself is NULL\n");
+						exit(-1);
+					}
 					int undone = set_element_in_tuple_in_place_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tueiplr.tpl_def), undo_lr->tueiplr.tuple_index, undo_lr->tueiplr.element_index, &(undo_lr->tueiplr.old_element));
 					if(!undone)
 					{
-						// TODO : copy the tuple outside, update the old_element in it, set the existing tuple to NULL, insert the modified tuple
-						printf("TODO :: unhandled case of tuple update element in place\n");
-						exit(-1);
+						void* new_tuple = NULL;
+						{
+							// get pointer to the current on page tuple
+							const void* on_page_tuple = get_nth_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tueiplr.tpl_def.size_def), undo_lr->tueiplr.tuple_index);
+
+							// clone it into new tuple
+							void* new_tuple = malloc(mte->user_stats.page_size);
+							if(new_tuple == NULL)
+							{
+								printf("ISSUE :: unable to undo tuple update element in place, memory allocation for new tuple failed\n");
+								exit(-1);
+							}
+							memory_move(new_tuple, on_page_tuple, get_tuple_size(&(undo_lr->tueiplr.tpl_def), on_page_tuple));
+						}
+
+						// perform set element on the new tuple, this must succeed
+						if(set_element_in_tuple(&(undo_lr->tueiplr.tpl_def), undo_lr->tueiplr.element_index, new_tuple, &(undo_lr->tueiplr.old_element), UINT32_MAX))
+						{
+							printf("ISSUE :: unable to undo tuple update element in place, set tuple on fallback failed\n");
+							exit(-1);
+						}
+
+						// discard old tuple on the page and run page compaction
+						{
+							if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tueiplr.size_def), undo_lr->tueiplr.tuple_index, NULL)) // this should never fail
+							{
+								printf("ISSUE :: unable to set NULL to a tuple :: this should never happen\n");
+								exit(-1);
+							}
+							int memory_allocation_error = 0;
+							run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tueiplr.size_def), &memory_allocation_error);
+							if(memory_allocation_error) // malloc failed on compaction
+							{
+								printf("ISSUE :: unable to undo tuple update, due to failure to allocate memory for page compaction\n");
+								exit(-1);
+							}
+						}
+
+						// perform update for new tuple on the page
+						if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tueiplr.size_def), undo_lr->tueiplr.update_index, new_tuple)) // this should never happen if write locks were held
+						{
+							printf("ISSUE :: unable to undo tuple update\n");
+							exit(-1);
+						}
+
+						free(new_tuple);
 					}
 					break;
 				}
