@@ -27,6 +27,12 @@ PICKED
     * like a separate faster allocation case which checks these free space mapper pages first, then fall backs to current code
     * also update this cache when a new page is allocated or freed
     * this cache should be randomized to randomly select pages for allocation
+    * do this caching while releasing latch on the free space mapper page
+    * simple API like
+      * void update_free_space_mapper_page_in_availability_cache_UNSAFE(mini_transaction_engine* mte, const void* free_space_mapper_page, uint64_t free_space_mapper_page_id); // to be called when ever you release a latch on the free space mapper page
+      * uint64_t get_any_free_space_mapper_page_from_availability_cache_UNSAFE(mini_transaction_engine* mte); // return of 0, implies nothing available
+        * this will not give you enough information as you also need to check that the corresponding page we decide to allocate also needs to be not write locked
+
 
 TESTS
   * main1, main2 and main3 with variable length tuples
