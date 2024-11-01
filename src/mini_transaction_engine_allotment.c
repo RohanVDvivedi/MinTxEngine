@@ -61,7 +61,7 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 	return mt;
 }
 
-static void append_abortion_log_record_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt)
+static void append_abortion_log_record_and_flush_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt)
 {
 	if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
 	{
@@ -112,9 +112,10 @@ static void append_abortion_log_record_INTERNAL(mini_transaction_engine* mte, mi
 		free((void*)serialized_lr);
 	}
 
-	// no need to flush wal log records here
-	// if we crash after logging it is already an abort
-	// if we crash before logging it is still an abort but with an abort_error = ABORTED_AFTER_CRASH
+	// you can not read committed log records without a flush
+	pthread_mutex_lock(&(mte->global_lock));
+	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
+	pthread_mutex_unlock(&(mte->global_lock));
 }
 
 static void append_completion_log_record_and_flush_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, const void* complete_info, uint32_t complete_info_size)
@@ -547,7 +548,7 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	{
 		// state change must happen only after logging it, the correct ordering it below
 		pthread_mutex_unlock(&(mte->global_lock));
-		append_abortion_log_record_INTERNAL(mte, mt);
+		append_abortion_log_record_and_flush_INTERNAL(mte, mt);
 		pthread_mutex_lock(&(mte->global_lock));
 		mt->state = MIN_TX_UNDOING_FOR_ABORT;
 	}
