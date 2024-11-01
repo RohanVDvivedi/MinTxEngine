@@ -372,7 +372,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 					uint32_t tuple_count = get_tuple_count_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->talr.size_def));
 					if(tuple_count == 0) //this should never happen if write locks were held
 					{
-						printf("ISSUE :: will not be able to undo tuple append\n");
+						printf("ISSUE :: will not be able to undo tuple append, because current uple count is 0\n");
 						exit(-1);
 					}
 					if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->talr.size_def), tuple_count - 1)) // this should never happen if write locks were held
