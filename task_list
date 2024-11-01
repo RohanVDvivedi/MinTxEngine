@@ -1,7 +1,5 @@
 PICKED
 
- * add special test case for tueiplr undo, with fixed length and variable length elements
-
  * implement checkpointing and management tasks to be done periodically
    * grab exclusive lock on the manager lock
    * if wale file is full create a new one and add it to wa_list
