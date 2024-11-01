@@ -538,6 +538,12 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 		mt->state = MIN_TX_UNDOING_FOR_ABORT;
 	}
 
+	if(mt->state != MIN_TX_UNDOING_FOR_ABORT)
+	{
+		printf("ISSUE :: the correct state for the mini transaction here must be MIN_TX_UNDOING_FOR_ABORT\n");
+		exit(-1);
+	}
+
 	// undo everything you did for this transaction until now except FULL_PAGE_WRITE and PAGE_COMPACTION as their undo is NO-OP
 	{
 		uint256 undo_LSN; // this attribute tracks the log record to be undone
@@ -568,6 +574,12 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 			{
 				undo_LSN = lr.amtlr.prev_log_record_LSN;
 				destroy_and_free_parsed_log_record(&lr);
+
+				if(are_equal_uint256(undo_LSN, INVALID_LOG_SEQUENCE_NUMBER))
+				{
+					printf("ISSUE :: detected the presence of ABORT_MINI_TX log record for a reader mini transaction\n");
+					exit(-1);
+				}
 			}
 			else if(lr.type == COMPENSATION_LOG) // we start from the previous log record of the last log record that was undone
 			{
