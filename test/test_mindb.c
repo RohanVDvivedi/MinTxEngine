@@ -600,6 +600,7 @@ void main0()
 		release_writer_latch_on_page_for_mini_tx(&mte, mt, page, 0);
 		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
+	printf("-x-x-x-x- tx1 complete\n");
 
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
@@ -619,6 +620,7 @@ void main0()
 		release_writer_latch_on_page_for_mini_tx(&mte, mt, page, 0);
 		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
+	printf("-x-x-x-x- tx2 complete\n");
 
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
@@ -629,15 +631,16 @@ void main0()
 		release_reader_latch_on_page_for_mini_tx(&mte, mt, page, 0);
 		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
+	printf("-x-x-x-x- tx3 complete\n");
 
 	free(tup);
 }
 
 int main()
 {
-	//main0();
+	main0();
 	//main1();
 	//main2(5);  	// linked_page_list heavy hash_table
 	//main2(2000);	// array_table heavy hash_table
-	main3();
+	//main3();
 }
