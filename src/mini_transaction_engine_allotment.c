@@ -515,7 +515,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 							run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr->tueiplr.tpl_def.size_def), &memory_allocation_error);
 							if(memory_allocation_error) // malloc failed on compaction
 							{
-								printf("ISSUE :: unable to undo tuple update, due to failure to allocate memory for page compaction\n");
+								printf("ISSUE :: unable to undo tuple update element in place, due to failure to allocate memory for page compaction\n");
 								exit(-1);
 							}
 						}
@@ -523,7 +523,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 						// perform update for new tuple on the page
 						if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr->tueiplr.tpl_def.size_def), undo_lr->tueiplr.tuple_index, new_tuple)) // this should never happen if write locks were held
 						{
-							printf("ISSUE :: unable to undo tuple update\n");
+							printf("ISSUE :: unable to undo tuple update element in place\n");
 							exit(-1);
 						}
 
