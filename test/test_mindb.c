@@ -638,9 +638,9 @@ void main0()
 
 int main()
 {
-	main0();
+	//main0();
 	//main1();
 	//main2(5);  	// linked_page_list heavy hash_table
 	//main2(2000);	// array_table heavy hash_table
-	//main3();
+	main3();
 }
