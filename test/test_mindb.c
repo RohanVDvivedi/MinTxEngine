@@ -654,4 +654,5 @@ int main()
 	//main2(97);		// sweet spot
 	//main2(2000);	// array_table heavy hash_table
 	main3();
+	printf("total pages used = %"PRIu64"\n", mte.database_page_count);
 }
