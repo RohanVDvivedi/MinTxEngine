@@ -498,7 +498,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 						}
 
 						// perform set element on the new tuple, this must succeed
-						if(set_element_in_tuple(&(undo_lr->tueiplr.tpl_def), undo_lr->tueiplr.element_index, new_tuple, &(undo_lr->tueiplr.old_element), UINT32_MAX))
+						if(!set_element_in_tuple(&(undo_lr->tueiplr.tpl_def), undo_lr->tueiplr.element_index, new_tuple, &(undo_lr->tueiplr.old_element), UINT32_MAX))
 						{
 							printf("ISSUE :: unable to undo tuple update element in place, set tuple on fallback failed\n");
 							exit(-1);
