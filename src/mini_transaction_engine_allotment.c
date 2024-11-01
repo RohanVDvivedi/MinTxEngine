@@ -61,11 +61,9 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 	return mt;
 }
 
-static void append_abortion_log_record_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt)
+static void append_abortion_log_record_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt)
 {
 	{
-		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
-
 		log_record lr = {
 			.type = ABORT_MINI_TX,
 			.amtlr = {
@@ -84,30 +82,38 @@ static void append_abortion_log_record_UNSAFE(mini_transaction_engine* mte, mini
 			exit(-1);
 		}
 
-		int wal_error = 0;
-		uint256 log_record_LSN = append_log_record(wale_p, serialized_lr, serialized_lr_size, 0, &wal_error);
-		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+		pthread_mutex_lock(&(mte->global_lock));
+
 		{
-			printf("ISSUE :: unable to append log record\n");
-			exit(-1);
+			wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+
+			int wal_error = 0;
+			uint256 log_record_LSN = append_log_record(wale_p, serialized_lr, serialized_lr_size, 0, &wal_error);
+			if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
+			{
+				printf("ISSUE :: unable to append log record\n");
+				exit(-1);
+			}
+
+			// if mt->mini_transaction_id is INVALID, then assign it log_record_LSN. and make it a writer_mini_transaction
+			if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
+			{
+				mt->mini_transaction_id = log_record_LSN;
+
+				// remove mt from mte->reader_mini_transactions
+				remove_from_linkedlist(&(mte->reader_mini_transactions), mt);
+
+				// insert it to mte->writer_mini_transactions
+				insert_in_hashmap(&(mte->writer_mini_transactions), mt);
+			}
+
+			// update lastLSN of the mini transaction
+			mt->lastLSN = log_record_LSN;
 		}
+
+		pthread_mutex_unlock(&(mte->global_lock));
 
 		free((void*)serialized_lr);
-
-		// if mt->mini_transaction_id is INVALID, then assign it log_record_LSN. and make it a writer_mini_transaction
-		if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
-		{
-			mt->mini_transaction_id = log_record_LSN;
-
-			// remove mt from mte->reader_mini_transactions
-			remove_from_linkedlist(&(mte->reader_mini_transactions), mt);
-
-			// insert it to mte->writer_mini_transactions
-			insert_in_hashmap(&(mte->writer_mini_transactions), mt);
-		}
-
-		// update lastLSN of the mini transaction
-		mt->lastLSN = log_record_LSN;
 	}
 
 	// no need to flush wal log records here
@@ -538,7 +544,9 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	if(mt->state == MIN_TX_ABORTED)
 	{
 		// state change must happen only after logging it, the correct ordering it below
-		append_abortion_log_record_UNSAFE(mte, mt);
+		pthread_mutex_unlock(&(mte->global_lock));
+		append_abortion_log_record_INTERNAL(mte, mt);
+		pthread_mutex_lock(&(mte->global_lock));
 		mt->state = MIN_TX_UNDOING_FOR_ABORT;
 	}
 
