@@ -1,5 +1,8 @@
 PICKED
 
+ * add check pointing log record type
+   * and its corresponding function cases to serialize and deserialize it
+   * and its tuple and type definition to encpsulate dirty page table entry and mini transaction table entry
  * implement checkpointing and management tasks to be done periodically
    * grab exclusive lock on the manager lock
    * if wale file is full create a new one and add it to wa_list
