@@ -224,7 +224,7 @@ uint64_t hash_func(const void* data, uint32_t data_size)
 void create_uint_hash_table(mini_transaction* mt, uint64_t bucket_count)
 {
 	int abort_error = 0;
-	root_page_id = get_new_hash_table(1000, &httd, &pam, &pmm, mt, &abort_error);
+	root_page_id = get_new_hash_table(bucket_count, &httd, &pam, &pmm, mt, &abort_error);
 
 	if(is_aborted_for_mini_tx(&mte, mt))
 	{
