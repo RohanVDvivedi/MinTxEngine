@@ -110,7 +110,9 @@ static void append_abortion_log_record_and_flush_UNSAFE(mini_transaction_engine*
 		mt->lastLSN = log_record_LSN;
 	}
 
-	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
+	// no need to flush wal log records here
+	// if we crash after logging it is already an abort
+	// if we crash before logging it is still an abort but with an abort_error = ABORTED_AFTER_CRASH
 }
 
 static void append_completion_log_record_and_flush_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, const void* complete_info, uint32_t complete_info_size)
