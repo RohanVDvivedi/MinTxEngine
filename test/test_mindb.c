@@ -651,6 +651,7 @@ int main()
 	//main0();
 	//main1();
 	//main2(5);  	// linked_page_list heavy hash_table
+	//main2(97);		// sweet spot
 	//main2(2000);	// array_table heavy hash_table
 	main3();
 }
