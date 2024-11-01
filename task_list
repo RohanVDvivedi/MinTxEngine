@@ -1,6 +1,6 @@
 PICKED
 
- * implement undo for TUPLE_UPDATE_ELEMENT_IN_PLACE with edge cases covered
+ * add special test case for tueiplr undo, with fixed length and variable length elements
 
  * implement checkpointing and management tasks to be done periodically
    * grab exclusive lock on the manager lock
