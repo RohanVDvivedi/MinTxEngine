@@ -521,6 +521,7 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	// if it is a successfull writer mini transaction, then append a complete mini transaction log record and flush all log records to make them persistent
 	if(mt->state == MIN_TX_IN_PROGRESS)
 	{
+		// state change must happen only after logging it, the correct ordering it below
 		append_completion_log_record_and_flush_UNSAFE(mte, mt, complete_info, complete_info_size);
 		mt->state = MIN_TX_COMPLETED;
 		pthread_cond_broadcast(&(mt->write_lock_wait));
@@ -534,6 +535,7 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	// if the mini transaction is in ABORTED state, then append abort log record and turn it into UNDOING_FOR_ABORT state
 	if(mt->state == MIN_TX_ABORTED)
 	{
+		// state change must happen only after logging it, the correct ordering it below
 		append_abortion_log_record_and_flush_UNSAFE(mte, mt);
 		mt->state = MIN_TX_UNDOING_FOR_ABORT;
 	}
@@ -633,6 +635,7 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
 	// mark it completed and exit
+	// state change must happen only after logging it, the correct ordering it below
 	append_completion_log_record_and_flush_UNSAFE(mte, mt, complete_info, complete_info_size);
 	mt->state = MIN_TX_COMPLETED;
 	pthread_cond_broadcast(&(mt->write_lock_wait));

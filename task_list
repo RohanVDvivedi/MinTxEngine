@@ -2,7 +2,6 @@ PICKED
 
  * no need for flush after logging for ABORT_MIN_TX log record
  * make aborting and complete min tx internal logging functions to be called with out locks
- * add a comment to say that state change must happen after the logging of the abort or complete minitx log record
  * implement undo for TUPLE_UPDATE_ELEMENT_IN_PLACE with edge cases covered
 
  * implement checkpointing and management tasks to be done periodically
