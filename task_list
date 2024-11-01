@@ -1,6 +1,5 @@
 PICKED
 
- * exit(-1) error messages to be printf-ed in allotment.c
  * check correct undoLSN calculation in mte_complete_mini_tx function
  * exit if afer setting the undoing for abort state if the state is not undoing for abort
  * no need for flush after logginf for ABORT_MIN_TX log record
