@@ -552,7 +552,10 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 			while(1)
 			{
 				if(!get_parsed_log_record_UNSAFE(mte, temp, &lr))
+				{
+					printf("ISSUE :: error reading log record\n");
 					exit(-1);
+				}
 
 				if(lr.type != FULL_PAGE_WRITE)
 					break;
@@ -572,13 +575,19 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 				destroy_and_free_parsed_log_record(&lr);
 
 				if(!get_parsed_log_record_UNSAFE(mte, temp, &lr))
+				{
+					printf("ISSUE :: error reading log record\n");
 					exit(-1);
+				}
 
 				undo_LSN = get_prev_log_record_LSN_for_log_record(&lr);
 				destroy_and_free_parsed_log_record(&lr);
 			}
 			else // it can not be any other type of log record
+			{
+				printf("ISSUE :: the mini transaction state is in MIN_TX_UNDOING_FOR_ABORT, the most recent not FULL_PAGE_WRITE log record is not ABORT_MINI_TX or COMPENSATION_LOG\n");
 				exit(-1);
+			}
 		}
 
 		shared_unlock(&(mte->manager_lock));
@@ -587,7 +596,10 @@ void mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, co
 		{
 			log_record undo_lr;
 			if(!get_parsed_log_record_UNSAFE(mte, undo_LSN, &undo_lr))
+			{
+				printf("ISSUE :: error reading log record\n");
 				exit(-1);
+			}
 
 			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
