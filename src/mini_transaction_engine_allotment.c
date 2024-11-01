@@ -719,14 +719,23 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 	return completion_log_record_LSN;
 }
 
-void mark_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, int abort_error)
+int mark_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, int abort_error)
 {
 	pthread_mutex_lock(&(mte->global_lock));
 	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+
+	// fail if the mini transaction is not in IN_PROGRESS state
+	if(mt->state != MIN_TX_IN_PROGRESS)
+	{
+		shared_unlock(&(mte->manager_lock));
+		pthread_mutex_unlock(&(mte->global_lock));
+		return 0;
+	}
 
 	mt->state = MIN_TX_ABORTED;
 	mt->abort_error = abort_error;
 
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
+	return 1;
 }
