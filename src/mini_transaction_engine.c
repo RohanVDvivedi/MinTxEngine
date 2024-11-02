@@ -28,6 +28,10 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	if(mte->bufferpool_frame_count < 2 || mte->wale_append_only_buffer_block_count < 1)
 		return 0;
 
+	// latch and lock wait timeouts can not be 0, checkpointing period must be more than a minute
+	if(mte->latch_wait_timeout_in_microseconds == 0 || mte->write_lock_wait_timeout_in_microseconds == 0 || mte->checkpointing_period_in_microseconds < 60000000)
+		return 0;
+
 	if(open_block_file(&(mte->database_block_file), mte->database_file_name, O_DIRECT))
 	{
 		if(!read_from_first_block(&(mte->database_block_file), &(mte->stats)))
