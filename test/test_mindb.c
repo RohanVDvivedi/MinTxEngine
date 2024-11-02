@@ -29,6 +29,9 @@ tuple_def record_def;
 positional_accessor KEY_POS[1] = {SELF};
 compare_direction CMP_DIR[1] = {ASC};
 
+#define JOBS_COUNT 10000
+uint64_t input[JOBS_COUNT];
+
 // tests for bplus tree
 
 bplus_tree_tuple_defs bpttd;
@@ -113,6 +116,9 @@ int main1()
 		exit(-1);
 	}
 
+	for(uint32_t i = 0; i < JOBS_COUNT; i++)
+		input[i] = (((uint64_t)rand()) % (JOBS_COUNT+13));
+
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
@@ -126,9 +132,9 @@ int main1()
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
-		for(uint64_t i = 10000; i >= 100; i--)
+		for(uint32_t i = 0; i < JOBS_COUNT; i++)
 		{
-			insert_uint_bplus_tree(mt, i);
+			insert_uint_bplus_tree(mt, input[i]);
 
 			/*if(i % 500 == 0)
 				intermediate_wal_flush_for_mini_transaction_engine(&mte);*/
@@ -153,9 +159,9 @@ int main1()
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
-		for(uint64_t i = 10000; i >= 100; i--)
+		for(uint64_t i = 0; i < JOBS_COUNT; i++)
 		{
-			delete_uint_bplus_tree(mt, i);
+			delete_uint_bplus_tree(mt, input[i]);
 
 			/*if(i % 500 == 0)
 				intermediate_wal_flush_for_mini_transaction_engine(&mte);*/
@@ -369,6 +375,9 @@ int main2(uint64_t bucket_count)
 		exit(-1);
 	}
 
+	for(uint32_t i = 0; i < JOBS_COUNT; i++)
+		input[i] = (((uint64_t)rand()) % (JOBS_COUNT+13));
+
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
@@ -384,7 +393,7 @@ int main2(uint64_t bucket_count)
 
 		for(uint64_t i = 10000; i >= 100; i--)
 		{
-			insert_uint_hash_table(mt, i);
+			insert_uint_hash_table(mt, input[i]);
 
 			/*if(i % 500 == 0)
 				intermediate_wal_flush_for_mini_transaction_engine(&mte);*/
@@ -409,9 +418,9 @@ int main2(uint64_t bucket_count)
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
-		for(uint64_t i = 10000; i >= 100; i--)
+		for(uint32_t i = 0; i < JOBS_COUNT; i++)
 		{
-			delete_uint_hash_table(mt, i);
+			delete_uint_hash_table(mt, input[i]);
 
 			/*if(i % 500 == 0)
 				intermediate_wal_flush_for_mini_transaction_engine(&mte);*/
@@ -470,7 +479,6 @@ int main2(uint64_t bucket_count)
 
 #include<executor.h>
 
-#define JOBS_COUNT 10000
 #define WORKER_COUNT 30
 
 pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
@@ -528,7 +536,6 @@ int main3()
 	}
 
 	executor* exe = new_executor(FIXED_THREAD_COUNT_EXECUTOR, WORKER_COUNT, JOBS_COUNT + 32, 1000000, NULL, NULL, NULL);
-	uint64_t input[JOBS_COUNT];
 
 	for(uint32_t i = 0; i < JOBS_COUNT; i++)
 	{
