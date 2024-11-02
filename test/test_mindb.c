@@ -117,7 +117,14 @@ int main1()
 	}
 
 	for(uint32_t i = 0; i < JOBS_COUNT; i++)
-		input[i] = (((uint64_t)rand()) % (JOBS_COUNT+13));
+		input[i] = i;
+
+	for(uint32_t i = 0; i < JOBS_COUNT; i++)
+	{
+		uint32_t i1 = (((uint64_t)rand()) % (JOBS_COUNT));
+		uint32_t i2 = (((uint64_t)rand()) % (JOBS_COUNT));
+		memory_swap(input + i1, input + i2, sizeof(input[i1]));
+	}
 
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
