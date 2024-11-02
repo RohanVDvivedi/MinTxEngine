@@ -405,7 +405,7 @@ int main2(uint64_t bucket_count)
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
-		for(uint64_t i = 10000; i >= 100; i--)
+		for(uint32_t i = 0; i < JOBS_COUNT; i++)
 		{
 			insert_uint_hash_table(mt, input[i]);
 
