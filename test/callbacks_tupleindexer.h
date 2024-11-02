@@ -89,16 +89,11 @@ void init_pam_for_mini_tx_engine(mini_transaction_engine* mte)
 		.release_reader_lock_on_page = release_reader_lock_on_page_mtx,
 		.release_writer_lock_on_page = release_writer_lock_on_page_mtx,
 		.free_page = free_page_mtx,
-		.pas = (page_access_specs){
-			.page_id_width = mte->user_stats.page_id_width,
-			.page_size = mte->user_stats.page_size,
-			.NULL_PAGE_ID = mte->user_stats.NULL_PAGE_ID,
-			.system_header_size = 0,
-		},
+		.pas = (page_access_specs){},
 		.context = mte,
 	};
-	pam.pas.page_id_type_info = define_uint_non_nullable_type("page_id", pam.pas.page_id_width);
-	initialize_tuple_def(&(pam.pas.page_id_tuple_def), &(pam.pas.page_id_type_info));
+	if(!initialize_page_access_specs(&(pam.pas), mte->user_stats.page_id_width, mte->user_stats.page_size, mte->user_stats.NULL_PAGE_ID, 0))
+		exit(-1);
 }
 
 int init_page_mtx(void* context, const void* transaction_id, persistent_page ppage, uint32_t page_size, uint32_t page_header_size, const tuple_size_def* tpl_sz_d, int* abort_error)
