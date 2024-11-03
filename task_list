@@ -1,11 +1,12 @@
 PICKED
- 
+ * add bufferpool task to wait for stopping of periodic flush job
+
  * limit maximum mini transaction that can be alloted at an instance
    * it should be min(bufferpool_frame_count, some max value, some user provided value);
    * dirty page table entries may not be created upfront
 
  * add check pointing log record type
-   * check point log record can be atmost 1 GB long -> figure out this limit
+   * check point log record can be atmost 1 GB long -> TODO:: figure out this limit
    * create small hash tables in this structure for mini transaction table and dirty page table
    * and its corresponding function cases to serialize and deserialize it
    * and its tuple and type definition to encpsulate dirty page table entry and mini transaction table entry
@@ -28,7 +29,8 @@ PICKED
    * release exclusive manager lock
 
  * deinitialize_mini_transaction_engine
-   * mark shutdown flag
+   * mark shutdown flag -> most of it to be done with shared lock
+   * OPTIONAL :: mark all active mini transactions aborted
    * wake up checkpointer
    * wake up all waiting for the execution slot
    * waits for all mini_transactions to be completed -> wait on wait_for_execution slot for this and keep checking the reader and writer mini transaction to become empty
@@ -47,7 +49,7 @@ PICKED
      * if it is complete mini tx, make the mini transaction as completed, and remove it from the , update lastLSN
    * now calculate the min of dirty page table -> recLSN, call it redo_from_LSN
      * loop from redo_from_LSN until the end
-       * TODO
+       * TODO ::
 
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
