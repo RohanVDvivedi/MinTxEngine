@@ -1,5 +1,4 @@
 PICKED
- * add bufferpool task to wait for stopping of periodic flush job
 
  * limit maximum mini transaction that can be alloted at an instance
    * it should be min(bufferpool_frame_count, some max value, some user provided value);
@@ -26,7 +25,7 @@ PICKED
    * wait on wait_wake_checkpointer for checkpointer period -> important to be done outside exclusive manager lock
    * if shut down quit
    * take exclusive manager lock
-     * turn off periodic flush job, and wait for it to finish -> need a function for this in bufferpool-> add a comment there that you may wait for ever if someone else comes and turns periodic flush job on
+     * turn off periodic flush job, and wait for it to finish
      * flush wale
      * flush bufferpool
      * create checkpoint log record with shallow copy and serialize it
