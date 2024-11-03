@@ -1,7 +1,5 @@
 PICKED
 
- * dirty page table entries may not be created upfront
-
  * add check pointing log record type
    * add ckecpoint log record types
      * CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY
