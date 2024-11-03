@@ -139,12 +139,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		insert_head_in_linkedlist(&(mte->free_mini_transactions_list), mt);
 	}
 
-	// allocate enough dity page table entry structures to survive safely
-	for(uint32_t i = 0; i < mte->bufferpool_frame_count; i++)
-	{
-		dirty_page_table_entry* dpte = get_new_dirty_page_table_entry();
-		insert_head_in_linkedlist(&(mte->free_dirty_page_entries_list), dpte);
-	}
+	// dirty page table entries may not be created upfront
 
 	// TODO start checkpointer thread
 
