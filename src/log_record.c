@@ -2312,6 +2312,12 @@ uint256 get_prev_log_record_LSN_for_log_record(const log_record* lr)
 			return lr->amtlr.prev_log_record_LSN;
 		case COMPLETE_MINI_TX :
 			return lr->cmtlr.prev_log_record_LSN;
+		case CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY :
+			return lr->ckptmttelr.prev_log_record_LSN;
+		case CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY :
+			return lr->ckptdptelr.prev_log_record_LSN;
+		case CHECKPOINT_END :
+			return lr->ckptelr.prev_log_record_LSN;
 	}
 }
 
@@ -2405,6 +2411,21 @@ int set_prev_log_record_LSN_for_log_record(log_record* lr, uint256 prev_log_reco
 		case COMPLETE_MINI_TX :
 		{
 			lr->cmtlr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY :
+		{
+			lr->ckptmttelr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY :
+		{
+			lr->ckptdptelr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
+		case CHECKPOINT_END :
+		{
+			lr->ckptelr.prev_log_record_LSN = prev_log_record_LSN;
 			return 1;
 		}
 	}
