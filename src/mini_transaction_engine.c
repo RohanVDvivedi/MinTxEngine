@@ -156,6 +156,17 @@ void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine*
 	pthread_mutex_unlock(&(mte->global_lock));
 }
 
+void intermediate_bufferpool_flush_for_mini_transaction_engine(mini_transaction_engine* mte)
+{
+	pthread_mutex_lock(&(mte->global_lock));
+	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+
+	flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
+
+	shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+}
+
 void debug_print_wal_logs_for_mini_transaction_engine(mini_transaction_engine* mte)
 {
 	pthread_mutex_lock(&(mte->global_lock));
@@ -178,5 +189,4 @@ void debug_print_wal_logs_for_mini_transaction_engine(mini_transaction_engine* m
 
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
-
 }

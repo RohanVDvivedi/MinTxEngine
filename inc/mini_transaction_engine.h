@@ -128,6 +128,9 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 // if your mini transaction is huge perform this intermediately to allow more changes to be left in bufferpool
 void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine* mte);
 
+// if your mini transaction is huge perform this intermediately to allow all possibly flushable bufferpool changes to be flushed to disk
+void intermediate_bufferpool_flush_for_mini_transaction_engine(mini_transaction_engine* mte);
+
 void debug_print_wal_logs_for_mini_transaction_engine(mini_transaction_engine* mte);
 
 #endif
