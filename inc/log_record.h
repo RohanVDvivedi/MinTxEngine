@@ -406,6 +406,10 @@ struct log_record_tuple_defs
 	tuple_def clr_def;
 	tuple_def amtlr_def;
 	tuple_def cmtlr_def;
+
+	tuple_def ckptmttelr_def;
+	tuple_def ckptdptelr_def;
+	tuple_def ckptelr_def;
 };
 
 // this function is crucial in succeeding the creation of mini_transaction_engine
