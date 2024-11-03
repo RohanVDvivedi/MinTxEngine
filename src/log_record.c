@@ -1052,6 +1052,47 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
+		case CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY :
+		{
+			log_record lr;
+			lr.type = CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY;
+
+			lr.ckptmttelr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+
+			lr.ckptmttelr.mt.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(1,0), log_record_contents).large_uint_value;
+			lr.ckptmttelr.mt.lastLSN = get_value_from_element_from_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(1,1), log_record_contents).large_uint_value;
+			lr.ckptmttelr.mt.state = get_value_from_element_from_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(1,2), log_record_contents).uint_value;
+
+			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
+			return lr;
+		}
+		case CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY :
+		{
+			log_record lr;
+			lr.type = CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY;
+
+			lr.ckptdptelr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->ckptdptelr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+
+			lr.ckptdptelr.dpte.page_id = get_value_from_element_from_tuple(&(lrtd_p->ckptdptelr_def), STATIC_POSITION(1,0), log_record_contents).uint_value;
+			lr.ckptdptelr.dpte.recLSN = get_value_from_element_from_tuple(&(lrtd_p->ckptdptelr_def), STATIC_POSITION(1,1), log_record_contents).large_uint_value;
+
+			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
+			return lr;
+		}
+		case CHECKPOINT_END :
+		{
+			log_record lr;
+			lr.type = CHECKPOINT_END;
+
+			lr.ckptelr.prev_log_record_LSN = get_value_from_element_from_tuple(&(lrtd_p->ckptelr_def), STATIC_POSITION(0), log_record_contents).large_uint_value;
+			lr.ckptelr.begin_LSN = get_value_from_element_from_tuple(&(lrtd_p->ckptelr_def), STATIC_POSITION(1), log_record_contents).large_uint_value;
+
+			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
+			return lr;
+		}
 	}
 }
 
