@@ -616,6 +616,25 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		// this shall never fail
 		initialize_tuple_def(&(lrtd->ckptdptelr_def), dti);
 	}
+
+	{
+		data_type_info* dti = malloc(sizeof_tuple_data_type_info(2));
+		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
+			exit(-1);
+		}
+		initialize_tuple_data_type_info(dti, "ckptelr_def", 0, lrtd->max_log_record_size, 2);
+
+		strcpy(dti->containees[0].field_name, "prev_log_record_LSN");
+		dti->containees[0].type_info = &(lrtd->LSN_type);
+
+		strcpy(dti->containees[1].field_name, "checkpoint_begin_LSN");
+		dti->containees[1].type_info = &(lrtd->LSN_type);
+
+		// this shall never fail
+		initialize_tuple_def(&(lrtd->ckptelr_def), dti);
+	}
 }
 
 void deinitialize_log_record_tuple_defs(log_record_tuple_defs* lrtd)
