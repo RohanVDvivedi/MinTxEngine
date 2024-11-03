@@ -258,6 +258,9 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 		// you must never encounter the below 4 types of log records and they can not be undone
 		// UNIDENTIFIED, checkpoint log records and user log records must not be present in a mini transaction
 		case UNIDENTIFIED :
+		case CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY :
+		case CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY :
+		case CHECKPOINT_END :
 		{
 			printf("ISSUE :: encountered a log record that should not be present in a mini transaction, wal probably corrupted or existence of a bug in mini transaction engine\n");
 			exit(-1);
