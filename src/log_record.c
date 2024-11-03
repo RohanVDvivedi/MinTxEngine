@@ -91,7 +91,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(lrtd->dirty_page_table_entry_type, "mini_transaction", 0, lrtd->max_log_record_size, 2);
+		initialize_tuple_data_type_info(lrtd->dirty_page_table_entry_type, "dirty_page_table_entry", 0, lrtd->max_log_record_size, 2);
 
 		strcpy(lrtd->dirty_page_table_entry_type->containees[0].field_name, "page_id");
 		lrtd->dirty_page_table_entry_type->containees[0].type_info = &(lrtd->page_id_type);
@@ -1845,6 +1845,78 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			}
 
 			(*result_size) = get_tuple_size(&(lrtd_p->cmtlr_def), result + 1) + 1;
+			return result;
+		}
+		case CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY :
+		{
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->ckptmttelr_def));
+
+			void* result = malloc(capacity);
+			if(result == NULL)
+				goto ERROR;
+
+			((unsigned char*)result)[0] = CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY;
+
+			init_tuple(&(lrtd_p->ckptmttelr_def), result + 1);
+
+			if(!set_element_in_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->ckptmttelr.prev_log_record_LSN}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(1,0), result + 1, &(user_value){.large_uint_value = lr->ckptmttelr.mt.mini_transaction_id}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(1,1), result + 1, &(user_value){.large_uint_value = lr->ckptmttelr.mt.lastLSN}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(1,2), result + 1, &(user_value){.uint_value = lr->ckptmttelr.mt.state}, UINT32_MAX))
+				goto ERROR;
+
+			(*result_size) = get_tuple_size(&(lrtd_p->ckptmttelr_def), result + 1) + 1;
+			return result;
+		}
+		case CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY :
+		{
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->ckptdptelr_def));
+
+			void* result = malloc(capacity);
+			if(result == NULL)
+				goto ERROR;
+
+			((unsigned char*)result)[0] = CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY;
+
+			init_tuple(&(lrtd_p->ckptdptelr_def), result + 1);
+
+			if(!set_element_in_tuple(&(lrtd_p->ckptdptelr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->ckptdptelr.prev_log_record_LSN}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->ckptdptelr_def), STATIC_POSITION(1,0), result + 1, &(user_value){.uint_value = lr->ckptdptelr.dpte.page_id}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->ckptdptelr_def), STATIC_POSITION(1,1), result + 1, &(user_value){.large_uint_value = lr->ckptdptelr.dpte.recLSN}, UINT32_MAX))
+				goto ERROR;
+
+			(*result_size) = get_tuple_size(&(lrtd_p->ckptdptelr_def), result + 1) + 1;
+			return result;
+		}
+		case CHECKPOINT_END :
+		{
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->ckptelr_def));
+
+			void* result = malloc(capacity);
+			if(result == NULL)
+				goto ERROR;
+
+			((unsigned char*)result)[0] = CHECKPOINT_END;
+
+			init_tuple(&(lrtd_p->ckptelr_def), result + 1);
+
+			if(!set_element_in_tuple(&(lrtd_p->ckptelr_def), STATIC_POSITION(0), result + 1, &(user_value){.large_uint_value = lr->ckptelr.prev_log_record_LSN}, UINT32_MAX))
+				goto ERROR;
+
+			if(!set_element_in_tuple(&(lrtd_p->ckptelr_def), STATIC_POSITION(1), result + 1, &(user_value){.large_uint_value = lr->ckptelr.begin_LSN}, UINT32_MAX))
+				goto ERROR;
+
+			(*result_size) = get_tuple_size(&(lrtd_p->ckptelr_def), result + 1) + 1;
 			return result;
 		}
 	}
