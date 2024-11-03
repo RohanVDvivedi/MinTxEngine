@@ -12,6 +12,8 @@ enum log_record_type
 {
 	UNIDENTIFIED = 0, // this log record can not be parsed or serialized with functions in this header and source file
 
+// below are log records that can exist in any mini transaction
+
 	PAGE_ALLOCATION = 1,
 	PAGE_DEALLOCATION = 2,
 
@@ -46,6 +48,13 @@ enum log_record_type
 
 	COMPLETE_MINI_TX = 18,
 	// informational suggesting no more log records will be or should be generated for this mini transaction
+
+// below are log records that can exist only in checkpoints one ofter another in consecutive fashion
+
+	CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY = 19,
+	CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY = 20,
+
+	CHECKPOINT_END = 21,
 };
 
 /*
@@ -56,7 +65,7 @@ enum log_record_type
 	  -> while redoing them they get writerLSN as in the log record, if their page_id suggests that they have one (if theyr are not a free space mapper page)
 */
 
-extern const char log_record_type_strings[19][64];
+extern const char log_record_type_strings[22][64];
 
 /*
 	NOTE :: for the first log record for any mini transaction

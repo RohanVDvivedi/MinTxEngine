@@ -5,7 +5,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-const char log_record_type_strings[19][64] = {
+const char log_record_type_strings[22][64] = {
 	"UNIDENTIFIED",
 	"PAGE_ALLOCATION",
 	"PAGE_DEALLOCATION",
@@ -24,7 +24,10 @@ const char log_record_type_strings[19][64] = {
 	"FULL_PAGE_WRITE",
 	"COMPENSATION_LOG",
 	"ABORT_MINI_TX",
-	"COMPLETE_MINI_TX"
+	"COMPLETE_MINI_TX",
+	"CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY",
+	"CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY",
+	"CHECKPOINT_END",
 };
 
 static uint32_t bytes_for_page_index(uint32_t page_size)
