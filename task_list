@@ -1,26 +1,53 @@
 PICKED
+ 
+ * limit maximum mini transaction that can be alloted at an instance
+   * it should be min(bufferpool_frame_count, some max value, some user provided value);
+   * dirty page table entries may not be created upfront
 
  * add check pointing log record type
+   * check point log record can be atmost 1 GB long -> figure out this limit
+   * create small hash tables in this structure for mini transaction table and dirty page table
    * and its corresponding function cases to serialize and deserialize it
    * and its tuple and type definition to encpsulate dirty page table entry and mini transaction table entry
- * implement checkpointing and management tasks to be done periodically
-   * grab exclusive lock on the manager lock
-   * if wale file is full create a new one and add it to wa_list
-   * add a checkpoint log record
-   * calculate the minimum visible LSN and remove log files that are no longer visible
-   * count the number of pages that can be truncated in database file (free space mapper page always truncatable, data pages truncatable if free and not write locked) and truncate this file
- * implement recovery function that gets called every time you initialize the mini transaction engine
-  * follow aries
-    * analyze from the most recent checkpoint log record, if none exists no need to load the contents of checkpoint record
-    * redo from the oldest dirty page table's recLSN
-    * then mark all active mini transactions to UNDOING_FOR_ABORT with reason being ABORTED_AFTER_CRASH
-    * then call mte_complete_mini_tx on all active writer transactions
+
+ * add checkpointer thread
+   * wait on wait_wake_checkpointer for checkpointer period
+   * if shut down quit
+   * take exclusive manager lock
+   * if shut down quit
+     * turn off periodic flush job, and wait for it to finish -> need a function for this in bufferpool-> add a comment there that you may wait for ever if someone else comes and turns periodic flush job on
+     * flush wale
+     * flush bufferpool
+     * create checkpoint log record with shallow copy and serialize it
+     * log checkpoint log record and flush
+     * you can release mutex now
+     * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpointLSN, )
+       * discard old wal files if possible
+     * start from the last page and count new size of the database
+       * truncate database file
+   * release exclusive manager lock
+
  * deinitialize_mini_transaction_engine
-   * waits for all mini_transactions to be returned
-   * also kill the checkpointer thread
-   * set a flag stating marked for shutdown
+   * mark shutdown flag
+   * wake up checkpointer
+   * wake up all waiting for the execution slot
+   * waits for all mini_transactions to be completed -> wait on wait_for_execution slot for this and keep checking the reader and writer mini transaction to become empty
+   * wait for checkpointer to quit
+   * release all memory and quit
    * modifications to mini_transaction allotter
      * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
+
+ * recover function
+   * get latest checkpoint log record, OR initialize it empty
+   * copy checkpoint log record's mini transaction table and dirty page table to local variables
+   * analyze loop acts on the local variables (created above) only, starting from checkpoint log record
+     * if log record is a change, add page to dirty page table with respective recLSN
+     * if mini_transaction with given id does not exist, create a new one in mini transaction table, update lastLSN
+     * if it is abort mini tx, mark the mini transaction as UNDOING for abort with specified abort error, update lastLSN
+     * if it is complete mini tx, make the mini transaction as completed, and remove it from the , update lastLSN
+   * now calculate the min of dirty page table -> recLSN, call it redo_from_LSN
+     * loop from redo_from_LSN until the end
+       * TODO
 
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
