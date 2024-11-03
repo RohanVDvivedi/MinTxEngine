@@ -64,6 +64,8 @@ PICKED
      * loop from redo_from_LSN until the end
        * TODO ::
 
+  * NOTE :: after adding any type of lof record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
+
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
     * like a separate faster allocation case which checks these free space mapper pages first, then fall backs to current code
