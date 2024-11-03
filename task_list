@@ -79,6 +79,7 @@ TESTS
 
  FAR FUTURE 
  * remove headers not required for public api from publicly installed headers
+   * like dirty_page_table_entry.h and log_record.h
 
 
 Tasks necessary to develop MinTxEngine
