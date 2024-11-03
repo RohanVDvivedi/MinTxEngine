@@ -1,14 +1,29 @@
 PICKED
 
- * limit maximum mini transaction that can be alloted at an instance
-   * it should be min(bufferpool_frame_count, some max value, some user provided value);
-   * dirty page table entries may not be created upfront
+ * dirty page table entries may not be created upfront
 
  * add check pointing log record type
-   * check point log record can be atmost 1 GB long -> TODO:: figure out this limit
-   * create small hash tables in this structure for mini transaction table and dirty page table
+   * add ckecpoint log record types
+     * CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY
+       * prev_log_record_LSN
+       * mini_transaction
+     * CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY
+       * prev_log_record_LSN
+       * dirty_page_table_entry
+     * CHECKPOINT_END
+       * prev_log_record_LSN
+       * checkpoint_begin_LSN
    * and its corresponding function cases to serialize and deserialize it
-   * and its tuple and type definition to encpsulate dirty page table entry and mini transaction table entry
+   * and its tuple and type definition to encapsulate dirty page table entry and mini transaction table entry
+
+ * checkpointer utility
+   * add a checkpoint struct
+     * uint256 checkpoint_begin_LSN
+     * hashtable writer_mini_transactions
+     * hashtable dirty_page_table
+   * utility function to read whole checkpoint given checkpoint_end_LSN
+     * exit(-1) if any of the LSNs fail to be read or any of the log records are not checkpoint LSNs of desired type
+   * utility function to append whole checkpoint struct to latest wale log, and return the begin and end checkpoint LSNs
 
  * deinitialize_mini_transaction_engine
    * mark shutdown flag -> most of it to be done with shared lock
@@ -23,7 +38,7 @@ PICKED
 
  * add checkpointer thread
    * wait on wait_wake_checkpointer for checkpointer period -> important to be done outside exclusive manager lock
-   * if shut down quit
+   * if shut down flag set quit
    * take exclusive manager lock
      * flush wale
      * checkpointing necessary only if last checkpointLSN was atleast some MBs away preferably 10
@@ -31,11 +46,12 @@ PICKED
      * flush bufferpool
      * create checkpoint log record with shallow copy and serialize it
      * log checkpoint log record and flush
-     * you can release mutex now
-     * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpointLSN, )
+     * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpoint_begin_LSN, user defined value from the call back)
        * discard old wal files if possible
      * start from the last page and count new size of the database
        * truncate database file
+       * update database_page_count variable
+     * you can release mutex now
    * release exclusive manager lock
 
  * recover function
