@@ -308,6 +308,9 @@ struct complete_mini_tx_log_record
 	uint32_t info_size;
 };
 
+#include<mini_transaction.h>
+#include<dirty_page_table_entry.h>
+
 typedef struct checkpoint_mini_transaction_table_entry_log_record checkpoint_mini_transaction_table_entry_log_record;
 struct checkpoint_mini_transaction_table_entry_log_record
 {
@@ -330,7 +333,7 @@ struct checkpoint_end_log_record
 	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same checkpoint
 
 	uint256 begin_LSN; // LSN of the first log record in the WALe for this very same checkpoint
-}
+};
 
 typedef struct log_record log_record;
 struct log_record

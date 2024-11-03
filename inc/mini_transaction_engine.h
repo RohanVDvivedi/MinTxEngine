@@ -66,8 +66,7 @@ struct mini_transaction_engine
 	// this is because we do not have a globally consistent view of the flushedLSN and checkpoint*LSN because global lock gets released while retrieveing it, and call to flushing log records will not ensure the return in any correct order, as global lock is released also while flushing the log records
 	// we can also not rely on the flushed LSN of the most recent wale_handle because if there were no log records writeen then it might even be 0, i.e. invalid
 	uint256 flushedLSN;
-	uint256 checkpoint_beginLSN
-	uint256 checkpoint_endLSN;
+	uint256 checkpointLSN; // end of the latest checkpoint
 
 	// this is the number of pages in database that are in use
 	// this must be lesser than or equal to user_stats.max_page_count
