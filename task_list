@@ -39,7 +39,7 @@ PICKED
    * if shut down flag set quit
    * take exclusive manager lock
      * flush wale
-     * checkpointing necessary only if last checkpointLSN was atleast some MBs away preferably 10
+     * checkpointing necessary only if last checkpoint_end_LSN - flushedLSN was atleast some MBs away preferably 10
      * turn off periodic flush job, and wait for it to finish
      * flush bufferpool
      * create checkpoint log record with shallow copy and serialize it
