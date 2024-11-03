@@ -11,11 +11,21 @@ PICKED
    * and its corresponding function cases to serialize and deserialize it
    * and its tuple and type definition to encpsulate dirty page table entry and mini transaction table entry
 
+ * deinitialize_mini_transaction_engine
+   * mark shutdown flag -> most of it to be done with shared lock
+   * OPTIONAL :: mark all active mini transactions aborted
+   * wake up checkpointer
+   * wake up all waiting for the execution slot
+   * waits for all mini_transactions to be completed -> wait on wait_for_execution slot for this and keep checking the reader and writer mini transaction to become empty
+   * wait for checkpointer to quit
+   * release all memory and quit
+   * modifications to mini_transaction allotter
+     * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
+
  * add checkpointer thread
-   * wait on wait_wake_checkpointer for checkpointer period
+   * wait on wait_wake_checkpointer for checkpointer period -> important to be done outside exclusive manager lock
    * if shut down quit
    * take exclusive manager lock
-   * if shut down quit
      * turn off periodic flush job, and wait for it to finish -> need a function for this in bufferpool-> add a comment there that you may wait for ever if someone else comes and turns periodic flush job on
      * flush wale
      * flush bufferpool
@@ -27,17 +37,6 @@ PICKED
      * start from the last page and count new size of the database
        * truncate database file
    * release exclusive manager lock
-
- * deinitialize_mini_transaction_engine
-   * mark shutdown flag -> most of it to be done with shared lock
-   * OPTIONAL :: mark all active mini transactions aborted
-   * wake up checkpointer
-   * wake up all waiting for the execution slot
-   * waits for all mini_transactions to be completed -> wait on wait_for_execution slot for this and keep checking the reader and writer mini transaction to become empty
-   * wait for checkpointer to quit
-   * release all memory and quit
-   * modifications to mini_transaction allotter
-     * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
 
  * recover function
    * get latest checkpoint log record, OR initialize it empty
