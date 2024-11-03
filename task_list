@@ -1,19 +1,5 @@
 PICKED
 
- * add check pointing log record type
-   * add ckecpoint log record types
-     * CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY
-       * prev_log_record_LSN
-       * mini_transaction
-     * CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY
-       * prev_log_record_LSN
-       * dirty_page_table_entry
-     * CHECKPOINT_END
-       * prev_log_record_LSN
-       * checkpoint_begin_LSN
-   * and its corresponding function cases to serialize and deserialize it
-   * and its tuple and type definition to encapsulate dirty page table entry and mini transaction table entry
-
  * checkpointer utility
    * add a checkpoint struct
      * uint256 checkpoint_begin_LSN
