@@ -426,10 +426,6 @@ void destroy_and_free_parsed_log_record(log_record* lr);
 
 const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size);
 
-// it will always succeed
-// this function is provided to atomically link log records (with global lock held) as a linkedlist in WAL after it has been applied and serialized
-void update_prev_log_record_LSN_in_serialized_log_record(const log_record_tuple_defs* lrtd_p, void* serialized_log_record, uint256 prev_log_record_LSN);
-
 void print_log_record(const log_record* lr, const mini_transaction_engine_stats* stats);
 
 // common getter setter calls
