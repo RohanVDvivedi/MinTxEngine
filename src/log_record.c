@@ -2104,6 +2104,29 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 			printf("info : "); print_blob(lr->cmtlr.info, lr->cmtlr.info_size); printf("\n");
 			return;
 		}
+		case CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY :
+		{
+			printf("prev_log_record_LSN : "); print_uint256(lr->ckptmttelr.prev_log_record_LSN); printf("\n");
+			printf("mt :\n");
+			printf("mini_transaction_id : "); print_uint256(lr->ckptmttelr.mt.mini_transaction_id); printf("\n");
+			printf("lastLSN : "); print_uint256(lr->ckptmttelr.mt.lastLSN); printf("\n");
+			printf("state : %d\n", lr->ckptmttelr.mt.state);
+			return;
+		}
+		case CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY :
+		{
+			printf("prev_log_record_LSN : "); print_uint256(lr->ckptdptelr.prev_log_record_LSN); printf("\n");
+			printf("dpte :\n");
+			printf("page_id : %"PRIu64"\n", lr->ckptdptelr.dpte.page_id);
+			printf("recLSN : "); print_uint256(lr->ckptdptelr.dpte.recLSN); printf("\n");
+			return;
+		}
+		case CHECKPOINT_END :
+		{
+			printf("prev_log_record_LSN : "); print_uint256(lr->ckptelr.prev_log_record_LSN); printf("\n");
+			printf("begin_LSN : "); print_uint256(lr->ckptelr.begin_LSN); printf("\n");
+			return;
+		}
 	}
 }
 
