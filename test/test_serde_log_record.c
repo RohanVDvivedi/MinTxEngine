@@ -586,6 +586,87 @@ int main()
 	}
 	printf("\n\n");
 
+	{
+		log_record a = {
+			.type = CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY,
+			.ckptmttelr = {
+				.prev_log_record_LSN = get_uint256(943),
+				.mt.mini_transaction_id = get_uint256(113),
+				.mt.lastLSN = get_uint256(391),
+				.mt.state = MIN_TX_ABORTED,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY,
+			.ckptdptelr = {
+				.prev_log_record_LSN = get_uint256(943),
+				.dpte.page_id = 533,
+				.dpte.recLSN = get_uint256(853),
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
+	}
+	printf("\n\n");
+
+	{
+		log_record a = {
+			.type = CHECKPOINT_END,
+			.ckptelr = {
+				.prev_log_record_LSN = get_uint256(943),
+				.begin_LSN = get_uint256(789),
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
+	}
+	printf("\n\n");
+
 	deinitialize_log_record_tuple_defs(&lrtd);
 
 	return 0;
