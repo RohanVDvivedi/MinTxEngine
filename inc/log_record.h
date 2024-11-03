@@ -280,7 +280,7 @@ typedef struct compensation_log_record compensation_log_record;
 struct compensation_log_record
 {
 	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
-	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transactionss
+	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transaction
 
 	uint256 undo_of_LSN; // this log record is undo log record of
 };
@@ -290,7 +290,7 @@ typedef struct abort_mini_tx_log_record abort_mini_tx_log_record;
 struct abort_mini_tx_log_record
 {
 	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
-	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transactionss
+	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transaction
 
 	int abort_error; // reason for abort, this is not needed, but it is provided so that someone reading logs could debug
 };
@@ -300,13 +300,37 @@ typedef struct complete_mini_tx_log_record complete_mini_tx_log_record;
 struct complete_mini_tx_log_record
 {
 	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
-	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transactionss
+	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transaction
 
 	int is_aborted:1; // this bit is set if the mini transaction was aborted
 
 	const void* info; // must not be more than 1 page in size
 	uint32_t info_size;
 };
+
+typedef struct checkpoint_mini_transaction_table_entry_log_record checkpoint_mini_transaction_table_entry_log_record;
+struct checkpoint_mini_transaction_table_entry_log_record
+{
+	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same checkpoint
+
+	mini_transaction mt;
+};
+
+typedef struct checkpoint_dirty_page_table_entry_log_record checkpoint_dirty_page_table_entry_log_record;
+struct checkpoint_dirty_page_table_entry_log_record
+{
+	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same checkpoint
+
+	dirty_page_table_entry dpte;
+};
+
+typedef struct checkpoint_end_log_record checkpoint_end_log_record;
+struct checkpoint_end_log_record
+{
+	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same checkpoint
+
+	uint256 begin_LSN; // LSN of the first log record in the WALe for this very same checkpoint
+}
 
 typedef struct log_record log_record;
 struct log_record
@@ -332,6 +356,10 @@ struct log_record
 		compensation_log_record clr;
 		abort_mini_tx_log_record amtlr;
 		complete_mini_tx_log_record cmtlr;
+
+		checkpoint_mini_transaction_table_entry_log_record ckptmttelr;
+		checkpoint_dirty_page_table_entry_log_record ckptdptelr;
+		checkpoint_end_log_record ckptelr;
 	};
 
 	const void* parsed_from;
