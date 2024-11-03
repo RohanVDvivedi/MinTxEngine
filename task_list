@@ -45,7 +45,7 @@ PICKED
      * turn off periodic flush job, and wait for it to finish
      * flush bufferpool
      * create checkpoint log record with shallow copy and serialize it
-     * log checkpoint log record and flush
+     * log checkpoint log record and flush, flush only all of the checkpoint of none of it
      * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpoint_begin_LSN, user defined value from the call back)
        * discard old wal files if possible
      * start from the last page and count new size of the database
