@@ -120,11 +120,6 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	}
 	initialize_linkedlist(&(mte->reader_mini_transactions), offsetof(mini_transaction, enode));
 	initialize_linkedlist(&(mte->free_mini_transactions_list), offsetof(mini_transaction, enode));
-	for(uint32_t i = 0; i < mte->bufferpool_frame_count; i++)
-	{
-		mini_transaction* mt = get_new_mini_transaction();
-		insert_head_in_linkedlist(&(mte->free_mini_transactions_list), mt);
-	}
 
 	if(!initialize_hashmap(&(mte->dirty_page_table), ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, mte->bufferpool_frame_count, &simple_hasher(hash_dirty_page_table_entry), &simple_comparator(compare_dirty_page_table_entries), offsetof(dirty_page_table_entry, enode)))
 	{
@@ -132,15 +127,26 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		exit(-1);
 	}
 	initialize_linkedlist(&(mte->free_dirty_page_entries_list), offsetof(dirty_page_table_entry, enode));
+
+	initialize_log_record_tuple_defs(&(mte->lrtd), &(mte->stats));
+
+	// TODO call recovery function here
+
+	// allocate enough mini transaction structures to survive safely
+	for(uint32_t i = 0; i < mte->bufferpool_frame_count; i++)
+	{
+		mini_transaction* mt = get_new_mini_transaction();
+		insert_head_in_linkedlist(&(mte->free_mini_transactions_list), mt);
+	}
+
+	// allocate enough dity page table entry structures to survive safely
 	for(uint32_t i = 0; i < mte->bufferpool_frame_count; i++)
 	{
 		dirty_page_table_entry* dpte = get_new_dirty_page_table_entry();
 		insert_head_in_linkedlist(&(mte->free_dirty_page_entries_list), dpte);
 	}
 
-	initialize_log_record_tuple_defs(&(mte->lrtd), &(mte->stats));
-
-	// TODO call recovery functions here
+	// TODO start checkpointer thread
 
 	return 1;
 }
