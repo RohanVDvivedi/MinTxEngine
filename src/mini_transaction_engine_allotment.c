@@ -8,7 +8,7 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 	pthread_mutex_lock(&(mte->global_lock));
 
 	int wait_error = 0;
-	while(is_empty_linkedlist(&(mte->free_mini_transactions_list)) && !wait_error) // and not a shutdown
+	while(is_empty_linkedlist(&(mte->free_mini_transactions_list)) && !mte->shutdown_called && !wait_error) // and not a shutdown
 	{
 		// get current time
 		struct timespec now;
@@ -40,7 +40,7 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 	}
 
 	mini_transaction* mt = NULL;
-	if(!is_empty_linkedlist(&(mte->free_mini_transactions_list))) // and not a shutdown
+	if(!is_empty_linkedlist(&(mte->free_mini_transactions_list)) && !mte->shutdown_called) // and not a shutdown
 	{
 		// if there is a free mini_transaction then grab it
 		mt = (mini_transaction*) get_head_of_linkedlist(&(mte->free_mini_transactions_list));

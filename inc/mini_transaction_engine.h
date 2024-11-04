@@ -111,6 +111,9 @@ struct mini_transaction_engine
 
 	// stats to be used by user
 	mini_transaction_engine_user_stats user_stats;
+
+	// this flag will be set if a shutdown was called
+	int shutdown_called;
 };
 
 // page_size, page_id_width and log_sequence_number_width parameter is only used if passed as non-zero
@@ -132,5 +135,7 @@ void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine*
 void intermediate_bufferpool_flush_for_mini_transaction_engine(mini_transaction_engine* mte);
 
 void debug_print_wal_logs_for_mini_transaction_engine(mini_transaction_engine* mte);
+
+void deinitialize_mini_transaction_engine(mini_transaction_engine* mte);
 
 #endif

@@ -22,6 +22,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	mte->latch_wait_timeout_in_microseconds = latch_wait_timeout_in_microseconds;
 	mte->write_lock_wait_timeout_in_microseconds = write_lock_wait_timeout_in_microseconds;
 	mte->checkpointing_period_in_microseconds = checkpointing_period_in_microseconds;
+	mte->shutdown_called = 0;
 
 	// with less than 2 buffers in bufferpool you can not redo all types of log records
 	// with less than 1 buffer in append only buffers of writer WALe, no log records can be appended
@@ -187,6 +188,17 @@ void debug_print_wal_logs_for_mini_transaction_engine(mini_transaction_engine* m
 
 		t = get_next_LSN_for_LSN_UNSAFE(mte, t);
 	}
+
+	shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+}
+
+void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
+{
+	pthread_mutex_lock(&(mte->global_lock));
+	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+
+	mte->shutdown_called = 1;
 
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
