@@ -210,3 +210,57 @@ uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, const chec
 
 	return checkpointLSN;
 }
+
+static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
+{
+
+}
+
+#include<errno.h>
+
+void* checkpointer(void* mte_vp)
+{
+	mini_transaction_engine* mte = mte_vp;
+
+	pthread_mutex_lock(&(mte->global_lock));
+	mte->is_checkpointer_running = 1;
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	while(1)
+	{
+		pthread_mutex_lock(&(mte->global_lock));
+
+		while(!mte->shutdown_called)
+		{
+			struct timespec now;
+			clock_gettime(CLOCK_REALTIME, &now);
+			struct timespec diff = {.tv_sec = (mte->checkpointing_period_in_microseconds / 1000000LL), .tv_nsec = (mte->checkpointing_period_in_microseconds % 1000000LL) * 1000LL};
+			struct timespec stop_at = {.tv_sec = now.tv_sec + diff.tv_sec, .tv_nsec = now.tv_nsec + diff.tv_nsec};
+			stop_at.tv_sec += stop_at.tv_nsec / 1000000000LL;
+			stop_at.tv_nsec = stop_at.tv_nsec % 1000000000LL;
+			if(ETIMEDOUT == pthread_cond_timedwait(&(mte->wait_for_checkpointer_period), &(mte->global_lock), &stop_at))
+				break;
+		}
+
+		if(mte->shutdown_called)
+		{
+			pthread_mutex_unlock(&(mte->global_lock));
+			break;
+		}
+
+		// perform checkpoint
+		exclusive_lock(&(mte->manager_lock), BLOCKING);
+
+		perform_checkpoint_UNSAFE(mte);
+
+		exclusive_unlock(&(mte->manager_lock));
+
+		pthread_mutex_unlock(&(mte->global_lock));
+	}
+
+	pthread_mutex_lock(&(mte->global_lock));
+	mte->is_checkpointer_running = 0;
+	pthread_cond_broadcast(&(mte->wait_for_checkpointer_to_stop));
+	pthread_mutex_unlock(&(mte->global_lock));
+	return NULL;
+}
