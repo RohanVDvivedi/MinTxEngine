@@ -1,6 +1,7 @@
 PICKED
 
  * add checkpointer thread
+   * review checkpointer util functions
    * wait on wait_wake_checkpointer for checkpointer period -> important to be done outside exclusive manager lock
    * if shut down flag set quit
    * take exclusive manager lock
