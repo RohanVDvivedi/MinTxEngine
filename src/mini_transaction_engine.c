@@ -33,6 +33,8 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	if(mte->latch_wait_timeout_in_microseconds == 0 || mte->write_lock_wait_timeout_in_microseconds == 0 || mte->checkpointing_period_in_microseconds < 60000000)
 		return 0;
 
+	int recovery_required = 0;
+
 	if(open_block_file(&(mte->database_block_file), mte->database_file_name, O_DIRECT))
 	{
 		if(!read_from_first_block(&(mte->database_block_file), &(mte->stats)))
@@ -72,6 +74,8 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 			close_block_file(&(mte->database_block_file));
 			return 0;
 		}
+
+		recovery_required = 1;
 	}
 	else if(create_and_open_block_file(&(mte->database_block_file), mte->database_file_name, O_DIRECT))
 	{
@@ -131,7 +135,10 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 
 	initialize_log_record_tuple_defs(&(mte->lrtd), &(mte->stats));
 
-	// TODO call recovery function here
+	if(recovery_required)
+	{
+		// TODO call recovery function here
+	}
 
 	// allocate enough mini transaction structures to survive safely
 	for(uint32_t i = 0; i < mte->bufferpool_frame_count; i++)
@@ -200,6 +207,46 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 
 	mte->shutdown_called = 1;
 
+	// come out when both are empty
+	while(!(is_empty_hashmap(&(mte->writer_mini_transactions)) && is_empty_linkedlist(&(mte->reader_mini_transactions))))
+		pthread_cond_wait(&(mte->conditional_to_wait_for_execution_slot), &(mte->global_lock));
+
+	// TODO :: wake up checkpointer
+
+	// flush wale
+	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
+
+	// flush bufferpool
+	flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
+
+	close_all_in_wal_list(&(mte->wa_list));
+
+	deinitialize_bufferpool(&(mte->bufferpool_handle));
+	close_block_file(&(mte->database_block_file));
+
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
+
+	pthread_cond_destroy(&(mte->conditional_to_wait_for_execution_slot));
+	deinitialize_rwlock(&(mte->manager_lock));
+	pthread_mutex_destroy(&(mte->global_lock));
+
+	while(is_empty_linkedlist(&(mte->free_mini_transactions_list)))
+	{
+		mini_transaction* mt = (mini_transaction*) get_head_of_linkedlist(&(mte->free_mini_transactions_list));
+		remove_head_from_linkedlist(&(mte->free_mini_transactions_list));
+		delete_mini_transaction(mt);
+	}
+
+	while(is_empty_linkedlist(&(mte->free_dirty_page_entries_list)))
+	{
+		dirty_page_table_entry* dpte = (dirty_page_table_entry*) get_head_of_linkedlist(&(mte->free_dirty_page_entries_list));
+		remove_head_from_linkedlist(&(mte->free_dirty_page_entries_list));
+		delete_dirty_page_table_entry(dpte);
+	}
+
+	deinitialize_hashmap(&(mte->writer_mini_transactions));
+	deinitialize_hashmap(&(mte->dirty_page_table));
+
+	deinitialize_log_record_tuple_defs(&(mte->lrtd));
 }
