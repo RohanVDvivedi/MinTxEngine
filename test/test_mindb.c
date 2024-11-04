@@ -222,6 +222,8 @@ int main1()
 	/*printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
 
+	deinitialize_mini_transaction_engine(&mte);
+
 	return 0;
 }
 
@@ -488,6 +490,8 @@ int main2(uint64_t bucket_count)
 	/*printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
 
+	deinitialize_mini_transaction_engine(&mte);
+
 	return 0;
 }
 
@@ -572,6 +576,8 @@ int main3()
 
 	/*printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
+
+	deinitialize_mini_transaction_engine(&mte);
 
 	return 0;
 }
@@ -665,6 +671,7 @@ void main0()
 	printf("-x-x-x-x- tx3 complete\n");
 
 	free(tup);
+	deinitialize_mini_transaction_engine(&mte);
 }
 
 int main()
