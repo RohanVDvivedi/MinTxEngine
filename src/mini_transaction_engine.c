@@ -221,24 +221,24 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 
 	close_all_in_wal_list(&(mte->wa_list));
 
-	deinitialize_bufferpool(&(mte->bufferpool_handle));
-	close_block_file(&(mte->database_block_file));
-
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
+
+	deinitialize_bufferpool(&(mte->bufferpool_handle));
+	close_block_file(&(mte->database_block_file));
 
 	pthread_cond_destroy(&(mte->conditional_to_wait_for_execution_slot));
 	deinitialize_rwlock(&(mte->manager_lock));
 	pthread_mutex_destroy(&(mte->global_lock));
 
-	while(is_empty_linkedlist(&(mte->free_mini_transactions_list)))
+	while(!is_empty_linkedlist(&(mte->free_mini_transactions_list)))
 	{
 		mini_transaction* mt = (mini_transaction*) get_head_of_linkedlist(&(mte->free_mini_transactions_list));
 		remove_head_from_linkedlist(&(mte->free_mini_transactions_list));
 		delete_mini_transaction(mt);
 	}
 
-	while(is_empty_linkedlist(&(mte->free_dirty_page_entries_list)))
+	while(!is_empty_linkedlist(&(mte->free_dirty_page_entries_list)))
 	{
 		dirty_page_table_entry* dpte = (dirty_page_table_entry*) get_head_of_linkedlist(&(mte->free_dirty_page_entries_list));
 		remove_head_from_linkedlist(&(mte->free_dirty_page_entries_list));
