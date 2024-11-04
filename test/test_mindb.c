@@ -14,7 +14,7 @@ mini_transaction_engine mte;
 #define LSN_WIDTH 4
 
 #define BUFFERPOOL_BUFFERS 100
-#define WALE_BUFFERS 10
+#define WALE_BUFFERS 30
 
 #define LATCH_WAIT_TIMEOUT_US     100 // 100 microseconds
 #define LOCK_WAIT_TIMEOUT_US   500000 // 0.5 second
