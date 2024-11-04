@@ -2,12 +2,14 @@ PICKED
 
  * add checkpointer thread
    * perform_checkpoint_UNSAFE(mte)
-     * flush wale
-     * checkpointing necessary only if flushedLSN - checkpointLSN >= X MBs
-     * turn off periodic flush job, and wait for it to finish
-     * flush bufferpool
-     * create checkpoint log record with shallow copy and serialize it
-     * log checkpoint log record and flush, flush only all of the checkpoint or none of it
+     ** flush wale
+     ** checkpointing necessary only if flushedLSN - checkpointLSN >= X MBs
+     ** turn off periodic flush job, and wait for it to finish
+     ** flush bufferpool
+     ** create checkpoint log record with shallow copy and serialize it
+     ** log checkpoint log record and flush, flush only all of the checkpoint or none of it
+    * tests to make sure that checkpoints do infact happen and that full page writes are logged after the checkpoint again for the pages (with page size = 512 and = 1024), print logs
+    * management
      * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpoint_begin_LSN, user defined value from the call back)
        * discard old wal files if possible
      * if last wal file is greater than Y MBs, then create a new wal file and insert it in wa_list
@@ -15,9 +17,6 @@ PICKED
        * truncate database file
        * update database_page_count variable
        * need some mechanism to explicitly discard those pages from the cache - OR not, everything is already flushed to disk
-
- * tests to make sure that checkpoints do infact happen and that full page writes are logged after the checkpoint again for the pages (with page size = 512 and = 1024), print logs
- * turn off log file deletion to see the checkpoint log records
 
  * recover function
    * get latest checkpoint log record, OR initialize it empty
