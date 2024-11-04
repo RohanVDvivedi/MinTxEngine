@@ -8,6 +8,8 @@
 #include<callbacks_wale.h>
 #include<wal_list_utils.h>
 
+#define MINIMUM_CHECKPOINTER_PERIOD 1000000
+
 int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds)
 {
 	// initialize everything that does not need resource allocation first
@@ -32,8 +34,8 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	if(mte->bufferpool_frame_count < 2 || mte->wale_append_only_buffer_block_count < 1)
 		return 0;
 
-	// latch and lock wait timeouts can not be 0, checkpointing period must be more than a minute
-	if(mte->latch_wait_timeout_in_microseconds == 0 || mte->write_lock_wait_timeout_in_microseconds == 0 || mte->checkpointing_period_in_microseconds < 60000000)
+	// latch and lock wait timeouts can not be 0, checkpointing period must be more than a second
+	if(mte->latch_wait_timeout_in_microseconds == 0 || mte->write_lock_wait_timeout_in_microseconds == 0 || mte->checkpointing_period_in_microseconds < MINIMUM_CHECKPOINTER_PERIOD)
 		return 0;
 
 	int recovery_required = 0;
