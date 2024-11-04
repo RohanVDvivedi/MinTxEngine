@@ -22,6 +22,9 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	mte->latch_wait_timeout_in_microseconds = latch_wait_timeout_in_microseconds;
 	mte->write_lock_wait_timeout_in_microseconds = write_lock_wait_timeout_in_microseconds;
 	mte->checkpointing_period_in_microseconds = checkpointing_period_in_microseconds;
+	pthread_cond_init(&(mte->wait_for_checkpointer_period), NULL);
+	pthread_cond_init(&(mte->wait_for_checkpointer_to_stop), NULL);
+	mte->is_checkpointer_running = 0;
 	mte->shutdown_called = 0;
 
 	// with less than 2 buffers in bufferpool you can not redo all types of log records
@@ -211,7 +214,10 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 	while(!(is_empty_hashmap(&(mte->writer_mini_transactions)) && is_empty_linkedlist(&(mte->reader_mini_transactions))))
 		pthread_cond_wait(&(mte->conditional_to_wait_for_execution_slot), &(mte->global_lock));
 
-	// TODO :: wake up checkpointer
+	// wake up checkpointer and wait for it to stop
+	pthread_cond_signal(&(mte->wait_for_checkpointer_period));
+	while(mte->is_checkpointer_running)
+		pthread_cond_wait(&(mte->wait_for_checkpointer_to_stop), &(mte->global_lock));
 
 	// flush wale
 	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);

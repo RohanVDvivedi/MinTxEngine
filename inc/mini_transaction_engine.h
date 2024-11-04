@@ -111,6 +111,7 @@ struct mini_transaction_engine
 	pthread_cond_t wait_for_checkpointer_period;
 
 	// after calling shutdown, you can wait here for the checkpointer to stop
+	int is_checkpointer_running;
 	pthread_cond_t wait_for_checkpointer_to_stop;
 
 	// stats for internal use
