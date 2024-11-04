@@ -7,6 +7,10 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 {
 	pthread_mutex_lock(&(mte->global_lock));
 
+	// below lock is WRITE_PREFERRING because we want the new mini_transaction allotment to wait if a checkpointer is waiting for an exclusive lock on the manager_lock
+	// this allows the checkpointer to not wait indefinitely
+	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+
 	int wait_error = 0;
 	while(is_empty_linkedlist(&(mte->free_mini_transactions_list)) && !mte->shutdown_called && !wait_error) // and not a shutdown
 	{
@@ -22,7 +26,11 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 			stop_at.tv_nsec = stop_at.tv_nsec % 1000000000LL;
 
 			// wait until atmost stop_at
+			shared_unlock(&(mte->manager_lock));
 			pthread_cond_timedwait(&(mte->conditional_to_wait_for_execution_slot), &(mte->global_lock), &stop_at);
+			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+			// above lock is WRITE_PREFERRING because we want the new mini_transaction allotment to wait if a checkpointer is waiting for an exclusive lock on the manager_lock
+			// this allows the checkpointer to not wait indefinitely
 		}
 
 		{
@@ -56,6 +64,7 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 		insert_head_in_linkedlist(&(mte->reader_mini_transactions), mt);
 	}
 
+	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	return mt;
@@ -578,7 +587,7 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 {
 	pthread_mutex_lock(&(mte->global_lock));
 
-	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 	// if it is a reader mini transaction, no matter what state it is in, there is nothing to be done
 	if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
@@ -695,7 +704,7 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 				exit(-1);
 			}
 
-			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+			shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 			pthread_mutex_unlock(&(mte->global_lock));
 
@@ -712,7 +721,7 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 		}
 	}
 
-	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 	// mark it completed and exit
 	// state change must happen only after logging it, the correct ordering it below
@@ -735,7 +744,7 @@ int mark_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 		return 0;
 
 	pthread_mutex_lock(&(mte->global_lock));
-	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 	// fail if the mini transaction is not in IN_PROGRESS state
 	if(mt->state != MIN_TX_IN_PROGRESS)
@@ -756,7 +765,7 @@ int mark_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 int is_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt)
 {
 	pthread_mutex_lock(&(mte->global_lock));
-	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 	int abort_error = 0;
 	if(mt->state == MIN_TX_ABORTED || mt->state == MIN_TX_UNDOING_FOR_ABORT)

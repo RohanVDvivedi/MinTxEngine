@@ -213,6 +213,7 @@ uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, const chec
 
 static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 {
+	// TODO
 	printf("CHECKPOINTING\n");
 }
 

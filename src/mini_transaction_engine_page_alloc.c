@@ -33,7 +33,7 @@ int free_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, ui
 			return 0;
 		}
 
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 		// check to ensure that you are not attempting to latch a page that is out of bounds for the current page count
 		if(page_id >= mte->database_page_count) // this check must be done with manager_lock held
@@ -95,7 +95,7 @@ void* get_new_page_with_write_latch_for_mini_tx(mini_transaction_engine* mte, mi
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// this function needs to be called with shared_lock on manager_lock
@@ -118,7 +118,7 @@ void* get_new_page_with_write_latch_for_mini_tx(mini_transaction_engine* mte, mi
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// this function needs to be called with shared_lock on manager_lock

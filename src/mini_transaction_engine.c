@@ -166,7 +166,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine* mte)
 {
 	pthread_mutex_lock(&(mte->global_lock));
-	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
 
@@ -177,7 +177,7 @@ void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine*
 void intermediate_bufferpool_flush_for_mini_transaction_engine(mini_transaction_engine* mte)
 {
 	pthread_mutex_lock(&(mte->global_lock));
-	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 	flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
 
@@ -188,7 +188,7 @@ void intermediate_bufferpool_flush_for_mini_transaction_engine(mini_transaction_
 void debug_print_wal_logs_for_mini_transaction_engine(mini_transaction_engine* mte)
 {
 	pthread_mutex_lock(&(mte->global_lock));
-	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 	uint256 t = ((wal_accessor*)get_front_of_arraylist(&(mte->wa_list)))->wale_LSNs_from;
 
@@ -212,6 +212,8 @@ void debug_print_wal_logs_for_mini_transaction_engine(mini_transaction_engine* m
 void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 {
 	pthread_mutex_lock(&(mte->global_lock));
+
+	// below lock is WRITE_PREFERRING because we want the deinitialization to wait if a checkpointer is waiting for an exclusive lock on the manager_lock
 	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
 	mte->shutdown_called = 1;

@@ -63,7 +63,7 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
@@ -133,7 +133,7 @@ void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction*
 			pthread_mutex_unlock(&(mte->global_lock));
 			return ;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
@@ -206,7 +206,7 @@ int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
@@ -275,7 +275,7 @@ int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
@@ -345,7 +345,7 @@ int update_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
@@ -416,7 +416,7 @@ int discard_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transac
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
@@ -486,7 +486,7 @@ void discard_all_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_t
 			pthread_mutex_unlock(&(mte->global_lock));
 			return ;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
@@ -555,7 +555,7 @@ uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engin
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
@@ -624,7 +624,7 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
@@ -702,7 +702,7 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
@@ -774,7 +774,7 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 			pthread_mutex_unlock(&(mte->global_lock));
 			return ;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
@@ -844,7 +844,7 @@ int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
 		}
-		shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
+		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 		void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
 		uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
 		if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
