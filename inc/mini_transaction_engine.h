@@ -106,6 +106,13 @@ struct mini_transaction_engine
 	// as the name suggests check pointing is done every this many microseconds
 	uint64_t checkpointing_period_in_microseconds;
 
+	// the checkpointer thread waits here for checkpointing_period_in_microseconds
+	// you can signal here, if shutdown is called OR if checkpointing_period_in_microseconds change
+	pthread_cond_t wait_for_checkpointer_period;
+
+	// after calling shutdown, you can wait here for the checkpointer to stop
+	pthread_cond_t wait_for_checkpointer_to_stop;
+
 	// stats for internal use
 	mini_transaction_engine_stats stats;
 
