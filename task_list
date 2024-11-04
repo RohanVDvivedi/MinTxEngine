@@ -1,16 +1,5 @@
 PICKED
 
- * deinitialize_mini_transaction_engine
-   * mark shutdown flag -> most of it to be done with shared lock
-   * OPTIONAL :: mark all active mini transactions aborted
-   * wake up checkpointer
-   * wake up all waiting for the execution slot
-   * waits for all mini_transactions to be completed -> wait on wait_for_execution slot for this and keep checking the reader and writer mini transaction to become empty
-   * wait for checkpointer to quit
-   * release all memory and quit
-   * modifications to mini_transaction allotter
-     * fail wait if the mini_transaction engine is marked for shutdown, after marking for shutdown wake up all waiters waiting for new slot
-
  * add checkpointer thread
    * wait on wait_wake_checkpointer for checkpointer period -> important to be done outside exclusive manager lock
    * if shut down flag set quit
@@ -54,6 +43,8 @@ PICKED
       * uint64_t get_any_free_space_mapper_page_from_availability_cache_UNSAFE(mini_transaction_engine* mte); // return of 0, implies nothing available
         * this will not give you enough information as you also need to check that the corresponding page we decide to allocate also needs to be not write locked
 
+ * deinitialize_mini_transaction_engine
+   * stop check pointer thread
 
 TESTS
   * main1, main2 and main3 with variable length tuples
