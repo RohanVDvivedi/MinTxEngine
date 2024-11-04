@@ -1,15 +1,5 @@
 PICKED
 
- * checkpointer utility
-   * add a checkpoint struct
-     * uint256 checkpoint_begin_LSN
-     * hashtable writer_mini_transactions
-     * hashtable dirty_page_table
-   * utility function to read whole checkpoint given checkpoint_end_LSN
-     * exit(-1) if any of the LSNs fail to be read or any of the log records are not checkpoint LSNs of desired type
-     * mini transaction related log records and user log records must not be present in check point log record sequence
-   * utility function to append whole checkpoint struct to latest wale log, and return the begin and end checkpoint LSNs
-
  * deinitialize_mini_transaction_engine
    * mark shutdown flag -> most of it to be done with shared lock
    * OPTIONAL :: mark all active mini transactions aborted
