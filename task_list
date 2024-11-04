@@ -16,6 +16,9 @@ PICKED
        * update database_page_count variable
        * need some mechanism to explicitly discard those pages from the cache - OR not, everything is already flushed to disk
 
+ * tests to make sure that checkpoints do infact happen and that full page writes are logged after the checkpoint again for the pages (with page size = 512 and = 1024), print logs
+ * turn off log file deletion to see the checkpoint log records
+
  * recover function
    * get latest checkpoint log record, OR initialize it empty
    * copy checkpoint log record's mini transaction table and dirty page table to local variables
@@ -28,7 +31,7 @@ PICKED
      * loop from redo_from_LSN until the end
        * TODO ::
 
-  * NOTE :: after adding any type of lof record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
+  * NOTE :: after adding any type of log record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
 
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
