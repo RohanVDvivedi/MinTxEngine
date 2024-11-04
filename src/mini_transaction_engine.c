@@ -9,7 +9,7 @@
 #include<wal_list_utils.h>
 #include<mini_transaction_engine_checkpointer_util.h>
 
-#define MINIMUM_CHECKPOINTER_PERIOD 1000000
+#define MINIMUM_CHECKPOINTER_PERIOD 5000000 // checkpoint period no lesser than 5 seconds
 
 int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds)
 {

@@ -16,9 +16,9 @@ mini_transaction_engine mte;
 #define BUFFERPOOL_BUFFERS 100
 #define WALE_BUFFERS 10
 
-#define LATCH_WAIT_TIMEOUT_US     100
-#define LOCK_WAIT_TIMEOUT_US  2000000
-#define CHECKPOINT_PERIOD_US (1000000) // 1 second
+#define LATCH_WAIT_TIMEOUT_US     100 // 100 microseconds
+#define LOCK_WAIT_TIMEOUT_US   500000 // 0.5 second
+#define CHECKPOINT_PERIOD_US (20 * 1000000) // 20 seconds
 
 const char* db_filename = "test.db";
 
@@ -29,7 +29,7 @@ tuple_def record_def;
 positional_accessor KEY_POS[1] = {SELF};
 compare_direction CMP_DIR[1] = {ASC};
 
-#define JOBS_COUNT 10000
+#define JOBS_COUNT 100000
 uint64_t input[JOBS_COUNT];
 
 // tests for bplus tree
