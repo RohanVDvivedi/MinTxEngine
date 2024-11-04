@@ -1,7 +1,6 @@
 PICKED
 
  * add checkpointer thread
-   * review checkpointer util functions
    * perform_checkpoint_UNSAFE(mte)
      * flush wale
      * checkpointing necessary only if last checkpoint_end_LSN - flushedLSN was atleast some MBs away preferably 10
