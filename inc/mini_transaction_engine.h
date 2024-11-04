@@ -103,6 +103,9 @@ struct mini_transaction_engine
 	// it must be held in exclusive mode for truncating WALe and Bufferpool files, check pointing etc
 	rwlock manager_lock;
 
+	// job for checkpointer
+	job checkpointer_job;
+
 	// as the name suggests check pointing is done every this many microseconds
 	uint64_t checkpointing_period_in_microseconds;
 

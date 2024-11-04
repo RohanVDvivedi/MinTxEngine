@@ -7,6 +7,7 @@
 #include<callbacks_bufferpool.h>
 #include<callbacks_wale.h>
 #include<wal_list_utils.h>
+#include<mini_transaction_engine_checkpointer_util.h>
 
 #define MINIMUM_CHECKPOINTER_PERIOD 1000000
 
@@ -154,7 +155,10 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 
 	// dirty page table entries may not be created upfront
 
-	// TODO start checkpointer thread
+	// start checkpointer thread
+	initialize_job(&(mte->checkpointer_job), checkpointer, mte, NULL, NULL);
+	pthread_t thread_id;
+	execute_job_async(&(mte->checkpointer_job), &thread_id);
 
 	return 1;
 }

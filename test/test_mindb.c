@@ -18,7 +18,7 @@ mini_transaction_engine mte;
 
 #define LATCH_WAIT_TIMEOUT_US     100
 #define LOCK_WAIT_TIMEOUT_US  2000000
-#define CHECKPOINT_PERIOD_US (5 * 60 * 1000000) // 5 minutes
+#define CHECKPOINT_PERIOD_US (1000000) // 1 second
 
 const char* db_filename = "test.db";
 
