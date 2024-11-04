@@ -1,15 +1,21 @@
 #ifndef MINI_TRANSACTION_ENGINE_CHECKPOINTER_UTIL_H
 #define MINI_TRANSACTION_ENGINE_CHECKPOINTER_UTIL_H
 
-#include<hashtable.h>
+#include<hashmap.h>
+
+#include<large_uints.h>
+
+#include<mini_transaction_engine.h>
 
 typedef struct checkpoint checkpoint;
 struct checkpoint
 {
-	hashtable mini_transaction_table; // mini transactions by mini transaction ids
+	hashmap mini_transaction_table; // mini transactions by mini transaction ids
 
-	hashtable dirty_page_table; // dirty pages by page ids
+	hashmap dirty_page_table; // dirty pages by page ids
 };
+
+// both the below functions must be called with exclusive lock on the manager and global lock held
 
 // returns begin_LSN of the checkpoint
 // it will also initialize ckpt
