@@ -18,8 +18,6 @@ PICKED
        * update database_page_count variable
      * you can release mutex now
    * release exclusive manager lock
- * deinitialize_mini_transaction_engine
-   * stop check pointer thread
 
  * recover function
    * get latest checkpoint log record, OR initialize it empty
