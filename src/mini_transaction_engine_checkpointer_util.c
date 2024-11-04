@@ -214,7 +214,7 @@ uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, const chec
 static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 {
 	// TODO
-	printf("CHECKPOINTING\n");
+	printf("CHECKPOINTING active_writers = %"PRIu_cy_uint"\n", get_element_count_hashmap(&(mte->writer_mini_transactions)));
 }
 
 #include<errno.h>
