@@ -1,16 +1,5 @@
 PICKED
 
- * add checkpointer thread
-   * perform_checkpoint_UNSAFE(mte)
-    * management
-     * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpoint_begin_LSN, user defined value from the call back)
-       * discard old wal files if possible
-     * if last wal file is greater than Y MBs, then create a new wal file and insert it in wa_list
-     * start from the last page and count new size of the database
-       * truncate database file
-       * update database_page_count variable
-       * need some mechanism to explicitly discard those pages from the cache - OR not, everything is already flushed to disk
-
  * recover function
    * get latest checkpoint log record, OR initialize it empty
    * copy checkpoint log record's mini transaction table and dirty page table to local variables
@@ -35,6 +24,16 @@ PICKED
       * void update_free_space_mapper_page_in_availability_cache_UNSAFE(mini_transaction_engine* mte, const void* free_space_mapper_page, uint64_t free_space_mapper_page_id); // to be called when ever you release a latch on the free space mapper page
       * uint64_t get_any_free_space_mapper_page_from_availability_cache_UNSAFE(mini_transaction_engine* mte); // return of 0, implies nothing available
         * this will not give you enough information as you also need to check that the corresponding page we decide to allocate also needs to be not write locked
+
+  * DISK SPACE RENUNCIATION BACK TO OS
+  * management in perform_checkpoint_UNSAFE(mte)
+   * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpoint_begin_LSN, user defined value from the call back)
+     * discard old wal files if possible
+   * if last wal file is greater than Y MBs, then create a new wal file and insert it in wa_list
+   * start from the last page and count new size of the database
+     * truncate database file
+     * update database_page_count variable
+     * need some mechanism to explicitly discard those pages from the cache - OR not, everything is already flushed to disk
 
 TESTS
   * main1, main2 and main3 with variable length tuples
