@@ -211,18 +211,22 @@ uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, const chec
 	return checkpointLSN;
 }
 
-// a checkpoint will occur only if there has been MINIMIM_CHECKPINTING_LSN_DIFF LSNs flushed after the last checkpoint
-#define MINIMIM_CHECKPINTING_LSN_DIFF (2 * 1000000)
+// a checkpoint will occur only if there has been MINIMIM_CHECKPOINTING_LSN_DIFF LSNs flushed after the last checkpoint
+#define MINIMIM_CHECKPOINTING_LSN_DIFF (2 * 1000000)
 
 static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 {
 	// flush wal logs, no one will be woken up, as no one is waiting, since we are here with an exclusive lock
 	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
 
-	// flushedLSN - checkpointLSN < MINIMIM_CHECKPINTING_LSN_DIFF
+	// flushedLSN - checkpointLSN < MINIMIM_CHECKPOINTING_LSN_DIFF
 	// then there are not enough log records to be checkpointed
-	if(compare_uint256(sub_uint256(mte->flushedLSN, mte->checkpointLSN), get_uint256(MINIMIM_CHECKPINTING_LSN_DIFF)) < 0)
-		return;
+	{
+		uint256 lsn_diff;
+		sub_uint256(&lsn_diff, mte->flushedLSN, mte->checkpointLSN);
+		if(compare_uint256(lsn_diff, get_uint256(MINIMIM_CHECKPOINTING_LSN_DIFF)) < 0)
+			return;
+	}
 
 	// get old status of the periodic flush job to be reverted to
 	// and then shut periodic flush job, and wait for it to finish
@@ -234,7 +238,7 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 	flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
 
 	// TODO
-	printf("CHECKPOINTING active_writers = %"PRIu_cy_uint", dirty_pages = %"PRIu64"\n", get_element_count_hashmap(&(mte->writer_mini_transactions)), get_element_count_hashmap(&(mte->dirty_page_table)));
+	printf("CHECKPOINTING active_writers = %"PRIu_cy_uint", dirty_pages = %"PRIu_cy_uint"\n", get_element_count_hashmap(&(mte->writer_mini_transactions)), get_element_count_hashmap(&(mte->dirty_page_table)));
 
 	// start the periodic flush job at the prior state
 	modify_periodic_flush_job_status(&(mte->bufferpool_handle), old_state);
