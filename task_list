@@ -19,14 +19,6 @@ PICKED
      * loop from redo_from_LSN until the end
        * TODO ::
 
-  * TEST
-    * start a mini transaction create 2 data structures 1 bplus tree and 1 hash table insert 2 tuples to both
-    * start mini tx 1 insert to bplus tree and open an iterator on it
-    * start mini tx 2 deleted from hash table (5 buckets) and open an interator on inserted key
-    * sleep for checkpointer_period + 1 seconds
-    * complete mini_tx 1 and mini_tx 2
-    * print wal records -> there must be 2 dirty pages and 2 mini transactions in check point log record
-
   * NOTE :: after adding any type of log record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
 
   * PAGE_ALLOCATION OPTIMIZATION
