@@ -237,8 +237,10 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 	// flush bufferpool, reducing the number of dirty pages
 	flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
 
-	// TODO
+	// appending checkpoint log record
 	printf("CHECKPOINTING active_writers = %"PRIu_cy_uint", dirty_pages = %"PRIu_cy_uint"\n", get_element_count_hashmap(&(mte->writer_mini_transactions)), get_element_count_hashmap(&(mte->dirty_page_table)));
+	uint256 checkpoint_begin_LSN;
+	mte->checkpointLSN = append_checkpoint_to_wal_UNSAFE(mte, &(const checkpoint){.mini_transaction_table = mte->writer_mini_transactions, .dirty_page_table = mte->dirty_page_table}, &checkpoint_begin_LSN);
 
 	// flush checkpointer wal logs, no one will be woken up, as no one is waiting, since we are here with an exclusive lock
 	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
