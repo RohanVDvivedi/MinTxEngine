@@ -240,8 +240,14 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 	// TODO
 	printf("CHECKPOINTING active_writers = %"PRIu_cy_uint", dirty_pages = %"PRIu_cy_uint"\n", get_element_count_hashmap(&(mte->writer_mini_transactions)), get_element_count_hashmap(&(mte->dirty_page_table)));
 
+	// flush checkpointer wal logs, no one will be woken up, as no one is waiting, since we are here with an exclusive lock
+	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
+
 	// start the periodic flush job at the prior state
 	modify_periodic_flush_job_status(&(mte->bufferpool_handle), old_state);
+
+	// ------ officially checkpointing here is completed
+	// you can do management tasks here, like truncating, deleting and creating wal files or database file
 }
 
 #include<errno.h>
