@@ -4,6 +4,13 @@ PICKED
    * get latest checkpoint log record, OR initialize it empty
    * copy checkpoint log record's mini transaction table and dirty page table to local variables
    * analyze loop acts on the local variables (created above) only, starting from checkpoint log record
+     * if the log record does not fit the current state or the transition from the current state of the mini transaction then exit with failure
+       * mini_transaction_id = INVALID creates one
+       * FPW log records can occur any time any where
+       * change log record con only occur in a IN_PROGRESS state
+       * CLR log record can only occur in UNDOING_FOR_ABORT state
+       * ABORTED log record changes the state from IN_PROGRESS to UNDOING_FOR_ABORT
+       * COMPLTED log record changes the stte from UNDOING_FOR_ABORT OR IN_PROGRESS to COMPLETED state
      * if log record is a change, add page to dirty page table with respective recLSN
      * if mini_transaction with given id does not exist, create a new one in mini transaction table, update lastLSN
      * if it is abort mini tx, mark the mini transaction as UNDOING for abort with specified abort error, update lastLSN
