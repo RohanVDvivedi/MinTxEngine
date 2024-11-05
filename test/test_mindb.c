@@ -740,7 +740,7 @@ void main_1()
 		}
 
 		// sleep for a checkpoint to pass by
-		sleep((CHECKPOINT_PERIOD_US/1000000) + 2);
+		sleep((CHECKPOINT_PERIOD_US/1000000) + 1);
 
 		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
 		{
@@ -786,8 +786,8 @@ void main_1()
 	}
 	printf("-x-x-x-x- read completed");
 
-	/*printf("PRINTING LOGS\n");
-	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
+	printf("PRINTING LOGS\n");
+	debug_print_wal_logs_for_mini_transaction_engine(&mte);
 
 	free(tup);
 	deinitialize_mini_transaction_engine(&mte);
