@@ -674,8 +674,128 @@ void main0()
 	deinitialize_mini_transaction_engine(&mte);
 }
 
+#define ACTIVE_MINI_TRANSACTIONS_TO_TEST 10
+
+#include<unistd.h>
+
+void main_1()
+{
+	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
+	{
+		printf("failed to initialize mini transaction engine\n");
+		exit(-1);
+	}
+	init_pam_for_mini_tx_engine(&mte);
+	init_pmm_for_mini_tx_engine(&mte);
+
+	data_type_info str = get_variable_length_string_type("", SYSTEM_PAGE_SIZE);
+	data_type_info* tup = malloc(sizeof_tuple_data_type_info(2));
+	initialize_tuple_data_type_info((tup), "tuple", 1, SYSTEM_PAGE_SIZE, 2);
+	strcpy(tup->containees[0].field_name, "a");
+	tup->containees[0].type_info = &str;
+	strcpy(tup->containees[1].field_name, "b");
+	tup->containees[1].type_info = UINT_NULLABLE[5];
+
+	initialize_tuple_def(&record_def, tup);
+
+	uint64_t page_id[ACTIVE_MINI_TRANSACTIONS_TO_TEST] = {};
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+		void* page[ACTIVE_MINI_TRANSACTIONS_TO_TEST] = {};
+
+		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
+			page[i] = get_new_page_with_write_latch_for_mini_tx(&mte, mt, &(page_id[i]));
+
+		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
+			init_page_for_mini_tx(&mte, mt, page[i], 5, &(record_def.size_def));
+
+		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
+		{
+			release_writer_latch_on_page_for_mini_tx(&mte, mt, page[i], 0);
+			page[i] = NULL;
+		}
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mt = NULL;
+	}
+	printf("-x-x-x-x- init completed\n");
+
+	char tuple[SYSTEM_PAGE_SIZE];
+
+	{
+		mini_transaction* mt[ACTIVE_MINI_TRANSACTIONS_TO_TEST] = {};
+		void* page[ACTIVE_MINI_TRANSACTIONS_TO_TEST] = {};
+
+		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
+			mt[i] = mte_allot_mini_tx(&mte, 1000000);
+
+		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
+			page[i] = acquire_page_with_writer_latch_for_mini_tx(&mte, mt[i], page_id[i]);
+
+		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
+		{
+			construct_tuple(tuple, &record_def, "Rohan Vipulkumar Dvivedi", 1996 + i);
+			append_tuple_on_page_for_mini_tx(&mte, mt[i], page[i], &(record_def.size_def), tuple);
+		}
+
+		// sleep for a checkpoint to pass by
+		sleep((CHECKPOINT_PERIOD_US/1000000) + 2);
+
+		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
+		{
+			printf("page_id = %"PRIu64"\n", page_id[i]);
+			print_page(page[i], mte.user_stats.page_size, &record_def);
+			printf("\n");
+		}
+
+		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
+		{
+			release_writer_latch_on_page_for_mini_tx(&mte, mt[i], page[i], 0);
+			page[i] = NULL;
+		}
+
+		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
+		{
+			if((i % 2) == 1)
+				mark_aborted_for_mini_tx(&mte, mt[i], -55);
+
+			mte_complete_mini_tx(&mte, mt[i], NULL, 0);
+			mt[i] = NULL;
+		}
+	}
+	printf("-x-x-x-x- writes completed\n");
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
+		{
+			void* page = acquire_page_with_reader_latch_for_mini_tx(&mte, mt, page_id[i]);
+
+			printf("page_id = %"PRIu64"\n", page_id[i]);
+			print_page(page, mte.user_stats.page_size, &record_def);
+			printf("\n");
+
+			release_reader_latch_on_page_for_mini_tx(&mte, mt, page, 0);
+			page = NULL;
+		}
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mt = NULL;
+	}
+	printf("-x-x-x-x- read completed");
+
+	/*printf("PRINTING LOGS\n");
+	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
+
+	free(tup);
+	deinitialize_mini_transaction_engine(&mte);
+}
+
 int main()
 {
+	//main_1();
 	//main0();
 	//main1();
 	//main2(5);  	// linked_page_list heavy hash_table
