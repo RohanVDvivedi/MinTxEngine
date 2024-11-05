@@ -15,6 +15,8 @@ struct checkpoint
 	hashmap dirty_page_table; // dirty pages by page ids
 };
 
+void print_checkpoint(const checkpoint* ckpt);
+
 // both the below functions must be called with exclusive lock on the manager and global lock held
 
 // returns begin_LSN of the checkpoint

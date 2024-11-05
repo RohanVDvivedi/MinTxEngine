@@ -4,16 +4,39 @@
 
 #include<log_record.h>
 
+void print_checkpoint(const checkpoint* ckpt)
+{
+	printf("mini_transaction_table : \n");
+	for(const mini_transaction* mt = get_first_of_in_hashmap(&(ckpt->mini_transaction_table), FIRST_OF_HASHMAP); mt != NULL; mt = get_next_of_in_hashmap(&(ckpt->mini_transaction_table), mt, ANY_IN_HASHMAP))
+	{
+		printf("mini_transaction_id : ");
+		print_uint256(mt->mini_transaction_id);
+		printf(" \t lastLSN : ");
+		print_uint256(mt->lastLSN);
+		printf(" \t state : %d\n", mt->state);
+	}
+	printf("\n");
+
+	printf("dirty_page_table : \n");
+	for(const dirty_page_table_entry* dpte = get_first_of_in_hashmap(&(ckpt->dirty_page_table), FIRST_OF_HASHMAP); dpte != NULL; dpte = get_next_of_in_hashmap(&(ckpt->dirty_page_table), dpte, ANY_IN_HASHMAP))
+	{
+		printf("page_id : %"PRIu64" \t recLSN : ", dpte->page_id);
+		print_uint256(dpte->recLSN);
+		printf("\n");
+	}
+	printf("\n");
+}
+
 uint256 read_checkpoint_from_wal_UNSAFE(mini_transaction_engine* mte, uint256 checkpointLSN, checkpoint* ckpt)
 {
 	{
-		if(!initialize_hashmap(&(ckpt->mini_transaction_table), ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, 10, &simple_hasher(hash_mini_transaction), &simple_comparator(compare_mini_transactions), offsetof(mini_transaction, enode)))
+		if(!initialize_hashmap(&(ckpt->mini_transaction_table), ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, 3, &simple_hasher(hash_mini_transaction), &simple_comparator(compare_mini_transactions), offsetof(mini_transaction, enode)))
 		{
 			printf("ISSUE :: unable to initialize an checkpoint hashmap\n");
 			exit(-1);
 		}
 
-		if(!initialize_hashmap(&(ckpt->dirty_page_table), ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, 10, &simple_hasher(hash_dirty_page_table_entry), &simple_comparator(compare_dirty_page_table_entries), offsetof(dirty_page_table_entry, enode)))
+		if(!initialize_hashmap(&(ckpt->dirty_page_table), ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, 3, &simple_hasher(hash_dirty_page_table_entry), &simple_comparator(compare_dirty_page_table_entries), offsetof(dirty_page_table_entry, enode)))
 		{
 			printf("ISSUE :: unable to initialize an checkpoint hashmap\n");
 			exit(-1);
