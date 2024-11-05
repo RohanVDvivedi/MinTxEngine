@@ -92,7 +92,7 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 
 			// now calculate the time elapsed
 			uint64_t microseconds_elapsed = (((int64_t)current_time_after_wait.tv_sec - (int64_t)current_time.tv_sec) * INT64_C(1000000))
-			+ (((int64_t)current_time_after_wait.tv_nsec - (int64_t)current_time_after_wait.tv_nsec) / INT64_C(1000));
+			+ (((int64_t)current_time_after_wait.tv_nsec - (int64_t)current_time.tv_nsec) / INT64_C(1000));
 
 			// discard the time elapsed
 			if(microseconds_elapsed > (*write_lock_wait_timeout_in_microseconds_LEFT))
