@@ -234,8 +234,9 @@ uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, const chec
 	return checkpointLSN;
 }
 
+// TODO :: to be configured
 // a checkpoint will occur only if there has been MINIMIM_CHECKPOINTING_LSN_DIFF LSNs flushed after the last checkpoint
-#define MINIMIM_CHECKPOINTING_LSN_DIFF (2 * 1000000)
+#define MINIMIM_CHECKPOINTING_LSN_DIFF 10240 /*(2 * 1000000)*/ // set this value to a few 10 of MBs in production
 
 static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 {
