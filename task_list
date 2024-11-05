@@ -87,6 +87,7 @@ char *number_to_words(int n) {
  FAR FUTURE 
  * remove headers not required for public api from publicly installed headers
    * like dirty_page_table_entry.h and log_record.h
+ * configure this in future MINIMIM_CHECKPOINTING_LSN_DIFF
 
 
 Tasks necessary to develop MinTxEngine
