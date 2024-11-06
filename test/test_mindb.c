@@ -555,16 +555,19 @@ int main3()
 
 	executor* exe = new_executor(FIXED_THREAD_COUNT_EXECUTOR, WORKER_COUNT, JOBS_COUNT + 32, 1000000, NULL, NULL, NULL);
 
+	int failed_job_submissions = 0;
 	for(uint32_t i = 0; i < JOBS_COUNT; i++)
 	{
 		input[i] = (((uint64_t)rand()) % (JOBS_COUNT+13));
-		submit_job_executor(exe, perform_insert, input+i, NULL, NULL, 1000000);
+		failed_job_submissions += (0 == submit_job_executor(exe, perform_insert, input+i, NULL, NULL, 1000000));
 	}
 
 	shutdown_executor(exe, 0);
 	wait_for_all_executor_workers_to_complete(exe);
 	delete_executor(exe);
 
+	printf("jobs_count = %d\n", JOBS_COUNT);
+	printf("failed_job_submissions = %d\n", failed_job_submissions);
 	printf("duplicates_encountered = %d\n", duplicates_encountered);
 	printf("aborts_done = %d\n", aborts_done);
 
