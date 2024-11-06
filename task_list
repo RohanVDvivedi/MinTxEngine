@@ -1,5 +1,4 @@
 PICKED
- * store latch counter for every mini transaction and fail complete mini transaction if this counter value is non zero
 
  * recover function
    * get latest checkpoint log record, OR initialize it empty
