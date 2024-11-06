@@ -28,3 +28,20 @@ void delete_dirty_page_table_entry(dirty_page_table_entry* dpte)
 {
 	free(dpte);
 }
+
+#include<wale.h>
+
+uint256 get_minimum_recLSN_for_dirty_page_table(const hashmap* dirty_page_table)
+{
+	uint256 min_recLSN = INVALID_LOG_SEQUENCE_NUMBER;
+
+	for(const dirty_page_table_entry* dpte = get_first_of_in_hashmap(dirty_page_table, FIRST_OF_HASHMAP); dpte != NULL; dpte = get_next_of_in_hashmap(dirty_page_table, dpte, ANY_IN_HASHMAP))
+	{
+		if(are_equal_uint256(min_recLSN, INVALID_LOG_SEQUENCE_NUMBER))
+			min_recLSN = dpte->recLSN;
+		else
+			min_recLSN = min_uint256(min_recLSN, dpte->recLSN);
+	}
+
+	return min_recLSN;
+}

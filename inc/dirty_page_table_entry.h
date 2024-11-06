@@ -25,4 +25,10 @@ cy_uint hash_dirty_page_table_entry(const void* dpte);
 dirty_page_table_entry* get_new_dirty_page_table_entry();
 void delete_dirty_page_table_entry(dirty_page_table_entry* dpte);
 
+#include<hashmap.h>
+
+// returns minimum recLSN for the dirty_page_table
+// returns INVALID_LOG_SEQUENCE_NUMBER if dirty_page_table is empty
+uint256 get_minimum_recLSN_for_dirty_page_table(const hashmap* dirty_page_table);
+
 #endif
