@@ -57,6 +57,7 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 		mt->mini_transaction_id = INVALID_LOG_SEQUENCE_NUMBER;
 		mt->lastLSN = INVALID_LOG_SEQUENCE_NUMBER;
 		mt->state = MIN_TX_IN_PROGRESS;
+		mt->page_latches_held_counter = 0;
 		mt->abort_error = 0;
 		mt->reference_counter = 1;
 
@@ -588,6 +589,12 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 	pthread_mutex_lock(&(mte->global_lock));
 
 	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
+
+	if(mt->page_latches_held_counter != 0)
+	{
+		printf("ISSUE :: mte_complete_mini_tx() was called with %"PRIu64" page latches still held\n", mt->page_latches_held_counter);
+		exit(-1);
+	}
 
 	// if it is a reader mini transaction, no matter what state it is in, there is nothing to be done
 	if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))

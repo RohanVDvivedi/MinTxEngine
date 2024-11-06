@@ -102,6 +102,8 @@ void* get_new_page_with_write_latch_for_mini_tx(mini_transaction_engine* mte, mi
 		new_page = allocate_page_without_database_expansion_INTERNAL(mte, mt, page_id_returned);
 
 		pthread_mutex_lock(&(mte->global_lock));
+		if(new_page != NULL)// page was allocated, so latch acquisition was release was a success so increment the latch counter for this mini transaction
+			mt->page_latches_held_counter++;
 		shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
@@ -125,9 +127,14 @@ void* get_new_page_with_write_latch_for_mini_tx(mini_transaction_engine* mte, mi
 		new_page = allocate_page_with_database_expansion_INTERNAL(mte, mt, page_id_returned);
 
 		pthread_mutex_lock(&(mte->global_lock));
+		if(new_page != NULL)// page was allocated, so latch acquisition was release was a success so increment the latch counter for this mini transaction
+			mt->page_latches_held_counter++;
 		shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
-	return get_page_contents_for_page(new_page, (*page_id_returned), &(mte->stats));
+	if(new_page != NULL) // if we were successfull, quit
+		return get_page_contents_for_page(new_page, (*page_id_returned), &(mte->stats));
+
+	return NULL;
 }

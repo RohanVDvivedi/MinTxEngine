@@ -86,6 +86,10 @@ void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, m
 			continue;
 		}
 
+		// a new page latch is granted, so increment the latch counter for this mini transaction
+		if(latched_page != NULL)
+			mt->page_latches_held_counter++;
+
 		shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
 
@@ -177,6 +181,10 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 			// we waited until completion of a mini transaction, we must try again and test if the latch could be acquired without any contention, so continue
 			continue;
 		}
+
+		// a new page latch is granted, so increment the latch counter for this mini transaction
+		if(latched_page != NULL)
+			mt->page_latches_held_counter++;
 
 		shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
@@ -303,6 +311,8 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
 			}
+			else // latch release was a success so decrement the latch counter for this mini transaction
+				mt->page_latches_held_counter--;
 
 			shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
@@ -356,6 +366,9 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 			if(!result)
 				// this must succeed if the prior upgrade call succeeded
 				downgrade_writer_lock_to_reader_lock(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+			else
+				// page was freed, so latch release was a success so decrement the latch counter for this mini transaction
+				mt->page_latches_held_counter--;
 
 			shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
@@ -399,6 +412,8 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
 			}
+			else // latch release was a success so decrement the latch counter for this mini transaction
+				mt->page_latches_held_counter--;
 
 			shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
@@ -438,6 +453,11 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 			result = free_write_latched_page_INTERNAL(mte, mt, page, page_id);
 
 			pthread_mutex_lock(&(mte->global_lock));
+
+			if(result)
+				// page was freed, so latch release was a success so decrement the latch counter for this mini transaction
+				mt->page_latches_held_counter--;
+
 			shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
 

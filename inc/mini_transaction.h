@@ -44,6 +44,10 @@ struct mini_transaction
 		MIN_TX_IN_PROGRESS -> MIN_TX_ABORTED -> MIN_TX_UNDOING_FOR_ABORT -> MIN_TX_COMPLETED
 	*/
 
+	// below attribute maintains the counter of the page latched that this mini transaction holds
+	// a mini transaction can not be completed, (i.e. you can not call mte_complete_mini_tx() function on it), until it releases all the latches that it holds
+	uint64_t page_latches_held_counter;
+
 	int abort_error; // reason for abort if state = MIN_TX_ABORTED, MIN_TX_UNDOING_FOR_ABORT OR MIN_TX_COMPLETED, else set to 0
 
 	pthread_cond_t write_lock_wait; // any mini_transaction who wants to waits for the writer lock on the page, write locked by this mini_transaction waits here
