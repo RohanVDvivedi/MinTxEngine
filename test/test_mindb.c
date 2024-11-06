@@ -801,8 +801,8 @@ int main()
 	//main_1();
 	//main0();
 	//main1();
-	//main2(5);  	// linked_page_list heavy hash_table
-	//main2(97);		// sweet spot
+	//main2(100);  	// linked_page_list heavy hash_table
+	//main2(500);	// sweet spot
 	//main2(2000);	// array_table heavy hash_table
 	main3();
 	printf("total pages used = %"PRIu64"\n", mte.database_page_count);
