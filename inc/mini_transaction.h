@@ -70,4 +70,10 @@ cy_uint hash_mini_transaction(const void* mt);
 mini_transaction* get_new_mini_transaction();
 void delete_mini_transaction(mini_transaction* mt);
 
+#include<hashmap.h>
+
+// returns minimum mini_transaction_id for the hashtable of mini_transactions
+// returns INVALID_LOG_SEQUENCE_NUMBER if no mini_transaction-s are present
+uint256 get_minimum_mini_transaction_id_for_mini_transaction_table(const hashmap* mini_transaction_table);
+
 #endif
