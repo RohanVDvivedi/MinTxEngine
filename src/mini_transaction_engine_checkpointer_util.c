@@ -274,6 +274,10 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 
 	// ------ officially checkpointing here is completed
 	// you can do management tasks here, like truncating, deleting and creating wal files or database file
+	uint256 min_mini_transaction_id = get_minimum_mini_transaction_id_for_mini_transaction_table(&(mte->writer_mini_transactions));
+	printf("min mini_tx_id = "); print_uint256(min_mini_transaction_id); printf("\n");
+	uint256 min_recLSN = get_minimum_recLSN_for_dirty_page_table(&(mte->dirty_page_table));
+	printf("min recLSN = "); print_uint256(min_recLSN); printf("\n");
 }
 
 #include<errno.h>
