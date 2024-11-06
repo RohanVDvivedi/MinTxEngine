@@ -1,8 +1,5 @@
 PICKED
 
- * implement function to get minimum mini_transaction_id for a hashtable of mini_transactions
- * implement function to get minimum recLSN for a dirty_page_table
-
  * recover function
    * get latest checkpoint log record, OR initialize it empty
    * copy checkpoint log record's mini transaction table and dirty page table to local variables
