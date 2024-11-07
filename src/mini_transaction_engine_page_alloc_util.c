@@ -468,7 +468,7 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = OUT_OF_AVAILABLE_PAGE_IDS;
 			pthread_mutex_unlock(&(mte->global_lock));
-			return 0;
+			return NULL;
 		}
 
 		free_space_mapper_page_id = mte->database_page_count;
