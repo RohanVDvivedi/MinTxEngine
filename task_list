@@ -1,5 +1,9 @@
 PICKED
 
+ * add utility function to remove all from mini_transaction_table and free all mini transactions, move all from 1 mini transaction_table to another, and to initialize mini transaction table
+ * add utility function to remove all from dirty_page_table and free all dirty page table entries, move all from 1 dirty page table to another, and to initialize dirty page table
+ * refactor to replace all such calls to initialize the baove tables
+
  * recover function
    * to be called only upon starting a mini transaction engine
    * only global lock to be held only customarily as noone has access to the mini transaction begin initialized
