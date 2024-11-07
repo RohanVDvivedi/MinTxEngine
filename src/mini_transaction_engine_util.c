@@ -116,7 +116,10 @@ const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256
 {
 	cy_uint wa_list_index = find_relevant_from_wal_list_UNSAFE(&(mte->wa_list), LSN);
 	if(wa_list_index == INVALID_INDEX) // LSN belongs to a very old WAL file
-		return NULL;
+	{
+		printf("ISSUE :: attempting to read a non existent wal log record, it was probably discarded\n");
+		exit(-1);
+	}
 
 	int wal_error = 0;
 	const void* lr =  get_log_record_at(&(((wal_accessor*)get_from_front_of_arraylist(&(mte->wa_list), wa_list_index))->wale_handle), LSN, lr_size, &wal_error);
@@ -159,7 +162,10 @@ uint256 get_next_LSN_for_LSN_UNSAFE(mini_transaction_engine* mte, uint256 LSN)
 {
 	cy_uint wa_list_index = find_relevant_from_wal_list_UNSAFE(&(mte->wa_list), LSN);
 	if(wa_list_index == INVALID_INDEX) // LSN belongs to a very old WAL file
-		return INVALID_LOG_SEQUENCE_NUMBER;
+	{
+		printf("ISSUE :: attempting to get next LSN of a non existent wal log record, it was probably discarded\n");
+		exit(-1);
+	}
 
 	wale* wale_p = &(((wal_accessor*)get_from_front_of_arraylist(&(mte->wa_list), wa_list_index))->wale_handle);
 
