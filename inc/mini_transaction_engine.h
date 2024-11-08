@@ -28,6 +28,9 @@
 
 // both the accessor structs below must be created over malloc-ed memory and 
 
+// first LSN of any database is 7
+#define FIRST_LOG_SEQUENCE_NUMBER get_uint256(7)
+
 typedef struct wal_accessor wal_accessor;
 struct wal_accessor
 {

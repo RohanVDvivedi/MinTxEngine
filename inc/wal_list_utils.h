@@ -3,9 +3,6 @@
 
 #include<mini_transaction_engine.h>
 
-// first LSN of any file is 7
-#define FIRST_LOG_SEQUENCE_NUMBER get_uint256(7)
-
 // create a new wal directory at (mte->database_file_name + "_logs/") and a new first log.7 (almost empty) wal file
 // it will fail if this directory already exists
 // it will also initialize flushedLSN and checkpointLSN attributes of mte, on success
