@@ -197,7 +197,144 @@ checkpoint analyze(mini_transaction_engine* mte)
 			expand_hashmap(&(ckpt.dirty_page_table), 1.5);
 
 		// maintain and update mini_transaction_table in checkpoint
-		// TODO
+		// only mini_transaction related log records are to be analyzed here
+		switch(lr.type)
+		{
+			case UNIDENTIFIED :
+			{
+				printf("ISSUE :: encountered unidentified log record while analyzing for recovery\n");
+				exit(-1);
+			}
+
+			case PAGE_ALLOCATION :
+			case PAGE_DEALLOCATION :
+			case PAGE_INIT :
+			case PAGE_SET_HEADER :
+			case TUPLE_APPEND :
+			case TUPLE_INSERT :
+			case TUPLE_UPDATE :
+			case TUPLE_DISCARD :
+			case TUPLE_DISCARD_ALL :
+			case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+			case TUPLE_SWAP :
+			case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+			case PAGE_CLONE :
+			case PAGE_COMPACTION :
+			{
+				uint256 mini_transaction_id = get_mini_transaction_id_for_log_record(&lr);
+
+				mini_transaction* mt = (mini_transaction*)find_equals_in_hashmap(&(ckpt.mini_transaction_table), &(mini_transaction){.mini_transaction_id = mini_transaction_id});
+
+				if(mt == NULL)
+				{
+					mt = get_new_mini_transaction();
+					mt->mini_transaction_id = mini_transaction_id;
+					mt->state = MIN_TX_IN_PROGRESS;
+					insert_in_hashmap(&(ckpt.mini_transaction_table), mt);
+				}
+
+				if(mt->state != MIN_TX_IN_PROGRESS)
+				{
+					printf("ISSUE :: encountered a change log record for a non in_progress mini transaction\n");
+					exit(-1);
+				}
+
+				mt->lastLSN = analyze_at;
+
+				break;
+			}
+
+			case FULL_PAGE_WRITE :
+			{
+				uint256 mini_transaction_id = get_mini_transaction_id_for_log_record(&lr);
+
+				mini_transaction* mt = (mini_transaction*)find_equals_in_hashmap(&(ckpt.mini_transaction_table), &(mini_transaction){.mini_transaction_id = mini_transaction_id});
+
+				if(mt == NULL)
+				{
+					mt = get_new_mini_transaction();
+					mt->mini_transaction_id = mini_transaction_id;
+					mt->state = MIN_TX_IN_PROGRESS;
+					insert_in_hashmap(&(ckpt.mini_transaction_table), mt);
+				}
+
+				mt->lastLSN = analyze_at;
+
+				break;
+			}
+
+			case ABORT_MINI_TX :
+			{
+				uint256 mini_transaction_id = get_mini_transaction_id_for_log_record(&lr);
+
+				mini_transaction* mt = (mini_transaction*)find_equals_in_hashmap(&(ckpt.mini_transaction_table), &(mini_transaction){.mini_transaction_id = mini_transaction_id});
+
+				if(mt == NULL)
+				{
+					printf("ISSUE :: encountered an abort log record for a non existing mini transaction\n");
+					exit(-1);
+				}
+
+				if(mt->state != MIN_TX_IN_PROGRESS && mt->state != MIN_TX_ABORTED)
+				{
+					printf("ISSUE :: encountered a abort log record for a non in_progress and a non aborted mini transaction\n");
+					exit(-1);
+				}
+
+				mt->state = MIN_TX_UNDOING_FOR_ABORT;
+
+				mt->lastLSN = analyze_at;
+
+				break;
+			}
+
+			case COMPENSATION_LOG :
+			{
+				uint256 mini_transaction_id = get_mini_transaction_id_for_log_record(&lr);
+
+				mini_transaction* mt = (mini_transaction*)find_equals_in_hashmap(&(ckpt.mini_transaction_table), &(mini_transaction){.mini_transaction_id = mini_transaction_id});
+
+				if(mt == NULL)
+				{
+					printf("ISSUE :: encountered a compensation log record for a non existing mini transaction\n");
+					exit(-1);
+				}
+
+				if(mt->state != MIN_TX_UNDOING_FOR_ABORT)
+				{
+					printf("ISSUE :: encountered a clr log record for a non undoing for abort - state mini transaction\n");
+					exit(-1);
+				}
+
+				mt->lastLSN = analyze_at;
+
+				break;
+			}
+
+			case COMPLETE_MINI_TX :
+			{
+				uint256 mini_transaction_id = get_mini_transaction_id_for_log_record(&lr);
+
+				mini_transaction* mt = (mini_transaction*)find_equals_in_hashmap(&(ckpt.mini_transaction_table), &(mini_transaction){.mini_transaction_id = mini_transaction_id});
+
+				if(mt == NULL)
+				{
+					printf("ISSUE :: encountered a completion log record for a non existing mini transaction\n");
+					exit(-1);
+				}
+
+				remove_from_hashmap(&(ckpt.mini_transaction_table), mt);
+				delete_mini_transaction(mt);
+
+				break;
+			}
+
+			// for checkpoint log records nothing needs to be done
+			default :
+			{
+				break;
+			}
+		}
 
 		// expand mini transaction table if necessary
 		if(get_element_count_hashmap(&(ckpt.mini_transaction_table)) / 3 > get_bucket_count_hashmap(&(ckpt.mini_transaction_table)))
