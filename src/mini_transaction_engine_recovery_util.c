@@ -360,8 +360,38 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 	// this lock is customary to be taken only to access bufferpool and wale
 	pthread_mutex_lock(&(mte->global_lock));
 
-	// TODO
+	// get the lsn to start redoing from
+	uint256 redo_at = get_minimum_recLSN_for_dirty_page_table(&(ckpt->dirty_page_table));
+	if(are_equal_uint256(redo_at, INVALID_LOG_SEQUENCE_NUMBER)) // this happens if there are no dirty page table entries in the checkpoint at the time of crash
+		goto EXIT;
 
+	// perform redo until you reach the end of the log records
+	while(!are_equal_uint256(redo_at, INVALID_LOG_SEQUENCE_NUMBER))
+	{
+		log_record lr;
+		if(!get_parsed_log_record_UNSAFE(mte, redo_at, &lr))
+		{
+			printf("ISSUE :: unable to read log record during recovery\n");
+			exit(-1);
+		}
+
+		switch(lr.type)
+		{
+			case UNIDENTIFIED :
+			{
+				printf("ISSUE :: encountered unidentified log record while redoing for recovery\n");
+				exit(-1);
+			}
+
+			// TODO
+		}
+
+		// prepare for next iteration
+		redo_at = get_next_LSN_for_LSN_UNSAFE(mte, redo_at);
+		destroy_and_free_parsed_log_record(&lr);
+	}
+
+	EXIT:;
 	// destroy checkpoint we do not need it now
 	// here we transfer all mini transactions directly to the mte->writer_mini_transactions
 	remove_all_from_hashmap(&(ckpt->mini_transaction_table), AND_TRANSFER_TO_MINI_TRANSACTION_TABLE_NOTIFIER(&(mte->writer_mini_transactions)));
