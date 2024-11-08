@@ -379,7 +379,7 @@ void recover(mini_transaction_engine* mte)
 	printf("printing checkpoint after analyze ::: \n");
 	print_checkpoint(&ckpt);
 	printf("\n");
-	exit(-1);
+	//exit(-1);
 
 	redo(mte, &ckpt);				// consumes checkpoint and deinitizlizes it, and redos all log records from the minimum recLSN in the checkpoint
 
