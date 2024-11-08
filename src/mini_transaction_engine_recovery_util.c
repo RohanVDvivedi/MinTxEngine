@@ -373,6 +373,14 @@ void undo(mini_transaction_engine* mte)
 void recover(mini_transaction_engine* mte)
 {
 	checkpoint ckpt = analyze(mte); // runs to generate the checkpoint for the last state of the mini_transaction_engine's mini transaction table and dirty page table at the time of crash
+
+	// TODO to be removed, only left here for testing analyze
+	printf("printing checkpoint after analyze ::: \n");
+	print_checkpoint(&ckpt);
+	printf("\n");
+	exit(-1);
+
 	redo(mte, &ckpt);				// consumes checkpoint and deinitizlizes it, and redos all log records from the minimum recLSN in the checkpoint
+
 	undo(mte); 						// undos uncommitted mini transactions
 }
