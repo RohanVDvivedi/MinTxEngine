@@ -2,6 +2,7 @@
 
 #include<mini_transaction_engine_checkpointer_util.h>
 #include<mini_transaction_engine_util.h>
+#include<system_page_header_util.h>
 
 checkpoint analyze(mini_transaction_engine* mte)
 {
@@ -42,13 +43,165 @@ checkpoint analyze(mini_transaction_engine* mte)
 		}
 
 		// maintain and update dirty_page_table in checkpoint
-		// TODO
+		switch(lr.type)
+		{
+			case UNIDENTIFIED :
+			{
+				printf("ISSUE :: encountered unidentified log record while analyzing for recovery\n");
+				exit(-1);
+			}
+
+			case PAGE_ALLOCATION :
+			case PAGE_DEALLOCATION :
+			{
+				uint64_t page_id = get_page_id_for_log_record(&lr);
+				uint64_t free_space_mapper_page_id = get_is_valid_bit_page_id_for_page(page_id, &(mte->stats));
+
+				{
+					dirty_page_table_entry* dpte = (dirty_page_table_entry*)find_equals_in_hashmap(&(ckpt.dirty_page_table), &((dirty_page_table_entry){.page_id = page_id}));
+					if(dpte == NULL)
+					{
+						dpte = get_new_dirty_page_table_entry();
+						dpte->page_id = page_id;
+						dpte->recLSN = analyze_at;
+						insert_in_hashmap(&(ckpt.dirty_page_table), dpte);
+					}
+				}
+
+				{
+					dirty_page_table_entry* dpte = (dirty_page_table_entry*)find_equals_in_hashmap(&(ckpt.dirty_page_table), &((dirty_page_table_entry){.page_id = free_space_mapper_page_id}));
+					if(dpte == NULL)
+					{
+						dpte = get_new_dirty_page_table_entry();
+						dpte->page_id = free_space_mapper_page_id;
+						dpte->recLSN = analyze_at;
+						insert_in_hashmap(&(ckpt.dirty_page_table), dpte);
+					}
+				}
+
+				break;
+			}
+
+			case PAGE_INIT :
+			case PAGE_SET_HEADER :
+			case TUPLE_APPEND :
+			case TUPLE_INSERT :
+			case TUPLE_UPDATE :
+			case TUPLE_DISCARD :
+			case TUPLE_DISCARD_ALL :
+			case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+			case TUPLE_SWAP :
+			case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+			case PAGE_CLONE :
+			case PAGE_COMPACTION :
+			case FULL_PAGE_WRITE :
+			{
+				uint64_t page_id = get_page_id_for_log_record(&lr);
+
+				{
+					dirty_page_table_entry* dpte = (dirty_page_table_entry*)find_equals_in_hashmap(&(ckpt.dirty_page_table), &((dirty_page_table_entry){.page_id = page_id}));
+					if(dpte == NULL)
+					{
+						dpte = get_new_dirty_page_table_entry();
+						dpte->page_id = page_id;
+						dpte->recLSN = analyze_at;
+						insert_in_hashmap(&(ckpt.dirty_page_table), dpte);
+					}
+				}
+
+				break;
+			}
+
+			case COMPENSATION_LOG :
+			{
+				// grab undo of lr
+				log_record undo_lr;
+				if(!get_parsed_log_record_UNSAFE(mte, lr.clr.undo_of_LSN, &undo_lr))
+				{
+					printf("ISSUE :: unable to read undo log record during recovery\n");
+					exit(-1);
+				}
+
+				// take decissions based on undo_lr
+				switch(undo_lr.type)
+				{
+					case PAGE_ALLOCATION :
+					case PAGE_DEALLOCATION :
+					{
+						uint64_t page_id = get_page_id_for_log_record(&undo_lr);
+						uint64_t free_space_mapper_page_id = get_is_valid_bit_page_id_for_page(page_id, &(mte->stats));
+
+						{
+							dirty_page_table_entry* dpte = (dirty_page_table_entry*)find_equals_in_hashmap(&(ckpt.dirty_page_table), &((dirty_page_table_entry){.page_id = free_space_mapper_page_id}));
+							if(dpte == NULL)
+							{
+								dpte = get_new_dirty_page_table_entry();
+								dpte->page_id = free_space_mapper_page_id;
+								dpte->recLSN = analyze_at;
+								insert_in_hashmap(&(ckpt.dirty_page_table), dpte);
+							}
+						}
+
+						break;
+					}
+
+					case PAGE_INIT :
+					case PAGE_SET_HEADER :
+					case TUPLE_APPEND :
+					case TUPLE_INSERT :
+					case TUPLE_UPDATE :
+					case TUPLE_DISCARD :
+					case TUPLE_DISCARD_ALL :
+					case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+					case TUPLE_SWAP :
+					case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+					case PAGE_CLONE :
+					case PAGE_COMPACTION :
+					{
+						uint64_t page_id = get_page_id_for_log_record(&undo_lr);
+
+						{
+							dirty_page_table_entry* dpte = (dirty_page_table_entry*)find_equals_in_hashmap(&(ckpt.dirty_page_table), &((dirty_page_table_entry){.page_id = page_id}));
+							if(dpte == NULL)
+							{
+								dpte = get_new_dirty_page_table_entry();
+								dpte->page_id = page_id;
+								dpte->recLSN = analyze_at;
+								insert_in_hashmap(&(ckpt.dirty_page_table), dpte);
+							}
+						}
+
+						break;
+					}
+
+					default :
+					{
+						printf("ISSUE :: encountered a CLR log record of a non forward change log record for a mini transaction, plausible bug or corruption\n");
+						exit(-1);
+					}
+				}
+
+				destroy_and_free_parsed_log_record(&undo_lr);
+				break;
+			}
+
+			// if it is abort_mini_tx, completed_mini_tx or some later checkpoint log record then do nothing
+			default :
+			{
+				break;
+			}
+		}
+
+		// expand dirty page table if necessary
+		if(get_element_count_hashmap(&(ckpt.dirty_page_table)) / 3 > get_bucket_count_hashmap(&(ckpt.dirty_page_table)))
+			expand_hashmap(&(ckpt.dirty_page_table), 1.5);
 
 		// maintain and update mini_transaction_table in checkpoint
 		// TODO
 
 		// prepare for next iteration
 		analyze_at = get_next_LSN_for_LSN_UNSAFE(mte, analyze_at);
+		destroy_and_free_parsed_log_record(&lr);
 	}
 
 	pthread_mutex_unlock(&(mte->global_lock));
