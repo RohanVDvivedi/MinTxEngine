@@ -50,3 +50,14 @@ void delete_dirty_page_table_entry_notify(void* resource_p, const void* data_p)
 {
 	delete_dirty_page_table_entry((dirty_page_table_entry*) data_p);
 }
+
+void transfer_to_dirty_page_table_notify(void* resource_p, const void* data_p)
+{
+	hashmap* hm = resource_p;
+	dirty_page_table_entry* dpte = (dirty_page_table_entry*) data_p;
+
+	insert_in_hashmap(hm, dpte);
+
+	if(get_element_count_hashmap(hm) / 3 > get_bucket_count_hashmap(hm))
+		expand_hashmap(hm, 1.5);
+}

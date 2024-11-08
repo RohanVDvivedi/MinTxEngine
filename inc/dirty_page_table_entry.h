@@ -36,4 +36,7 @@ uint256 get_minimum_recLSN_for_dirty_page_table(const hashmap* dirty_page_table)
 void delete_dirty_page_table_entry_notify(void* resource_p, const void* data_p);
 #define AND_DELETE_DIRTY_PAGE_TABLE_ENTRIES_NOTIFIER &(notifier_interface){.resource_p = NULL, .notify = delete_dirty_page_table_entry_notify}
 
+void transfer_to_dirty_page_table_notify(void* resource_p, const void* data_p);
+#define AND_TRANSFER_TO_DIRTY_PAGE_TABLE_NOTIFIER(dirty_page_table) &(notifier_interface){.resource_p = dirty_page_table, .notify = transfer_to_dirty_page_table_notify}
+
 #endif
