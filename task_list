@@ -11,6 +11,7 @@ PICKED
        * lr = read_at(redo_at), redo_at = next_of(redo_at);
        * TODO
    * undo(mte) - completed
+   * review and test recovery code
 
   * NOTE :: after adding any type of log record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
 
