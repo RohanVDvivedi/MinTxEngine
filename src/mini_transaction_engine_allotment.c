@@ -260,11 +260,6 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 {
 	switch(undo_lr->type)
 	{
-		default :
-		{
-			break;
-		}
-
 		// you must never encounter the below 4 types of log records and they can not be undone
 		// UNIDENTIFIED, checkpoint log records and user log records must not be present in a mini transaction
 		case UNIDENTIFIED :
@@ -276,12 +271,22 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 			exit(-1);
 		}
 
-		case COMPENSATION_LOG :
-		case ABORT_MINI_TX :
-		case COMPLETE_MINI_TX :
+		// only the below list of log records can be undone
+		case PAGE_ALLOCATION :
+		case PAGE_DEALLOCATION :
+		case PAGE_INIT :
+		case PAGE_SET_HEADER :
+		case TUPLE_APPEND :
+		case TUPLE_INSERT :
+		case TUPLE_UPDATE :
+		case TUPLE_DISCARD :
+		case TUPLE_DISCARD_ALL :
+		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+		case TUPLE_SWAP :
+		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+		case PAGE_CLONE :
 		{
-			printf("ISSUE :: encountered a log record that can not be undone, wal probably corrupted or existence of a bug in mini transaction engine\n");
-			exit(-1);
+			break;
 		}
 
 		// the undo of the below 2 types of lof records is just NOP so return early
@@ -291,22 +296,13 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 			return;
 		}
 
-		/*
-		you need to take care of undo for only the below types of log records
-			PAGE_ALLOCATION
-			PAGE_DEALLOCATION
-			PAGE_INIT
-			PAGE_SET_HEADER
-			TUPLE_APPEND
-			TUPLE_INSERT
-			TUPLE_UPDATE
-			TUPLE_DISCARD
-			TUPLE_DISCARD_ALL
-			TUPLE_DISCARD_TRAILING_TOMB_STONES
-			TUPLE_SWAP
-			TUPLE_UPDATE_ELEMENT_IN_PLACE
-			PAGE_CLONE
-		*/
+		case COMPENSATION_LOG :
+		case ABORT_MINI_TX :
+		case COMPLETE_MINI_TX :
+		{
+			printf("ISSUE :: encountered a log record that can not be undone, wal probably corrupted or existence of a bug in mini transaction engine\n");
+			exit(-1);
+		}
 	}
 
 	uint64_t page_id = get_page_id_for_log_record(undo_lr);
