@@ -86,7 +86,6 @@ char *number_to_words(int n) {
 Tasks necessary to develop MinTxEngine
  * checkpointing is done by writing the mini transaction table and dirty page table to the WALe as a check point record
  * check pointing occurs every T minutes
-   * a checkpoint log record is written
    * discard any WALe files whose log records are not visible/required by anyone
    * truncate the database file, if the last page is either a free space mapper page OR is a free page from a committed - not active mini transaction
  * atlast there is a recovery function that must be called as the first line of your application, it recovers from crash
