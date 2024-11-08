@@ -3,22 +3,14 @@ PICKED
  * recover function
    * to be called only upon starting a mini transaction engine
    * only global lock to be held only customarily as noone has access to the mini transaction begin initialized
-   * checkpoint analyze(mte) - completed
+   * analyze(mte) - completed
    * redo(mte, checkpoint ckpt)
      * redo_at = min_recLSN(ckpt.dpt)
      * restore the mtt from checkpoint variable to mte's writer transactions
      * while(redo_at != INVALID_LSN)
        * lr = read_at(redo_at), redo_at = next_of(redo_at);
        * TODO
-   * undo
-     * fetch mini transactions one by one from the mini transaction engine
-      * make their page_latches_held_counter = 0 and reference_counter = 1
-     * mark them aborted due to crash
-     * call mte_complete_mini_tx on them one by one, call get first until the writer mini transactions table is not empty
-     * flush wal
-     * flush bufferpool
-     * delete all from free_dirty_page_entries_list
-     * delete all from free_mini_transactions_list
+   * undo(mte) - completed
 
   * NOTE :: after adding any type of log record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
 
