@@ -1065,6 +1065,7 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.ckptmttelr.mt.mini_transaction_id = get_value_from_element_from_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(1,0), log_record_contents).large_uint_value;
 			lr.ckptmttelr.mt.lastLSN = get_value_from_element_from_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(1,1), log_record_contents).large_uint_value;
 			lr.ckptmttelr.mt.state = get_value_from_element_from_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(1,2), log_record_contents).uint_value;
+			lr.ckptmttelr.mt.abort_error = get_value_from_element_from_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(1,3), log_record_contents).int_value;
 
 			lr.parsed_from = serialized_log_record;
 			lr.parsed_from_size = serialized_log_record_size;
@@ -1874,6 +1875,9 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			if(!set_element_in_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(1,2), result + 1, &(user_value){.uint_value = lr->ckptmttelr.mt.state}, UINT32_MAX))
 				goto ERROR;
 
+			if(!set_element_in_tuple(&(lrtd_p->ckptmttelr_def), STATIC_POSITION(1,3), result + 1, &(user_value){.int_value = lr->ckptmttelr.mt.abort_error}, UINT32_MAX))
+				goto ERROR;
+
 			(*result_size) = get_tuple_size(&(lrtd_p->ckptmttelr_def), result + 1) + 1;
 			return result;
 		}
@@ -2114,6 +2118,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 			printf("mini_transaction_id : "); print_uint256(lr->ckptmttelr.mt.mini_transaction_id); printf("\n");
 			printf("lastLSN : "); print_uint256(lr->ckptmttelr.mt.lastLSN); printf("\n");
 			printf("state : %d\n", lr->ckptmttelr.mt.state);
+			printf("abort_error : %d\n", lr->ckptmttelr.mt.abort_error);
 			return;
 		}
 		case CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY :
