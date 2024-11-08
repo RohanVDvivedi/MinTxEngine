@@ -85,6 +85,7 @@ uint256 read_checkpoint_from_wal_UNSAFE(mini_transaction_engine* mte, uint256 ch
 			mt->mini_transaction_id = lr.ckptmttelr.mt.mini_transaction_id;
 			mt->lastLSN = lr.ckptmttelr.mt.lastLSN;
 			mt->state = lr.ckptmttelr.mt.state;
+			mt->abort_error = lr.ckptmttelr.mt.abort_error;
 
 			insert_in_hashmap(&(ckpt->mini_transaction_table), mt);
 
