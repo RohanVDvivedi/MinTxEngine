@@ -3,53 +3,7 @@ PICKED
  * recover function
    * to be called only upon starting a mini transaction engine
    * only global lock to be held only customarily as noone has access to the mini transaction begin initialized
-   * checkpoint analyze(mte)
-     * if there is a checkpointLSN != INVALID_LSN, then read it (analyze_from = next_of(checkpointLSN)), else initialize it empty(analyze_from = FIRST_LSN)
-     * analyze_at = analyze_from
-     * loop while(analyze_at != INVALID_LSN)
-       * lr = read(analyze_at), analyze_at = next_of(analyze_at)
-       * maintain dpt
-         * if unidentified
-           * exit();
-         * if forward change log OR FPW
-           * if page alloc/dealloc
-             * add page and free space mapper page to dpt, if not present in dpt
-           * else
-             * add page to dpt, if not present in dpt
-         * if clr
-             * read corresponding lr
-               * if page alloc/dealloc add free space mapper page to dpt, if not present in dpt
-               * else if forward change log, add page to dpt, if not present in dpt
-               * else exit() -> presence of compensation log record for a possibly valid by inappropriate log record, plausible bug in mini transaction engine
-         * else skip
-       * maintain mtt
-         * if unidentified
-           * exit();
-         * if forward change log
-           * mt = mtt.find(lr.mtx_id)
-           * if mt = NULL then mt = mtt.insert(lr.mtx_id, in_progress)
-           * if mt.state != in_progress exit()
-           * mt.lastLSN = analyze_at
-         * if FPW
-           * mt = mtt.find(lr.mtx_id)
-           * if mt = NULL then mt = mtt.insert(lr.mtx_id, in_progress)
-           * mt.lastLSN = analyze_at
-         * if abort log
-           * mt = mtt.find(lr.mtx_id)
-           * if mt = NULL exit() -> abort log record for an in existent mini transaction, plausible log corruption or bug in mini transaction engine
-           * if mt.state != in_progress && mt.state != aborted -> exit() -> invalid mini transaction state transition detected
-           * mt.state = undoing_for_abort
-           * mt.lastLSN = analyze_at
-         * if clr
-           * mt = mtt.find(lr.mtx_id)
-           * if mt = NULL exit() -> abort log record for an in existent mini transaction, plausible log corruption or bug in mini transaction engine
-           * if mt.state != undoing_for_abort -> exit() -> invalid mini transaction state transition detected
-           * mt.lastLSN = analyze_at
-         * if complete log
-           * mt = mtt.find(lr.mtx_id)
-           * if mt = NULL exit() -> abort log record for an in existent mini transaction, plausible log corruption or bug in mini transaction engine
-           * if mt.state != in_progress && mt.state != undoing_for_abort -> exit() -> invalid mini transaction state transition detected
-           * remove mt from mtt
+   * checkpoint analyze(mte) - completed
    * redo(mte, checkpoint ckpt)
      * redo_at = min_recLSN(ckpt.dpt)
      * restore the mtt from checkpoint variable to mte's writer transactions
