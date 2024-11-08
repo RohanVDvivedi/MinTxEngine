@@ -33,4 +33,7 @@ uint256 get_minimum_recLSN_for_dirty_page_table(const hashmap* dirty_page_table)
 
 #define initialize_dirty_page_table(dirty_page_table, bucket_count) initialize_hashmap(dirty_page_table, ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, bucket_count, &simple_hasher(hash_dirty_page_table_entry), &simple_comparator(compare_dirty_page_table_entries), offsetof(dirty_page_table_entry, enode))
 
+void delete_dirty_page_table_notify(void* resource_p, const void* data_p);
+#define AND_DELETE_DIRTY_PAGE_TABLE_ENTRIES_NOTIFIER &(notifier_interface){.resource_p = NULL, .notify = delete_dirty_page_table_notify}
+
 #endif

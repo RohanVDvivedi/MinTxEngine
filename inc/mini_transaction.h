@@ -78,4 +78,7 @@ uint256 get_minimum_mini_transaction_id_for_mini_transaction_table(const hashmap
 
 #define initialize_mini_transaction_table(mini_transaction_table, bucket_count) initialize_hashmap(mini_transaction_table, ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, bucket_count, &simple_hasher(hash_mini_transaction), &simple_comparator(compare_mini_transactions), offsetof(mini_transaction, enode))
 
+void delete_mini_transaction_notify(void* resource_p, const void* data_p);
+#define AND_DELETE_MINI_TRANSACTIONS_NOTIFIER &(notifier_interface){.resource_p = NULL, .notify = delete_mini_transaction_notify}
+
 #endif

@@ -49,3 +49,8 @@ uint256 get_minimum_mini_transaction_id_for_mini_transaction_table(const hashmap
 
 	return min_mini_tx_id;
 }
+
+void delete_mini_transaction_notify(void* resource_p, const void* data_p)
+{
+	delete_mini_transaction((mini_transaction*)data_p);
+}

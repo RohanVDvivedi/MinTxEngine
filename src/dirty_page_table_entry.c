@@ -45,3 +45,8 @@ uint256 get_minimum_recLSN_for_dirty_page_table(const hashmap* dirty_page_table)
 
 	return min_recLSN;
 }
+
+void delete_dirty_page_table_notify(void* resource_p, const void* data_p)
+{
+	delete_dirty_page_table_entry((dirty_page_table_entry*) data_p);
+}
