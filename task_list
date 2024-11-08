@@ -14,6 +14,7 @@ PICKED
    * review and test recovery code
 
   * NOTE :: after adding any type of log record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
+    * do this by performing `grep --include "*.c" -inr "switch(.*type)" .`
 
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
