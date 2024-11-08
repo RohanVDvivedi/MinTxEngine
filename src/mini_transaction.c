@@ -22,6 +22,7 @@ mini_transaction* get_new_mini_transaction()
 	}
 	pthread_cond_init(&(mt->write_lock_wait), NULL);
 	mt->reference_counter = 0;
+	mt->page_latches_held_counter = 0;
 	initialize_llnode(&(mt->enode));
 	return mt;
 }
