@@ -1,5 +1,7 @@
 PICKED
 
+ * add abort error to check point log record that carries mini transaction table entry
+
  * recover function
    * to be called only upon starting a mini transaction engine
    * only global lock to be held only customarily as noone has access to the mini transaction begin initialized
