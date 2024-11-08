@@ -66,13 +66,13 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	lrtd->type_info_in_bytes_type.is_static = 1;
 
 	{
-		lrtd->mini_transaction_type = malloc(sizeof_tuple_data_type_info(3));
+		lrtd->mini_transaction_type = malloc(sizeof_tuple_data_type_info(4));
 		if(lrtd->mini_transaction_type == NULL)
 		{
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(lrtd->mini_transaction_type, "mini_transaction", 0, lrtd->max_log_record_size, 3);
+		initialize_tuple_data_type_info(lrtd->mini_transaction_type, "mini_transaction", 0, lrtd->max_log_record_size, 4);
 
 		strcpy(lrtd->mini_transaction_type->containees[0].field_name, "mini_transaction_id");
 		lrtd->mini_transaction_type->containees[0].type_info = &(lrtd->LSN_type);
@@ -82,6 +82,9 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 
 		strcpy(lrtd->mini_transaction_type->containees[2].field_name, "state");
 		lrtd->mini_transaction_type->containees[2].type_info = UINT_NON_NULLABLE[1];
+
+		strcpy(lrtd->mini_transaction_type->containees[3].field_name, "abort_error");
+		lrtd->mini_transaction_type->containees[3].type_info = INT_NON_NULLABLE[sizeof(int)];
 	}
 
 	{
