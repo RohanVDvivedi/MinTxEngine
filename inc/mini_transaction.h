@@ -76,4 +76,6 @@ void delete_mini_transaction(mini_transaction* mt);
 // returns INVALID_LOG_SEQUENCE_NUMBER if no mini_transaction-s are present
 uint256 get_minimum_mini_transaction_id_for_mini_transaction_table(const hashmap* mini_transaction_table);
 
+#define initialize_mini_transaction_table(mini_transaction_table, bucket_count) initialize_hashmap(mini_transaction_table, ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, bucket_count, &simple_hasher(hash_mini_transaction), &simple_comparator(compare_mini_transactions), offsetof(mini_transaction, enode))
+
 #endif

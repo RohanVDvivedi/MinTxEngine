@@ -124,7 +124,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	else
 		return 0;
 
-	if(!initialize_hashmap(&(mte->writer_mini_transactions), ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, mte->bufferpool_frame_count, &simple_hasher(hash_mini_transaction), &simple_comparator(compare_mini_transactions), offsetof(mini_transaction, enode)))
+	if(!initialize_mini_transaction_table(&(mte->writer_mini_transactions), mte->bufferpool_frame_count))
 	{
 		printf("ISSUE :: unable to initialize an internal hashmap\n");
 		exit(-1);
@@ -132,7 +132,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	initialize_linkedlist(&(mte->reader_mini_transactions), offsetof(mini_transaction, enode));
 	initialize_linkedlist(&(mte->free_mini_transactions_list), offsetof(mini_transaction, enode));
 
-	if(!initialize_hashmap(&(mte->dirty_page_table), ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, mte->bufferpool_frame_count, &simple_hasher(hash_dirty_page_table_entry), &simple_comparator(compare_dirty_page_table_entries), offsetof(dirty_page_table_entry, enode)))
+	if(!initialize_dirty_page_table(&(mte->dirty_page_table), mte->bufferpool_frame_count))
 	{
 		printf("ISSUE :: unable to initialize an internal hashmap\n");
 		exit(-1);

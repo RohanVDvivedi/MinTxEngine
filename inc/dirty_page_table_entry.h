@@ -31,4 +31,6 @@ void delete_dirty_page_table_entry(dirty_page_table_entry* dpte);
 // returns INVALID_LOG_SEQUENCE_NUMBER if dirty_page_table is empty
 uint256 get_minimum_recLSN_for_dirty_page_table(const hashmap* dirty_page_table);
 
+#define initialize_dirty_page_table(dirty_page_table, bucket_count) initialize_hashmap(dirty_page_table, ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, bucket_count, &simple_hasher(hash_dirty_page_table_entry), &simple_comparator(compare_dirty_page_table_entries), offsetof(dirty_page_table_entry, enode))
+
 #endif

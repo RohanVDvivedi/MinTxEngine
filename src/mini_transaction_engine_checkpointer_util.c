@@ -30,13 +30,13 @@ void print_checkpoint(const checkpoint* ckpt)
 uint256 read_checkpoint_from_wal_UNSAFE(mini_transaction_engine* mte, uint256 checkpointLSN, checkpoint* ckpt)
 {
 	{
-		if(!initialize_hashmap(&(ckpt->mini_transaction_table), ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, 3, &simple_hasher(hash_mini_transaction), &simple_comparator(compare_mini_transactions), offsetof(mini_transaction, enode)))
+		if(!initialize_mini_transaction_table(&(ckpt->mini_transaction_table), 3))
 		{
 			printf("ISSUE :: unable to initialize an checkpoint hashmap\n");
 			exit(-1);
 		}
 
-		if(!initialize_hashmap(&(ckpt->dirty_page_table), ELEMENTS_AS_LINKEDLIST_INSERT_AT_TAIL, 3, &simple_hasher(hash_dirty_page_table_entry), &simple_comparator(compare_dirty_page_table_entries), offsetof(dirty_page_table_entry, enode)))
+		if(!initialize_dirty_page_table(&(ckpt->dirty_page_table), 3))
 		{
 			printf("ISSUE :: unable to initialize an checkpoint hashmap\n");
 			exit(-1);
