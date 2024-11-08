@@ -246,21 +246,15 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 	deinitialize_rwlock(&(mte->manager_lock));
 	pthread_mutex_destroy(&(mte->global_lock));
 
-	while(!is_empty_linkedlist(&(mte->free_mini_transactions_list)))
-	{
-		mini_transaction* mt = (mini_transaction*) get_head_of_linkedlist(&(mte->free_mini_transactions_list));
-		remove_head_from_linkedlist(&(mte->free_mini_transactions_list));
-		delete_mini_transaction(mt);
-	}
+	remove_all_from_linkedlist(&(mte->free_mini_transactions_list), AND_DELETE_MINI_TRANSACTIONS_NOTIFIER);
+	remove_all_from_linkedlist(&(mte->reader_mini_transactions), AND_DELETE_MINI_TRANSACTIONS_NOTIFIER);
 
-	while(!is_empty_linkedlist(&(mte->free_dirty_page_entries_list)))
-	{
-		dirty_page_table_entry* dpte = (dirty_page_table_entry*) get_head_of_linkedlist(&(mte->free_dirty_page_entries_list));
-		remove_head_from_linkedlist(&(mte->free_dirty_page_entries_list));
-		delete_dirty_page_table_entry(dpte);
-	}
+	remove_all_from_linkedlist(&(mte->free_dirty_page_entries_list), AND_DELETE_DIRTY_PAGE_TABLE_ENTRIES_NOTIFIER);
 
+	remove_all_from_hashmap(&(mte->writer_mini_transactions), AND_DELETE_MINI_TRANSACTIONS_NOTIFIER);
 	deinitialize_hashmap(&(mte->writer_mini_transactions));
+
+	remove_all_from_hashmap(&(mte->dirty_page_table), AND_DELETE_DIRTY_PAGE_TABLE_ENTRIES_NOTIFIER);
 	deinitialize_hashmap(&(mte->dirty_page_table));
 
 	deinitialize_log_record_tuple_defs(&(mte->lrtd));
