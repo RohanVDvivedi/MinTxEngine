@@ -796,8 +796,25 @@ void main_1()
 	deinitialize_mini_transaction_engine(&mte);
 }
 
+void main_2()
+{
+	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
+	{
+		printf("failed to initialize mini transaction engine\n");
+		exit(-1);
+	}
+	init_pam_for_mini_tx_engine(&mte);
+	init_pmm_for_mini_tx_engine(&mte);
+
+	printf("PRINTING LOGS\n");
+	debug_print_wal_logs_for_mini_transaction_engine(&mte);
+
+	deinitialize_mini_transaction_engine(&mte);
+}
+
 int main()
 {
+	//main_2();
 	//main_1();
 	//main0();
 	//main1();
