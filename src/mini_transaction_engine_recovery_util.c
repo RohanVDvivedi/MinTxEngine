@@ -199,6 +199,10 @@ checkpoint analyze(mini_transaction_engine* mte)
 		// maintain and update mini_transaction_table in checkpoint
 		// TODO
 
+		// expand mini transaction table if necessary
+		if(get_element_count_hashmap(&(ckpt.mini_transaction_table)) / 3 > get_bucket_count_hashmap(&(ckpt.mini_transaction_table)))
+			expand_hashmap(&(ckpt.mini_transaction_table), 1.5);
+
 		// prepare for next iteration
 		analyze_at = get_next_LSN_for_LSN_UNSAFE(mte, analyze_at);
 		destroy_and_free_parsed_log_record(&lr);
