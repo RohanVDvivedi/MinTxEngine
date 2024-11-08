@@ -217,7 +217,7 @@ uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, const chec
 		}
 
 		int wal_error = 0;
-		checkpointLSN = append_log_record(wale_p, serialized_log_record, serialized_log_record_size, 0, &wal_error);
+		checkpointLSN = append_log_record(wale_p, serialized_log_record, serialized_log_record_size, 1, &wal_error); // only this log record is marked as checkpoint log record
 		if(are_equal_uint256(checkpointLSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
 		{
 			printf("ISSUE :: unable to append log record\n");

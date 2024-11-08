@@ -32,6 +32,9 @@ checkpoint analyze(mini_transaction_engine* mte)
 		analyze_at = get_next_LSN_for_LSN_UNSAFE(mte, mte->checkpointLSN);
 	}
 
+	printf("checkpoint at : "); print_uint256(mte->checkpointLSN); printf("\n");
+	printf("analyze from  : "); print_uint256(analyze_at); printf("\n");
+
 	// start analyzing from analyze_at, reconstructing the mini_transaction_table and dirty_page_table as it was during the crash
 	while(!are_equal_uint256(analyze_at, INVALID_LOG_SEQUENCE_NUMBER))
 	{
