@@ -8,6 +8,7 @@
 #include<callbacks_wale.h>
 #include<wal_list_utils.h>
 #include<mini_transaction_engine_checkpointer_util.h>
+#include<mini_transaction_engine_recovery_util.h>
 
 #define MINIMUM_CHECKPOINTER_PERIOD 5000000 // checkpoint period no lesser than 5 seconds
 
@@ -143,7 +144,8 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 
 	if(recovery_required)
 	{
-		// TODO call recovery function here
+		// all recovery function here
+		recover(mte);
 	}
 
 	// allocate enough mini transaction structures to survive safely
