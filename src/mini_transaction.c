@@ -54,3 +54,14 @@ void delete_mini_transaction_notify(void* resource_p, const void* data_p)
 {
 	delete_mini_transaction((mini_transaction*)data_p);
 }
+
+void transfer_to_mini_transaction_table_notify(void* resource_p, const void* data_p)
+{
+	hashmap* hm = resource_p;
+	mini_transaction* mt = (mini_transaction*) data_p;
+
+	insert_in_hashmap(hm, mt);
+
+	if(get_element_count_hashmap(hm) / 3 > get_bucket_count_hashmap(hm))
+		expand_hashmap(hm, 1.5);
+}

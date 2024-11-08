@@ -81,4 +81,7 @@ uint256 get_minimum_mini_transaction_id_for_mini_transaction_table(const hashmap
 void delete_mini_transaction_notify(void* resource_p, const void* data_p);
 #define AND_DELETE_MINI_TRANSACTIONS_NOTIFIER &(notifier_interface){.resource_p = NULL, .notify = delete_mini_transaction_notify}
 
+void transfer_to_mini_transaction_table_notify(void* resource_p, const void* data_p);
+#define AND_TRANSFER_TO_MINI_TRANSACTION_TABLE_NOTIFIER(mini_transaction_table) &(notifier_interface){.resource_p = mini_transaction_table, .notify = transfer_to_mini_transaction_table_notify}
+
 #endif
