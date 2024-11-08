@@ -281,6 +281,7 @@ checkpoint analyze(mini_transaction_engine* mte)
 					exit(-1);
 				}
 
+				mt->abort_error = lr.amtlr.abort_error;
 				mt->state = MIN_TX_UNDOING_FOR_ABORT;
 
 				mt->lastLSN = analyze_at;
