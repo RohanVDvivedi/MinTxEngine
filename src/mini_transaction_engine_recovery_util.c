@@ -408,6 +408,7 @@ static void undo(mini_transaction_engine* mte)
 	}
 
 	// now while there are writer mini transactions
+	// NOTE :: we can not run a regular loop over writer mini transaxtions here, because we are releasing lock in the middle of the loop and the iterator could get invalidated
 	while(!is_empty_hashmap(&(mte->writer_mini_transactions)))
 	{
 		// fetch the first one from this set and complete it
