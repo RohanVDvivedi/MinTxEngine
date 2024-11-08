@@ -4,7 +4,7 @@
 #include<mini_transaction_engine_util.h>
 #include<system_page_header_util.h>
 
-checkpoint analyze(mini_transaction_engine* mte)
+static checkpoint analyze(mini_transaction_engine* mte)
 {
 	// this lock is customary to be taken only to access bufferpool and wale
 	pthread_mutex_lock(&(mte->global_lock));
@@ -233,6 +233,7 @@ checkpoint analyze(mini_transaction_engine* mte)
 					mt = get_new_mini_transaction();
 					mt->mini_transaction_id = mini_transaction_id;
 					mt->state = MIN_TX_IN_PROGRESS;
+					mt->abort_error = 0;
 					insert_in_hashmap(&(ckpt.mini_transaction_table), mt);
 				}
 
@@ -258,6 +259,7 @@ checkpoint analyze(mini_transaction_engine* mte)
 					mt = get_new_mini_transaction();
 					mt->mini_transaction_id = mini_transaction_id;
 					mt->state = MIN_TX_IN_PROGRESS;
+					mt->abort_error = 0;
 					insert_in_hashmap(&(ckpt.mini_transaction_table), mt);
 				}
 
@@ -353,25 +355,81 @@ checkpoint analyze(mini_transaction_engine* mte)
 	return ckpt;
 }
 
-void redo(mini_transaction_engine* mte, checkpoint* ckpt)
+static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 {
 	// this lock is customary to be taken only to access bufferpool and wale
 	pthread_mutex_lock(&(mte->global_lock));
 
 	// TODO
 
-	pthread_mutex_unlock(&(mte->global_lock));
-
 	// destroy checkpoint we do not need it now
-	remove_all_from_hashmap(&(ckpt->mini_transaction_table), AND_DELETE_MINI_TRANSACTIONS_NOTIFIER);
+	// here we transfer all mini transactions directly to the mte->writer_mini_transactions
+	remove_all_from_hashmap(&(ckpt->mini_transaction_table), AND_TRANSFER_TO_MINI_TRANSACTION_TABLE_NOTIFIER(&(mte->writer_mini_transactions)));
 	deinitialize_hashmap(&(ckpt->mini_transaction_table));
+	// while we directly delete all the dirty page table entries of the checkpoint as we already constructed a new reliable one while redoing
 	remove_all_from_hashmap(&(ckpt->dirty_page_table), AND_DELETE_DIRTY_PAGE_TABLE_ENTRIES_NOTIFIER);
 	deinitialize_hashmap(&(ckpt->dirty_page_table));
+
+	pthread_mutex_unlock(&(mte->global_lock));
 }
 
-void undo(mini_transaction_engine* mte)
+static void undo(mini_transaction_engine* mte)
 {
-	// TODO
+	// this lock is customary to be taken only to access bufferpool and wale
+	pthread_mutex_lock(&(mte->global_lock));
+
+	// there should be no readers at this point in time
+	if(!is_empty_linkedlist(&(mte->reader_mini_transactions)))
+	{
+		printf("ISSUE :: existence of some reader mini transactions, while performing recovery undo\n");
+		exit(-1);
+	}
+
+	// initialize yet more uninitialized attributes of the mini transactions active at the time of crash
+	for(mini_transaction* mt = (mini_transaction*) get_first_of_in_hashmap(&(mte->writer_mini_transactions), FIRST_OF_HASHMAP); mt != NULL; mt = (mini_transaction*) get_next_of_in_hashmap(&(mte->writer_mini_transactions), mt, ANY_IN_HASHMAP))
+	{
+		// mini transaction attributes like mini_transaction_id, lastLSN, state and abort_error are already initialized
+
+		// now we need to initialize the below attributes
+		mt->page_latches_held_counter = 0;
+		mt->reference_counter = 1;
+
+		// and if it is in progress, then abort it, with reason as aborted after crash
+		if(mt->state == MIN_TX_IN_PROGRESS)
+		{
+			mt->state = MIN_TX_ABORTED;
+			mt->abort_error = ABORTED_AFTER_CRASH;
+		}
+		else if(mt->state == MIN_TX_COMPLETED)
+		{
+			printf("ISSUE :: existence of a completed mini transaction, encountered while performing recovery undo\n");
+			exit(-1);
+		}
+	}
+
+	// now while there are writer mini transactions
+	while(!is_empty_hashmap(&(mte->writer_mini_transactions)))
+	{
+		// fetch the first one from this set and complete it
+		mini_transaction* mt = (mini_transaction*) get_first_of_in_hashmap(&(mte->writer_mini_transactions), FIRST_OF_HASHMAP);
+		pthread_mutex_unlock(&(mte->global_lock));
+
+		// formally complete mt
+		mte_complete_mini_tx(mte, mt, NULL, 0);
+
+		pthread_mutex_lock(&(mte->global_lock));
+	}
+
+	// flush wal and bufferpool
+	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
+	flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
+
+	// now at this point we can clean up the free lists
+	// this is required as we allocated plenty of then and now they are redundant
+	remove_all_from_linkedlist(&(mte->free_mini_transactions_list), AND_DELETE_MINI_TRANSACTIONS_NOTIFIER);
+	remove_all_from_linkedlist(&(mte->free_dirty_page_entries_list), AND_DELETE_DIRTY_PAGE_TABLE_ENTRIES_NOTIFIER);
+
+	pthread_mutex_unlock(&(mte->global_lock));
 }
 
 void recover(mini_transaction_engine* mte)
