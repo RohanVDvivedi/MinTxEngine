@@ -594,6 +594,7 @@ int main()
 				.mt.mini_transaction_id = get_uint256(113),
 				.mt.lastLSN = get_uint256(391),
 				.mt.state = MIN_TX_ABORTED,
+				.mt.abort_error = -56,
 			}
 		};
 
