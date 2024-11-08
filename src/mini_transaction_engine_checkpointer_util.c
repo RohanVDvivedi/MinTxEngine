@@ -13,7 +13,7 @@ void print_checkpoint(const checkpoint* ckpt)
 		print_uint256(mt->mini_transaction_id);
 		printf(" \t lastLSN : ");
 		print_uint256(mt->lastLSN);
-		printf(" \t state : %d\n \t abort_error : %d\n", mt->state, mt->abort_error);
+		printf(" \t state : %d \t abort_error : %d\n", mt->state, mt->abort_error);
 	}
 	printf("\n");
 
