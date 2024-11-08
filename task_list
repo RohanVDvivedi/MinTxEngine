@@ -9,6 +9,8 @@ PICKED
      * loop while(analyze_at != INVALID_LSN)
        * lr = read(analyze_at), analyze_at = next_of(analyze_at)
        * maintain dpt
+         * if unidentified
+           * exit();
          * if forward change log OR FPW
            * if page alloc/dealloc
              * add page and free space mapper page to dpt, if not present in dpt
@@ -21,6 +23,8 @@ PICKED
                * else exit() -> presence of compensation log record for a possibly valid by inappropriate log record, plausible bug in mini transaction engine
          * else skip
        * maintain mtt
+         * if unidentified
+           * exit();
          * if forward change log
            * mt = mtt.find(lr.mtx_id)
            * if mt = NULL then mt = mtt.insert(lr.mtx_id, in_progress)
