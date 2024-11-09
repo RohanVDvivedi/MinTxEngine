@@ -569,10 +569,12 @@ int main3()
 	wait_for_all_executor_workers_to_complete(exe);
 	delete_executor(exe);
 
+	pthread_mutex_lock(&mtx);
 	printf("jobs_count = %d\n", JOBS_COUNT);
 	printf("failed_job_submissions = %d\n", failed_job_submissions);
 	printf("duplicates_encountered = %d\n", duplicates_encountered);
 	printf("writable_aborts_done = %d\n", writable_aborts_done);
+	pthread_mutex_unlock(&mtx);
 
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
