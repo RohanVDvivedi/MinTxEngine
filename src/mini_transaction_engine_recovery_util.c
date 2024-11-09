@@ -514,7 +514,10 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 				{void* page = acquire_writer_latch_only_if_redo_required_UNSAFE(mte, ckpt, redo_at, &lr, page_id);
 				if(page != NULL)
 				{
-					// TODO
+					// actual redo
+					{void* page_contents = get_page_contents_for_page(page, page_id, &(mte->stats));
+					uint32_t page_content_size = get_page_content_size_for_page(page_id, &(mte->stats));
+					memory_move(page_contents, lr.fpwlr.page_contents, page_content_size);}
 
 					// if it is not a free space mapper page, then set writerLSN from the log record
 					if(!is_free_space_mapper_page(page_id, &(mte->stats)))
