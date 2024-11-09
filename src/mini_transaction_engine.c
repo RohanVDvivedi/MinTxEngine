@@ -30,6 +30,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	pthread_cond_init(&(mte->wait_for_checkpointer_to_stop), NULL);
 	mte->is_checkpointer_running = 0;
 	mte->shutdown_called = 0;
+	pthread_mutex_init(&(mte->database_expansion_lock), NULL);
 
 	// with less than 2 buffers in bufferpool you can not redo all types of log records
 	// with less than 1 buffer in append only buffers of writer WALe, no log records can be appended
@@ -263,4 +264,6 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 	deinitialize_hashmap(&(mte->dirty_page_table));
 
 	deinitialize_log_record_tuple_defs(&(mte->lrtd));
+
+	pthread_mutex_destroy(&(mte->database_expansion_lock));
 }

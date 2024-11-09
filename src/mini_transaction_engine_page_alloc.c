@@ -114,6 +114,8 @@ void* get_new_page_with_write_latch_for_mini_tx(mini_transaction_engine* mte, mi
 	// strategy : 2
 	// allocate a new page secondly by attempting to do it with database expansion
 	{
+		pthread_mutex_lock(&(mte->database_expansion_lock)); // database expansion lock should be taken before you take manager lock in shared mode
+
 		pthread_mutex_lock(&(mte->global_lock));
 		if(mt->state != MIN_TX_IN_PROGRESS) // mini transaction is not in progress, then quit
 		{
@@ -131,6 +133,8 @@ void* get_new_page_with_write_latch_for_mini_tx(mini_transaction_engine* mte, mi
 			mt->page_latches_held_counter++;
 		shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
+
+		pthread_mutex_unlock(&(mte->database_expansion_lock));
 	}
 
 	if(new_page != NULL) // if we were successfull, quit
