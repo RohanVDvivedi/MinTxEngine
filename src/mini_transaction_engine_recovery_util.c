@@ -768,7 +768,6 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 
 				destroy_and_free_parsed_log_record(&undo_lr);
 				break;
-				break;
 			}
 
 			// on any other log record nothing needs to be done
