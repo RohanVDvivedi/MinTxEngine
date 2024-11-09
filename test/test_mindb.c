@@ -513,6 +513,11 @@ void* perform_insert(void* param)
 
 	if(res == 0)
 	{
+		if(!are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
+		{
+			printf("Bug in bplus tree insert, insert failed but mini_transaction_id is assigned\n");
+			exit(-1);
+		}
 		pthread_mutex_lock(&mtx);
 		duplicates_encountered++;
 		pthread_mutex_unlock(&mtx);
