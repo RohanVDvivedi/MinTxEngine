@@ -697,9 +697,14 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 		}
 
 		shared_unlock(&(mte->manager_lock));
+		pthread_mutex_unlock(&(mte->global_lock));
 
 		while(!are_equal_uint256(undo_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // keep on doing undo until you do not have any log record to undo
 		{
+			// we are releasing and acquiring manager_lock every iteration to allow the checkpointer to kick in somewhere in the middle
+			pthread_mutex_lock(&(mte->global_lock));
+			shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
+
 			log_record undo_lr;
 			if(!get_parsed_log_record_UNSAFE(mte, undo_LSN, &undo_lr))
 			{
@@ -707,23 +712,22 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 				exit(-1);
 			}
 
-			shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
-
 			pthread_mutex_unlock(&(mte->global_lock));
 
 			// undo undo_lr
 			undo_log_record_and_append_clr_and_manage_state_INTERNAL(mte, mt, undo_LSN, &undo_lr);
 
-			// prepare for next iteration
+			pthread_mutex_lock(&(mte->global_lock));
+			shared_unlock(&(mte->manager_lock));
+			pthread_mutex_unlock(&(mte->global_lock));
+
+			// prepare for next iteration, as guessed you do not need any locks for this anyway
 			undo_LSN = get_prev_log_record_LSN_for_log_record(&undo_lr);
 			destroy_and_free_parsed_log_record(&undo_lr);
-
-			pthread_mutex_lock(&(mte->global_lock));
-
-			shared_unlock(&(mte->manager_lock));
 		}
 	}
 
+	pthread_mutex_lock(&(mte->global_lock));
 	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 	// mark it completed and exit
