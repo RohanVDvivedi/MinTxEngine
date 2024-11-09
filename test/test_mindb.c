@@ -812,6 +812,69 @@ void main_2()
 	deinitialize_mini_transaction_engine(&mte);
 }
 
+void main4(uint64_t _root_page_id)
+{
+	root_page_id = _root_page_id;
+	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
+	{
+		printf("failed to initialize mini transaction engine\n");
+		exit(-1);
+	}
+	init_pam_for_mini_tx_engine(&mte);
+	init_pmm_for_mini_tx_engine(&mte);
+	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
+	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, 1))
+	{
+		printf("failed to initialize bplus tree tuple definitions\n");
+		exit(-1);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		print_uint_bplus_tree(mt);
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+
+	printf("PRINTING LOGS\n");
+	debug_print_wal_logs_for_mini_transaction_engine(&mte);
+
+	deinitialize_mini_transaction_engine(&mte);
+}
+
+void main5(uint64_t _root_page_id)
+{
+	root_page_id = _root_page_id;
+	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
+	{
+		printf("failed to initialize mini transaction engine\n");
+		exit(-1);
+	}
+	init_pam_for_mini_tx_engine(&mte);
+	init_pmm_for_mini_tx_engine(&mte);
+	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
+	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, 1, hash_func))
+	{
+		printf("failed to initialize hash table tuple definitions\n");
+		exit(-1);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		print_uint_hash_table(mt);
+
+		mte_complete_mini_tx(&mte, mt, NULL, 0);
+	}
+
+	printf("PRINTING LOGS\n");
+	debug_print_wal_logs_for_mini_transaction_engine(&mte);
+
+	deinitialize_mini_transaction_engine(&mte);
+}
+
 int main()
 {
 	//main_2();
@@ -822,5 +885,7 @@ int main()
 	//main2(500);	// sweet spot
 	//main2(2000);	// array_table heavy hash_table
 	main3();
+	//main4(1);		// prints bplus tree at root page id = 1
+	//main5(1); 	// prints hash table at root page_id = 1
 	printf("total pages used = %"PRIu64"\n", mte.database_page_count);
 }
