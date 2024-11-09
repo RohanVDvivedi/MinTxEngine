@@ -41,6 +41,10 @@ uint256 get_minimum_mini_transaction_id_for_mini_transaction_table(const hashmap
 
 	for(const mini_transaction* mt = get_first_of_in_hashmap(mini_transaction_table, FIRST_OF_HASHMAP); mt != NULL; mt = get_next_of_in_hashmap(mini_transaction_table, mt, ANY_IN_HASHMAP))
 	{
+		// skip all completed mini transactions
+		if(mt->state == MIN_TX_COMPLETED)
+			continue;
+
 		if(are_equal_uint256(min_mini_tx_id, INVALID_LOG_SEQUENCE_NUMBER))
 			min_mini_tx_id = mt->mini_transaction_id;
 		else
