@@ -877,14 +877,17 @@ void main5(uint64_t _root_page_id)
 
 int main()
 {
-	//main_2();
+	// seed random number generator
+	srand(time(NULL));
+
+	//main_2(); 	// prints logs and exits
 	//main_1();
 	//main0();
-	//main1();
+	//main1();		// bplus_tree
 	//main2(100);  	// linked_page_list heavy hash_table
 	//main2(300);	// sweet spot
 	//main2(2000);	// array_table heavy hash_table
-	main3();
+	main3();		// concurrent test for bplus tree insertion
 	//main4(1);		// prints bplus tree at root page id = 1
 	//main5(1); 	// prints hash table at root page_id = 1
 	printf("total pages used = %"PRIu64"\n", mte.database_page_count);
