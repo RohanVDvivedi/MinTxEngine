@@ -438,8 +438,9 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 					// set pageLSN on the page
 					set_pageLSN_for_page(page, redo_at, &(mte->stats));
 
-					// update checksum and release latch
+					// update checksum and release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
 					recalculate_page_checksum(page, &(mte->stats));
+					mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
 					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
 				}}
 
@@ -462,8 +463,9 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 					// set pageLSN on the page
 					set_pageLSN_for_page(free_space_mapper_page, redo_at, &(mte->stats));
 
-					// update checksum and release latch
+					// update checksum and release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
 					recalculate_page_checksum(free_space_mapper_page, &(mte->stats));
+					mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, free_space_mapper_page, free_space_mapper_page_id);
 					release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
 				}}
 
@@ -496,8 +498,9 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 					// set pageLSN on the page
 					set_pageLSN_for_page(page, redo_at, &(mte->stats));
 
-					// update checksum and release latch
+					// update checksum and release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
 					recalculate_page_checksum(page, &(mte->stats));
+					mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
 					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
 				}}
 
@@ -520,8 +523,9 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 					// set pageLSN on the page
 					set_pageLSN_for_page(page, redo_at, &(mte->stats));
 
-					// update checksum and release latch
+					// update checksum and release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
 					recalculate_page_checksum(page, &(mte->stats));
+					mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
 					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
 				}}
 
