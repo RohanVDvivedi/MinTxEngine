@@ -741,8 +741,201 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 						if(page != NULL)
 						{
 							// actual redo
-							{
-								// TODO
+							{void* page_contents = get_page_contents_for_page(page, page_id, &(mte->stats));
+								switch(undo_lr.type)
+								{
+									case PAGE_INIT :
+									{
+										memory_move(page_contents, undo_lr.pilr.old_page_contents, mte->user_stats.page_size);
+										break;
+									}
+									case PAGE_SET_HEADER :
+									{
+										void* page_header = get_page_header(page_contents, mte->user_stats.page_size);
+										uint32_t page_header_size = get_page_header_size(page_contents, mte->user_stats.page_size);
+										if(page_header_size != undo_lr.pshlr.page_header_size) // this should never happen if write locks were held
+										{
+											printf("ISSUE :: unable to redo the undo of page set header, header size of the page and that of the log record does not match\n");
+											exit(-1);
+										}
+										memory_move(page_header, undo_lr.pshlr.old_page_header_contents, page_header_size);
+										break;
+									}
+									case TUPLE_APPEND :
+									{
+										uint32_t tuple_count = get_tuple_count_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.talr.size_def));
+										if(tuple_count == 0) //this should never happen if write locks were held
+										{
+											printf("ISSUE :: will not be able to redo the undo of tuple append, because current uple count is 0\n");
+											exit(-1);
+										}
+										if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.talr.size_def), tuple_count - 1)) // this should never happen if write locks were held
+										{
+											printf("ISSUE :: unable to redo the undo of tuple append\n");
+											exit(-1);
+										}
+										break;
+									}
+									case TUPLE_INSERT :
+									{
+										if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tilr.size_def), undo_lr.tilr.insert_index)) // this should never happen if write locks were held
+										{
+											printf("ISSUE :: unable to redo the undo of tuple insert\n");
+											exit(-1);
+										}
+										break;
+									}
+									case TUPLE_UPDATE :
+									{
+										int undone = update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tulr.size_def), undo_lr.tulr.update_index, undo_lr.tulr.old_tuple);
+										if(!undone)
+										{
+											if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tulr.size_def), undo_lr.tulr.update_index, NULL)) // this should never fail
+											{
+												printf("ISSUE :: unable to set NULL to a tuple :: this should never happen\n");
+												exit(-1);
+											}
+											int memory_allocation_error = 0;
+											run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr.tulr.size_def), &memory_allocation_error);
+											if(memory_allocation_error) // malloc failed on compaction
+											{
+												printf("ISSUE :: unable to redo the undo of tuple update, due to failure to callocate memory for page compaction\n");
+												exit(-1);
+											}
+											if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tulr.size_def), undo_lr.tulr.update_index, undo_lr.tulr.old_tuple)) // this should never happen if write locks were held
+											{
+												printf("ISSUE :: unable to redo the undo of tuple update\n");
+												exit(-1);
+											}
+										}
+										break;
+									}
+									case TUPLE_DISCARD :
+									{
+										int undone = insert_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tdlr.size_def), undo_lr.tdlr.discard_index, undo_lr.tdlr.old_tuple);
+										if(!undone)
+										{
+											int memory_allocation_error = 0;
+											run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr.tdlr.size_def), &memory_allocation_error);
+											if(memory_allocation_error) // malloc failed on compaction
+											{
+												printf("ISSUE :: unable to redo the undo of tuple discard, due to failure to allocate memory for page compaction\n");
+												exit(-1);
+											}
+											if(!insert_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tdlr.size_def), undo_lr.tdlr.discard_index, undo_lr.tdlr.old_tuple)) // this should never happen if write locks were held
+											{
+												printf("ISSUE :: unable to redo the undo of tuple discard, even after a compaction\n");
+												exit(-1);
+											}
+										}
+										break;
+									}
+									case TUPLE_DISCARD_ALL :
+									{
+										memory_move(page_contents, undo_lr.tdalr.old_page_contents, mte->user_stats.page_size);
+										break;
+									}
+									case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+									{
+										for(uint32_t i = 0; i < undo_lr.tdttlr.discarded_trailing_tomb_stones_count; i++)
+										{
+											int undone = append_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tdttlr.size_def), NULL);
+											if(undone)
+												continue;
+											int memory_allocation_error = 0;
+											run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr.tdttlr.size_def), &memory_allocation_error);
+											if(memory_allocation_error) // malloc failed for compaction
+											{
+												printf("ISSUE :: unable to redo the undo of tuple discard trailing tombstones, due to failure to callocate memory for page compaction\n");
+												exit(-1);
+											}
+											if(!append_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tdttlr.size_def), NULL)) // this should never happen if write locks were held
+											{
+												printf("ISSUE :: unable to redo the undo of tuple discard trailing tombstones, even after a compaction\n");
+												exit(-1);
+											}
+										}
+										break;
+									}
+									case TUPLE_SWAP :
+									{
+										if(!swap_tuples_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tslr.size_def), undo_lr.tslr.swap_index1, undo_lr.tslr.swap_index2)) // this should never happen if write locks were held
+										{
+											printf("ISSUE :: unable to redo the undo of tuple swap\n");
+											exit(-1);
+										}
+										break;
+									}
+									case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+									{
+										if(NULL == get_nth_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tueiplr.tpl_def.size_def), undo_lr.tueiplr.tuple_index))
+										{
+											printf("ISSUE :: unable to redo the undo of tuple update element in place, tuple itself is NULL\n");
+											exit(-1);
+										}
+										int undone = set_element_in_tuple_in_place_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tueiplr.tpl_def), undo_lr.tueiplr.tuple_index, undo_lr.tueiplr.element_index, &(undo_lr.tueiplr.old_element));
+										if(!undone)
+										{
+											void* new_tuple = NULL;
+											{
+												// get pointer to the current on page tuple
+												const void* on_page_tuple = get_nth_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tueiplr.tpl_def.size_def), undo_lr.tueiplr.tuple_index);
+
+												// clone it into new tuple
+												new_tuple = malloc(mte->user_stats.page_size);
+												if(new_tuple == NULL)
+												{
+													printf("ISSUE :: unable to redo the undo of tuple update element in place, memory allocation for new tuple failed\n");
+													exit(-1);
+												}
+												memory_move(new_tuple, on_page_tuple, get_tuple_size(&(undo_lr.tueiplr.tpl_def), on_page_tuple));
+											}
+
+											// perform set element on the new tuple, this must succeed
+											if(!set_element_in_tuple(&(undo_lr.tueiplr.tpl_def), undo_lr.tueiplr.element_index, new_tuple, &(undo_lr.tueiplr.old_element), UINT32_MAX))
+											{
+												printf("ISSUE :: unable to redo the undo of tuple update element in place, set tuple on fallback failed\n");
+												exit(-1);
+											}
+
+											// discard old tuple on the page and run page compaction
+											{
+												if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tueiplr.tpl_def.size_def), undo_lr.tueiplr.tuple_index, NULL)) // this should never fail
+												{
+													printf("ISSUE :: unable to set NULL to a tuple :: this should never happen\n");
+													exit(-1);
+												}
+												int memory_allocation_error = 0;
+												run_page_compaction(page_contents, mte->user_stats.page_size, &(undo_lr.tueiplr.tpl_def.size_def), &memory_allocation_error);
+												if(memory_allocation_error) // malloc failed on compaction
+												{
+													printf("ISSUE :: unable to redo the undo of tuple update element in place, due to failure to allocate memory for page compaction\n");
+													exit(-1);
+												}
+											}
+
+											// perform update for new tuple on the page
+											if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tueiplr.tpl_def.size_def), undo_lr.tueiplr.tuple_index, new_tuple)) // this should never happen if write locks were held
+											{
+												printf("ISSUE :: unable to redo the undo of tuple update element in place\n");
+												exit(-1);
+											}
+
+											free(new_tuple);
+										}
+										break;
+									}
+									case PAGE_CLONE :
+									{
+										memory_move(page_contents, undo_lr.pclr.old_page_contents, mte->user_stats.page_size);
+										break;
+									}
+									default : // if you reach here it is a bug
+									{
+										printf("ISSUE :: unable to redo the undo of log record of an illegal type, which was already filtered\n");
+										exit(-1);
+									}
+								}
 							}
 
 							// never set writer lsn here
