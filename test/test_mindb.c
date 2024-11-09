@@ -558,7 +558,7 @@ int main3()
 	int failed_job_submissions = 0;
 	for(uint32_t i = 0; i < JOBS_COUNT; i++)
 	{
-		input[i] = (((uint64_t)rand()) % (JOBS_COUNT+13));
+		input[i] = (((uint64_t)rand()) % (5*(JOBS_COUNT+13)));
 		failed_job_submissions += (0 == submit_job_executor(exe, perform_insert, input+i, NULL, NULL, 1000000));
 	}
 
