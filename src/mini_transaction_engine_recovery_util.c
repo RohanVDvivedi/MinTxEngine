@@ -159,7 +159,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 					case TUPLE_SWAP :
 					case TUPLE_UPDATE_ELEMENT_IN_PLACE :
 					case PAGE_CLONE :
-					case PAGE_COMPACTION :
+					// here page compaction is missing, it is never undone
 					{
 						uint64_t page_id = get_page_id_for_log_record(&undo_lr);
 
@@ -179,7 +179,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 
 					default :
 					{
-						printf("ISSUE :: encountered a CLR log record of a non forward change log record for a mini transaction, plausible bug or corruption\n");
+						printf("ISSUE :: encountered a CLR log record of a log record for a mini transaction that can not have a CLR record, while performing analyze of recovery, plausible bug or corruption\n");
 						exit(-1);
 					}
 				}
@@ -452,9 +452,23 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 					{void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
 					uint64_t free_space_mapper_bit_pos = get_is_valid_bit_position_for_page(page_id, &(mte->stats));
 					if(lr.type == PAGE_ALLOCATION)
+					{
+						if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos) != 0) // this should never happen if write locks were held
+						{
+							printf("ISSUE :: unable to redo page allocation\n");
+							exit(-1);
+						}
 						set_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
+					}
 					else if(lr.type == PAGE_DEALLOCATION)
+					{
+						if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos) != 1) // this should never happen if write locks were held
+						{
+							printf("ISSUE :: unable to redo page deallocation\n");
+							exit(-1);
+						}
 						reset_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
+					}
 					else
 					{
 						printf("ISSUE :: this should never happen\n");
@@ -648,7 +662,112 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 
 			case COMPENSATION_LOG :
 			{
-				// TODO
+				// grab undo of lr
+				log_record undo_lr;
+				if(!get_parsed_log_record_UNSAFE(mte, lr.clr.undo_of_LSN, &undo_lr))
+				{
+					printf("ISSUE :: unable to read undo log record during recovery\n");
+					exit(-1);
+				}
+
+				// take decissions based on undo_lr
+				// never set writerLSN here
+				switch(undo_lr.type)
+				{
+					case PAGE_ALLOCATION :
+					case PAGE_DEALLOCATION :
+					{
+						uint64_t page_id = get_page_id_for_log_record(&undo_lr);
+						uint64_t free_space_mapper_page_id = get_is_valid_bit_page_id_for_page(page_id, &(mte->stats));
+
+						{void* free_space_mapper_page = acquire_writer_latch_only_if_redo_required_UNSAFE(mte, ckpt, redo_at, &lr, free_space_mapper_page_id);
+						if(free_space_mapper_page != NULL)
+						{
+							// actual redo
+							{void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
+							uint64_t free_space_mapper_bit_pos = get_is_valid_bit_position_for_page(page_id, &(mte->stats));
+							if(undo_lr.type == PAGE_ALLOCATION)
+							{
+								if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos) != 1) // this should never happen if write locks were held
+								{
+									printf("ISSUE :: unable to redo the undo of page allocation\n");
+									exit(-1);
+								}
+								reset_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
+							}
+							else if(undo_lr.type == PAGE_DEALLOCATION)
+							{
+								if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos) != 0) // this should never happen if write locks were held
+								{
+									printf("ISSUE :: unable to redo the undo of page deallocation\n");
+									exit(-1);
+								}
+								set_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
+							}
+							else
+							{
+								printf("ISSUE :: this should never happen\n");
+								exit(-1);
+							}}
+
+							// set pageLSN on the page
+							set_pageLSN_for_page(free_space_mapper_page, redo_at, &(mte->stats));
+
+							// update checksum and release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
+							recalculate_page_checksum(free_space_mapper_page, &(mte->stats));
+							mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, free_space_mapper_page, free_space_mapper_page_id);
+							release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+						}}
+
+						break;
+					}
+
+					case PAGE_INIT :
+					case PAGE_SET_HEADER :
+					case TUPLE_APPEND :
+					case TUPLE_INSERT :
+					case TUPLE_UPDATE :
+					case TUPLE_DISCARD :
+					case TUPLE_DISCARD_ALL :
+					case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+					case TUPLE_SWAP :
+					case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+					case PAGE_CLONE :
+					// here page compaction is mission it is never undone
+					{
+						uint64_t page_id = get_page_id_for_log_record(&undo_lr);
+
+						{void* page = acquire_writer_latch_only_if_redo_required_UNSAFE(mte, ckpt, redo_at, &lr, page_id);
+						if(page != NULL)
+						{
+							// actual redo
+							{
+								// TODO
+							}
+
+							// never set writer lsn here
+
+							// set pageLSN on the page
+							set_pageLSN_for_page(page, redo_at, &(mte->stats));
+
+							// update checksum and release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
+							recalculate_page_checksum(page, &(mte->stats));
+							mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
+							release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+						}}
+
+						break;
+					}
+
+					default :
+					{
+						printf("ISSUE :: encountered a CLR log record of a log record for a mini transaction that can not have a CLR record while performing redo of recovery, plausible bug or corruption\n");
+						exit(-1);
+					}
+				}
+
+				destroy_and_free_parsed_log_record(&undo_lr);
+				break;
 				break;
 			}
 
