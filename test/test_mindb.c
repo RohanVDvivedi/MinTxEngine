@@ -501,7 +501,7 @@ int main2(uint64_t bucket_count)
 
 pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 int duplicates_encountered = 0;
-int aborts_done = 0;
+int writable_aborts_done = 0;
 
 void* perform_insert(void* param)
 {
@@ -521,7 +521,7 @@ void* perform_insert(void* param)
 	if((9 <= (p % 23)) && ((p % 23) <= 12))
 	{
 		pthread_mutex_lock(&mtx);
-		aborts_done++;
+		writable_aborts_done += res;
 		pthread_mutex_unlock(&mtx);
 		mark_aborted_for_mini_tx(&mte, mt, -55);
 	}
@@ -552,6 +552,9 @@ int main3()
 		create_uint_bplus_tree(mt);
 		mte_complete_mini_tx(&mte, mt, NULL, 0);
 	}
+	/*{
+		root_page_id = 1;
+	}*/
 
 	executor* exe = new_executor(FIXED_THREAD_COUNT_EXECUTOR, WORKER_COUNT, JOBS_COUNT + 32, 1000000, NULL, NULL, NULL);
 
@@ -569,7 +572,7 @@ int main3()
 	printf("jobs_count = %d\n", JOBS_COUNT);
 	printf("failed_job_submissions = %d\n", failed_job_submissions);
 	printf("duplicates_encountered = %d\n", duplicates_encountered);
-	printf("aborts_done = %d\n", aborts_done);
+	printf("writable_aborts_done = %d\n", writable_aborts_done);
 
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
