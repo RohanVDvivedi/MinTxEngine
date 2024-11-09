@@ -394,6 +394,7 @@ static void* acquire_writer_latch_only_if_redo_required_UNSAFE(mini_transaction_
 }
 
 #include<bitmap.h>
+#include<page_layout.h>
 
 static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 {
@@ -490,7 +491,117 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 				{void* page = acquire_writer_latch_only_if_redo_required_UNSAFE(mte, ckpt, redo_at, &lr, page_id);
 				if(page != NULL)
 				{
-					// TODO
+					// actual redo
+					{void* page_contents = get_page_contents_for_page(page, page_id, &(mte->stats));
+					switch(lr.type)
+					{
+						case PAGE_INIT :
+						{
+							if(!init_page(page_contents, mte->user_stats.page_size, lr.pilr.new_page_header_size, &(lr.pilr.new_size_def)))
+							{
+								printf("ISSUE :: unable to redo page init\n");
+								exit(-1);
+							}
+							break;
+						}
+						case PAGE_SET_HEADER :
+						{
+							void* page_header_contents = get_page_header(page_contents, mte->user_stats.page_size);
+							{uint32_t page_header_size = get_page_header_size(page_contents, mte->user_stats.page_size);
+							if(page_header_size != lr.pshlr.page_header_size) // this should never happen if write locks were held
+							{
+								printf("ISSUE :: unable to redo page set header, header size of the page and that of the log record does not match\n");
+								exit(-1);
+							}}
+							memory_move(page_header_contents, lr.pshlr.new_page_header_contents, lr.pshlr.page_header_size);
+							break;
+						}
+						case TUPLE_APPEND :
+						{
+							if(!append_tuple_on_page(page_contents, mte->user_stats.page_size, &(lr.talr.size_def), lr.talr.new_tuple))
+							{
+								printf("ISSUE :: unable to redo tuple append\n");
+								exit(-1);
+							}
+							break;
+						}
+						case TUPLE_INSERT :
+						{
+							if(!insert_tuple_on_page(page_contents, mte->user_stats.page_size, &(lr.tilr.size_def), lr.tilr.insert_index, lr.tilr.new_tuple))
+							{
+								printf("ISSUE :: unable to redo tuple insert\n");
+								exit(-1);
+							}
+							break;
+						}
+						case TUPLE_UPDATE :
+						{
+							if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(lr.tulr.size_def), lr.tulr.update_index, lr.tulr.new_tuple))
+							{
+								printf("ISSUE :: unable to redo tuple update\n");
+								exit(-1);
+							}
+							break;
+						}
+						case TUPLE_DISCARD :
+						{
+							if(!discard_tuple_on_page(page_contents, mte->user_stats.page_size, &(lr.tdlr.size_def), lr.tdlr.discard_index))
+							{
+								printf("ISSUE :: unable to redo tuple discard\n");
+								exit(-1);
+							}
+							break;
+						}
+						case TUPLE_DISCARD_ALL :
+						{
+							discard_all_tuples_on_page(page_contents, mte->user_stats.page_size, &(lr.tdalr.size_def));
+							break;
+						}
+						case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+						{
+							discard_trailing_tomb_stones_on_page(page_contents, mte->user_stats.page_size, &(lr.tdttlr.size_def));
+							break;
+						}
+						case TUPLE_SWAP :
+						{
+							if(!swap_tuples_on_page(page_contents, mte->user_stats.page_size, &(lr.tslr.size_def), lr.tslr.swap_index1, lr.tslr.swap_index2))
+							{
+								printf("ISSUE :: unable to redo tuple swap\n");
+								exit(-1);
+							}
+							break;
+						}
+						case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+						{
+							if(!set_element_in_tuple_in_place_on_page(page_contents, mte->user_stats.page_size, &(lr.tueiplr.tpl_def), lr.tueiplr.tuple_index, lr.tueiplr.element_index, &(lr.tueiplr.new_element)))
+							{
+								printf("ISSUE :: unable to redo tuple update element in place\n");
+								exit(-1);
+							}
+							break;
+						}
+						case PAGE_CLONE :
+						{
+							clone_page(page_contents, mte->user_stats.page_size, &(lr.pclr.size_def), lr.pclr.new_page_contents);
+							break;
+						}
+						case PAGE_COMPACTION :
+						{
+							int memory_allocation_error = 0;
+							run_page_compaction(page_contents, mte->user_stats.page_size, &(lr.pcptlr.size_def), &memory_allocation_error);
+							if(memory_allocation_error)
+							{
+								printf("ISSUE :: memory allocation error while compacting the page for redo phase of recovery\n");
+								exit(-1);
+							}
+							break;
+						}
+						default :
+						{
+							printf("ISSUE :: this should never happen\n");
+							exit(-1);
+						}
+					}}
 
 					// lock the modified page
 					set_writerLSN_for_page(page, get_mini_transaction_id_for_log_record(&lr), &(mte->stats));

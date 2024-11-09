@@ -884,7 +884,10 @@ int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 	int memory_allocation_error = 0;
 	int result = run_page_compaction(page_contents, mte->user_stats.page_size, tpl_sz_d, &memory_allocation_error);
 	if(memory_allocation_error)
+	{
+		printf("ISSUE :: memory allocation error while compacting the page\n");
 		exit(-1);
+	}
 
 	if(result)
 	{

@@ -386,7 +386,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 					uint32_t page_header_size = get_page_header_size(page_contents, mte->user_stats.page_size);
 					if(page_header_size != undo_lr->pshlr.page_header_size) // this should never happen if write locks were held
 					{
-						printf("ISSUE :: unable to undo page set header\n");
+						printf("ISSUE :: unable to undo page set header, header size of the page and that of the log record does not match\n");
 						exit(-1);
 					}
 					memory_move(page_header, undo_lr->pshlr.old_page_header_contents, page_header_size);
