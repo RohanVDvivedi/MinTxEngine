@@ -146,6 +146,9 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	{
 		// all recovery function here
 		recover(mte);
+
+		// recovery may lead to creation of new pages so we update the database_page_count
+		mte->database_page_count = (get_total_size_for_block_file(&(mte->database_block_file)) - get_block_size_for_block_file(&(mte->database_block_file))) / mte->stats.page_size;
 	}
 
 	// allocate enough mini transaction structures to survive safely
