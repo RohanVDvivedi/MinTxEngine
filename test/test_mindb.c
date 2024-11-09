@@ -882,7 +882,7 @@ int main()
 	//main0();
 	//main1();
 	//main2(100);  	// linked_page_list heavy hash_table
-	//main2(500);	// sweet spot
+	//main2(300);	// sweet spot
 	//main2(2000);	// array_table heavy hash_table
 	main3();
 	//main4(1);		// prints bplus tree at root page id = 1
