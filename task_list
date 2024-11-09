@@ -1,5 +1,5 @@
 PICKED
-
+  * provide api to append and read user level log records
   * NOTE :: after adding any type of log record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
     * do this by performing `grep --include "*.c" -inr "switch(.*type)" .`
 
