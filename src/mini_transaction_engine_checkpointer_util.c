@@ -135,6 +135,10 @@ uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, const chec
 
 	for(const mini_transaction* mt = get_first_of_in_hashmap(&(ckpt->mini_transaction_table), FIRST_OF_HASHMAP); mt != NULL; mt = get_next_of_in_hashmap(&(ckpt->mini_transaction_table), mt, ANY_IN_HASHMAP))
 	{
+		// skip all completed mini transactions
+		if(mt->state == MIN_TX_COMPLETED)
+			continue;
+
 		log_record lr = {
 			.type = CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY,
 			.ckptmttelr = {
