@@ -393,6 +393,8 @@ static void* acquire_writer_latch_only_if_redo_required_UNSAFE(mini_transaction_
 	return page;
 }
 
+#include<bitmap.h>
+
 static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 {
 	// this lock is customary to be taken only to access bufferpool and wale
@@ -430,8 +432,6 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 				{void* page = acquire_writer_latch_only_if_redo_required_UNSAFE(mte, ckpt, redo_at, &lr, page_id);
 				if(page != NULL)
 				{
-					// TODO
-
 					// lock the modification bit and the page
 					set_writerLSN_for_page(page, get_mini_transaction_id_for_log_record(&lr), &(mte->stats));
 
@@ -446,10 +446,21 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 				{void* free_space_mapper_page = acquire_writer_latch_only_if_redo_required_UNSAFE(mte, ckpt, redo_at, &lr, free_space_mapper_page_id);
 				if(free_space_mapper_page != NULL)
 				{
-					// TODO
+					// actual redo
+					{void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
+					uint64_t free_space_mapper_bit_pos = get_is_valid_bit_position_for_page(page_id, &(mte->stats));
+					if(lr.type == PAGE_ALLOCATION)
+						set_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
+					else if(lr.type == PAGE_DEALLOCATION)
+						reset_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
+					else
+					{
+						printf("ISSUE :: this should never happen\n");
+						exit(-1);
+					}}
 
 					// set pageLSN on the page
-					set_pageLSN_for_page(page, redo_at, &(mte->stats));
+					set_pageLSN_for_page(free_space_mapper_page, redo_at, &(mte->stats));
 
 					// update checksum and release latch
 					recalculate_page_checksum(free_space_mapper_page, &(mte->stats));
