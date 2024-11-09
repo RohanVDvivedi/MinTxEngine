@@ -424,7 +424,38 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 			case PAGE_ALLOCATION :
 			case PAGE_DEALLOCATION :
 			{
-				// TODO
+				uint64_t page_id = get_page_id_for_log_record(&lr);
+				uint64_t free_space_mapper_page_id = get_is_valid_bit_page_id_for_page(page_id, &(mte->stats));
+
+				{void* page = acquire_writer_latch_only_if_redo_required_UNSAFE(mte, ckpt, redo_at, &lr, page_id);
+				if(page != NULL)
+				{
+					// TODO
+
+					// lock the modification bit and the page
+					set_writerLSN_for_page(page, get_mini_transaction_id_for_log_record(&lr), &(mte->stats));
+
+					// set pageLSN on the page
+					set_pageLSN_for_page(page, redo_at, &(mte->stats));
+
+					// update checksum and release latch
+					recalculate_page_checksum(page, &(mte->stats));
+					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+				}}
+
+				{void* free_space_mapper_page = acquire_writer_latch_only_if_redo_required_UNSAFE(mte, ckpt, redo_at, &lr, free_space_mapper_page_id);
+				if(free_space_mapper_page != NULL)
+				{
+					// TODO
+
+					// set pageLSN on the page
+					set_pageLSN_for_page(page, redo_at, &(mte->stats));
+
+					// update checksum and release latch
+					recalculate_page_checksum(free_space_mapper_page, &(mte->stats));
+					release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+				}}
+
 				break;
 			}
 
@@ -441,13 +472,48 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 			case PAGE_CLONE :
 			case PAGE_COMPACTION :
 			{
-				// TODO
+				uint64_t page_id = get_page_id_for_log_record(&lr);
+
+				{void* page = acquire_writer_latch_only_if_redo_required_UNSAFE(mte, ckpt, redo_at, &lr, page_id);
+				if(page != NULL)
+				{
+					// TODO
+
+					// lock the modified page
+					set_writerLSN_for_page(page, get_mini_transaction_id_for_log_record(&lr), &(mte->stats));
+
+					// set pageLSN on the page
+					set_pageLSN_for_page(page, redo_at, &(mte->stats));
+
+					// update checksum and release latch
+					recalculate_page_checksum(page, &(mte->stats));
+					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+				}}
+
 				break;
 			}
 
 			case FULL_PAGE_WRITE :
 			{
-				// TODO
+				uint64_t page_id = get_page_id_for_log_record(&lr);
+
+				{void* page = acquire_writer_latch_only_if_redo_required_UNSAFE(mte, ckpt, redo_at, &lr, page_id);
+				if(page != NULL)
+				{
+					// TODO
+
+					// if it is not a free space mapper page, then set writerLSN from the log record
+					if(!is_free_space_mapper_page(page_id, &(mte->stats)))
+						set_writerLSN_for_page(page, lr.fpwlr.writerLSN, &(mte->stats));
+
+					// set pageLSN on the page
+					set_pageLSN_for_page(page, redo_at, &(mte->stats));
+
+					// update checksum and release latch
+					recalculate_page_checksum(page, &(mte->stats));
+					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+				}}
+
 				break;
 			}
 
