@@ -80,6 +80,13 @@ uint256 read_checkpoint_from_wal_UNSAFE(mini_transaction_engine* mte, uint256 ch
 
 		if(lr.type == CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY)
 		{
+			// checkpoint must never contain a completed mini transaction
+			if(lr.ckptmttelr.mt.state == MIN_TX_COMPLETED)
+			{
+				printf("ISSUE :: checkpoint being read contains a completed mini transaction entry\n");
+				exit(-1);
+			}
+
 			mini_transaction* mt = get_new_mini_transaction();
 
 			mt->mini_transaction_id = lr.ckptmttelr.mt.mini_transaction_id;
