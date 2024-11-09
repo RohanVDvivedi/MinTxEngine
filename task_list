@@ -1,18 +1,5 @@
 PICKED
 
- * recover function
-   * to be called only upon starting a mini transaction engine
-   * only global lock to be held only customarily as noone has access to the mini transaction begin initialized
-   * analyze(mte) - completed
-   * redo(mte, checkpoint ckpt)
-     * redo_at = min_recLSN(ckpt.dpt)
-     * restore the mtt from checkpoint variable to mte's writer transactions
-     * while(redo_at != INVALID_LSN)
-       * lr = read_at(redo_at), redo_at = next_of(redo_at);
-       * TODO
-   * undo(mte) - completed
-   * review and test recovery code
-
   * NOTE :: after adding any type of log record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
     * do this by performing `grep --include "*.c" -inr "switch(.*type)" .`
 
@@ -61,7 +48,6 @@ char *number_to_words(int n) {
   }
   return output;
 }
-  * write test case where you build a bplus tree and then delete the database file and try reconstructing the complete database using the logs, then compare the database files, or print the bplus tree
   * write test to initialize and print wale_LSNs_from for all wa_list wal_accessors and ensure that they are correctly initialized
 
  NOTES
