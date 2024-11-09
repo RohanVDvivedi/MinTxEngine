@@ -358,7 +358,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 // page_id of only the page involved with the changes on this page for the given log record lr at LSN must be provided
 static void* acquire_writer_latch_only_if_redo_required_UNSAFE(mini_transaction_engine* mte, const checkpoint* ckpt, uint256 LSN, const log_record* lr, uint64_t page_id)
 {
-	// a FULL_PAGE_WRITE lg record has to be always redone
+	// a FULL_PAGE_WRITE log record has to be always redone
 	if(lr->type == FULL_PAGE_WRITE)
 	{
 		void* page = NULL;
@@ -389,6 +389,7 @@ static void* acquire_writer_latch_only_if_redo_required_UNSAFE(mini_transaction_
 		return NULL;
 	}
 
+	// changes of lr need to be redone on the page, so return with latch on the page
 	return page;
 }
 
