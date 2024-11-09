@@ -1,5 +1,10 @@
 PICKED
 
+ * BUG
+ * race condition identified in get_new_page_with_write_latch_for_mini_tx, while creating a new page to allocate it strategy
+   * only shared lock allows multiple mini transactions to grab the page id before it is allocated, while we wait for flush or an available frame
+   * if we take exclusive lock there could be people waiting on latch on page locked by us and we will wait until they relieve their shared lock on the manager - hence not a solution
+
   * NOTE :: after adding any type of log record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
     * do this by performing `grep --include "*.c" -inr "switch(.*type)" .`
 
