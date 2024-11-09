@@ -24,6 +24,11 @@ PICKED
      * update database_page_count variable
      * need some mechanism to explicitly discard those pages from the cache - OR not, everything is already flushed to disk
 
+ * there can be torn writes, if the database crashes during a write page call
+  * to avoid this do not perform checksum validation while reading a page into the dsk during the recovery
+  * need some mechanism to let the bufferpool callbacks know that it is recovery time so they can skip checking checksum
+  * do not worry our FULL_PAGE_WRITEs and recovery fixes torn writes
+
 TESTS
   * main1, main2 and main3 with variable length tuples
     same key but value = output of the following
