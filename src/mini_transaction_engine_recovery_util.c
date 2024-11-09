@@ -421,7 +421,47 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 				exit(-1);
 			}
 
-			// TODO
+			case PAGE_ALLOCATION :
+			case PAGE_DEALLOCATION :
+			{
+				// TODO
+				break;
+			}
+
+			case PAGE_INIT :
+			case PAGE_SET_HEADER :
+			case TUPLE_APPEND :
+			case TUPLE_INSERT :
+			case TUPLE_UPDATE :
+			case TUPLE_DISCARD :
+			case TUPLE_DISCARD_ALL :
+			case TUPLE_DISCARD_TRAILING_TOMB_STONES :
+			case TUPLE_SWAP :
+			case TUPLE_UPDATE_ELEMENT_IN_PLACE :
+			case PAGE_CLONE :
+			case PAGE_COMPACTION :
+			{
+				// TODO
+				break;
+			}
+
+			case FULL_PAGE_WRITE :
+			{
+				// TODO
+				break;
+			}
+
+			case COMPENSATION_LOG :
+			{
+				// TODO
+				break;
+			}
+
+			// on any other log record nothing needs to be done
+			default :
+			{
+				break;
+			}
 		}
 
 		// prepare for next iteration
