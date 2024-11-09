@@ -363,7 +363,7 @@ static void* acquire_writer_latch_only_if_redo_required_UNSAFE(mini_transaction_
 	{
 		void* page = NULL;
 		while(page == NULL)
-			page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, page_id, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+			page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, page_id, 1, 1); // evict_dirty_if_necessary -> to be overwritten -> full page writes are to be overwritten by default
 		return page;
 	}
 
