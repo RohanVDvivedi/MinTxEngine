@@ -355,6 +355,43 @@ static checkpoint analyze(mini_transaction_engine* mte)
 	return ckpt;
 }
 
+// page_id of only the page involved with the changes on this page for the given log record lr at LSN must be provided
+static void* acquire_writer_latch_only_if_redo_required_UNSAFE(mini_transaction_engine* mte, const checkpoint* ckpt, uint256 LSN, const log_record* lr, uint64_t page_id)
+{
+	// a FULL_PAGE_WRITE lg record has to be always redone
+	if(lr->type == FULL_PAGE_WRITE)
+	{
+		void* page = NULL;
+		while(page == NULL)
+			page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, page_id, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+		return page;
+	}
+
+	const dirty_page_table_entry* dpte = find_equals_in_hashmap(&(ckpt->dirty_page_table), &(dirty_page_table_entry){.page_id = page_id});
+
+	// if the page is not dirty at the checkpoint of crash nothing needs to be done
+	if(dpte == NULL)
+		return NULL;
+
+	// if the page was dirtied in future nothing needs to be done
+	if(compare_uint256(LSN, dpte->recLSN) < 0)
+		return NULL;
+
+	// grab latch on the page
+	void* page = NULL;
+	while(page == NULL)
+		page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, page_id, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+
+	// if the page on disk is upto date, release latch and return
+	if(compare_uint256(LSN, get_pageLSN_for_page(page, &(mte->stats))) <= 0)
+	{
+		release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+		return NULL;
+	}
+
+	return page;
+}
+
 static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 {
 	// this lock is customary to be taken only to access bufferpool and wale
