@@ -520,10 +520,12 @@ void* perform_insert(void* param)
 
 	if((9 <= (p % 23)) && ((p % 23) <= 12))
 	{
+		int aborted = mark_aborted_for_mini_tx(&mte, mt, -55);
+		if(!aborted)
+			printf("Abortion failed\n");
 		pthread_mutex_lock(&mtx);
-		writable_aborts_done += res;
+		writable_aborts_done += (res && aborted);
 		pthread_mutex_unlock(&mtx);
-		mark_aborted_for_mini_tx(&mte, mt, -55);
 	}
 
 	mte_complete_mini_tx(&mte, mt, NULL, 0);
