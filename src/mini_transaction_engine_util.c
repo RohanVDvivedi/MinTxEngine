@@ -150,11 +150,18 @@ int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_
 	if(serialized_log_record == NULL)
 		return 0;
 
-	// TODO :: (only) parsing can possibly done outside global mutex
-	(*lr) = parse_log_record(&(mte->lrtd), serialized_log_record, serialized_log_record_size);
+	// even though this is unsafe function, i.e. you are expected to hold global lock while calling it
+	// i.e. this below thing can be done without global lock
+	// parsing can be expensive so temporarily release global lock
+	pthread_mutex_unlock(&(mte->global_lock));
+	{
+		(*lr) = parse_log_record(&(mte->lrtd), serialized_log_record, serialized_log_record_size);
 
-	if(lr->type != UNIDENTIFIED && are_equal_uint256(get_mini_transaction_id_for_log_record(lr), INVALID_LOG_SEQUENCE_NUMBER))
-		set_mini_transaction_id_for_log_record(lr, LSN);
+		if(lr->type != UNIDENTIFIED && are_equal_uint256(get_mini_transaction_id_for_log_record(lr), INVALID_LOG_SEQUENCE_NUMBER))
+			set_mini_transaction_id_for_log_record(lr, LSN);
+	}
+	pthread_mutex_lock(&(mte->global_lock));
+	// grab the lock again, as the user expects us to have been holding it
 
 	return 1;
 }
