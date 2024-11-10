@@ -14,10 +14,11 @@ int read_page_for_bufferpool(const void* page_io_ops_handle, void* frame_dest, u
 int write_page_for_bufferpool(const void* page_io_ops_handle, const void* frame_src, uint64_t page_id, uint32_t page_size);
 int flush_all_pages_for_bufferpool(const void* page_io_ops_handle);
 
-#define get_page_io_ops_for_bufferpool(bf, _page_size, _page_frame_alignment) (page_io_ops){ \
-					.page_io_ops_handle = bf, \
-					.page_size = _page_size, \
-					.page_frame_alignment = _page_frame_alignment, \
+// input to the below macro is a pointer to the mini transaction engine
+#define get_page_io_ops_for_bufferpool(mte) (page_io_ops){ \
+					.page_io_ops_handle = (mte), \
+					.page_size = (mte)->stats.page_size, \
+					.page_frame_alignment = (mte)->stats.page_size, \
 					.read_page = read_page_for_bufferpool, \
 					.write_page = write_page_for_bufferpool, \
 					.flush_all_writes = flush_all_pages_for_bufferpool, \

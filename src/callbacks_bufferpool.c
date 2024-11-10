@@ -1,5 +1,6 @@
 #include<callbacks_bufferpool.h>
 
+#include<mini_transaction_engine.h>
 #include<dirty_page_table_entry.h>
 
 #include<block_io.h>
@@ -29,10 +30,12 @@ static int _validate_page_checksum(const void* page, uint32_t page_size)
 
 int read_page_for_bufferpool(const void* page_io_ops_handle, void* frame_dest, uint64_t page_id, uint32_t page_size)
 {
-	size_t block_size = get_block_size_for_block_file(((block_file*)(page_io_ops_handle)));
+	mini_transaction_engine* mte = (mini_transaction_engine*) page_io_ops_handle;
+
+	size_t block_size = get_block_size_for_block_file(&(mte->database_block_file));
 	off_t block_id = get_first_block_id_for_page_id(page_id, page_size, block_size);
 	size_t block_count = page_size / block_size;
-	int res = read_blocks_from_block_file(((block_file*)(page_io_ops_handle)), frame_dest, block_id, block_count);
+	int res = read_blocks_from_block_file(&(mte->database_block_file), frame_dest, block_id, block_count);
 
 	if(!res)
 	{
@@ -51,10 +54,12 @@ int read_page_for_bufferpool(const void* page_io_ops_handle, void* frame_dest, u
 
 int write_page_for_bufferpool(const void* page_io_ops_handle, const void* frame_src, uint64_t page_id, uint32_t page_size)
 {
-	size_t block_size = get_block_size_for_block_file(((block_file*)(page_io_ops_handle)));
+	mini_transaction_engine* mte = (mini_transaction_engine*) page_io_ops_handle;
+
+	size_t block_size = get_block_size_for_block_file(&(mte->database_block_file));
 	off_t block_id = get_first_block_id_for_page_id(page_id, page_size, block_size);
 	size_t block_count = page_size / block_size;
-	int res = write_blocks_to_block_file(((block_file*)(page_io_ops_handle)), frame_src, block_id, block_count);
+	int res = write_blocks_to_block_file(&(mte->database_block_file), frame_src, block_id, block_count);
 
 	if(!res)
 	{
@@ -67,7 +72,9 @@ int write_page_for_bufferpool(const void* page_io_ops_handle, const void* frame_
 
 int flush_all_pages_for_bufferpool(const void* page_io_ops_handle)
 {
-	int res = flush_all_writes_to_block_file(((block_file*)(page_io_ops_handle)));
+	mini_transaction_engine* mte = (mini_transaction_engine*) page_io_ops_handle;
+
+	int res = flush_all_writes_to_block_file(&(mte->database_block_file));
 
 	if(!res)
 	{
