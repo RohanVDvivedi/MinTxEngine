@@ -20,6 +20,8 @@ mini_transaction_engine mte;
 #define LOCK_WAIT_TIMEOUT_US   500000 // 0.5 second
 #define CHECKPOINT_PERIOD_US (20 * 1000000) // 20 seconds
 
+#define FLUSH_ON_COMPLETION 1
+
 const char* db_filename = "test.db";
 
 uint64_t root_page_id;
@@ -133,7 +135,7 @@ int main1()
 
 		print_uint_bplus_tree(mt);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	{
@@ -152,7 +154,7 @@ int main1()
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	{
@@ -160,7 +162,7 @@ int main1()
 
 		print_uint_bplus_tree(mt);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	{
@@ -179,7 +181,7 @@ int main1()
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	{
@@ -187,7 +189,7 @@ int main1()
 
 		print_uint_bplus_tree(mt);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	{
@@ -198,7 +200,7 @@ int main1()
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	/*{
@@ -206,7 +208,7 @@ int main1()
 
 		print_uint_bplus_tree(mt);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}*/
 
 	{
@@ -216,7 +218,7 @@ int main1()
 
 		print_uint_bplus_tree(mt);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	/*printf("PRINTING LOGS\n");
@@ -401,7 +403,7 @@ int main2(uint64_t bucket_count)
 
 		print_uint_hash_table(mt);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	{
@@ -420,7 +422,7 @@ int main2(uint64_t bucket_count)
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	{
@@ -428,7 +430,7 @@ int main2(uint64_t bucket_count)
 
 		print_uint_hash_table(mt);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	{
@@ -447,7 +449,7 @@ int main2(uint64_t bucket_count)
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	{
@@ -455,7 +457,7 @@ int main2(uint64_t bucket_count)
 
 		print_uint_hash_table(mt);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	{
@@ -466,7 +468,7 @@ int main2(uint64_t bucket_count)
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	/*{
@@ -474,7 +476,7 @@ int main2(uint64_t bucket_count)
 
 		print_uint_hash_table(mt);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}*/
 
 	{
@@ -484,7 +486,7 @@ int main2(uint64_t bucket_count)
 
 		print_uint_hash_table(mt);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	/*printf("PRINTING LOGS\n");
@@ -533,7 +535,7 @@ void* perform_insert(void* param)
 		pthread_mutex_unlock(&mtx);
 	}
 
-	mte_complete_mini_tx(&mte, mt, NULL, 0);
+	mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 
 	return NULL;
 }
@@ -557,7 +559,7 @@ int main3()
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 		create_uint_bplus_tree(mt);
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 	/*{
 		root_page_id = 1;
@@ -586,7 +588,7 @@ int main3()
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 		print_uint_bplus_tree(mt);
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	/*printf("PRINTING LOGS\n");
@@ -650,7 +652,7 @@ void main0()
 		print_page(page, mte.user_stats.page_size, &record_def);
 
 		release_writer_latch_on_page_for_mini_tx(&mte, mt, page, 0);
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 	printf("-x-x-x-x- tx1 complete\n");
 
@@ -670,7 +672,7 @@ void main0()
 		printf("aborting\n");
 		mark_aborted_for_mini_tx(&mte, mt, -55);
 		release_writer_latch_on_page_for_mini_tx(&mte, mt, page, 0);
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 	printf("-x-x-x-x- tx2 complete\n");
 
@@ -681,7 +683,7 @@ void main0()
 		print_page(page, mte.user_stats.page_size, &record_def);
 
 		release_reader_latch_on_page_for_mini_tx(&mte, mt, page, 0);
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 	printf("-x-x-x-x- tx3 complete\n");
 
@@ -731,7 +733,7 @@ void main_1()
 			page[i] = NULL;
 		}
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 		mt = NULL;
 	}
 	printf("-x-x-x-x- init completed\n");
@@ -775,7 +777,7 @@ void main_1()
 			if((i % 2) == 1)
 				mark_aborted_for_mini_tx(&mte, mt[i], -55);
 
-			mte_complete_mini_tx(&mte, mt[i], NULL, 0);
+			mte_complete_mini_tx(&mte, mt[i], FLUSH_ON_COMPLETION, NULL, 0);
 			mt[i] = NULL;
 		}
 	}
@@ -796,7 +798,7 @@ void main_1()
 			page = NULL;
 		}
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 		mt = NULL;
 	}
 	printf("-x-x-x-x- read completed");
@@ -846,7 +848,7 @@ void main4(uint64_t _root_page_id)
 
 		print_uint_bplus_tree(mt);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 
@@ -878,7 +880,7 @@ void main5(uint64_t _root_page_id)
 
 		print_uint_hash_table(mt);
 
-		mte_complete_mini_tx(&mte, mt, NULL, 0);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
 	printf("PRINTING LOGS\n");
