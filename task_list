@@ -1,33 +1,19 @@
 PICKED
 
-  * provide api to append and read user level log records
+  * provide api to append (flush_on_append flag taken) and read user level log records
   * NOTE :: after adding any type of log record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
     * do this by performing `grep --include "*.c" -inr "switch(.*type)" .`
 
- * DISK SPACE RENUNCIATION BACK TO OS
-  * management in perform_checkpoint_UNSAFE(mte)
-   * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpoint_begin_LSN, user defined value from the call back)
-     * discard old wal files if possible
-   * if last wal file is greater than Y MBs, then create a new wal file and insert it in wa_list
-   * start from the last page and count new size of the database
-     * truncate database file
-     * update database_page_count variable
-     * need some mechanism to explicitly discard those pages from the cache - OR not, everything is already flushed to disk
+ * use zlib to compress wal logs
+   * build this functionality directly into the serialize_log_record and parse_log_record functions
+   * make compressing the part of serialize_log_record and uncompressing part of parse_log_record
+   * parsing stores uncompressed log record instead of parsed_from
+   * compare compressed and uncompressed wal logs
 
-  * PAGE_ALLOCATION OPTIMIZATION
-  * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
-    * like a separate faster allocation case which checks these free space mapper pages first, then fall backs to current code
-    * also update this cache when a new page is allocated or freed
-    * this cache should be randomized to randomly select pages for allocation
-    * do this caching while releasing latch on the free space mapper page
-    * simple API like
-      * void update_free_space_mapper_page_in_availability_cache_UNSAFE(mini_transaction_engine* mte, const void* free_space_mapper_page, uint64_t free_space_mapper_page_id); // to be called when ever you release a latch on the free space mapper page
-      * uint64_t get_any_free_space_mapper_page_from_availability_cache_UNSAFE(mini_transaction_engine* mte); // return of 0, implies nothing available
-        * this will not give you enough information as you also need to check that the corresponding page we decide to allocate also needs to be not write locked
-
-TESTS
+VARIABLE LENGTH TESTS
   * main1, main2 and main3 with variable length tuples
-    same key but value = output of the following
+    same key but value = output of the following with either val % 1000 OR (val / 1000) % 1000 or value of (val / 1000000) % 1000
+  * simple function to construct tuple for a given value and order_1000 = 0, 1, OR 2
     const char *ones[] = {
   "zero", "one", "two", "three", "four", "five", "six", "seven",
   "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen",
@@ -49,21 +35,35 @@ char *number_to_words(int n) {
   }
   return output;
 }
-  * write test to initialize and print wale_LSNs_from for all wa_list wal_accessors and ensure that they are correctly initialized
 
- * use zlib to compress wal logs
-   * build this functionality directly into the serialize_log_record and parse_log_record functions
-   * make compressing the part of serialize_log_record and uncompressing part of parse_log_record
-   * parsing stores uncompressed log record instead of parsed_from
+ * DISK SPACE RENUNCIATION BACK TO OS
+  * management in perform_checkpoint_UNSAFE(mte)
+   * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpoint_begin_LSN, user defined value from the call back)
+     * discard old wal files if possible
+   * if last wal file is greater than Y MBs, then create a new wal file and insert it in wa_list
+     * write test to initialize and print wale_LSNs_from for all wa_list wal_accessors and ensure that they are correctly initialized
+   * start from the last page and count new size of the database
+     * truncate database file
+     * update database_page_count variable
+     * need some mechanism to explicitly discard those pages from the cache - OR not, everything is already flushed to disk
+
+  * PAGE_ALLOCATION OPTIMIZATION
+  * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
+    * like a separate faster allocation case which checks these free space mapper pages first, then fall backs to current code
+    * also update this cache when a new page is allocated or freed
+    * this cache should be randomized to randomly select pages for allocation
+    * do this caching while releasing latch on the free space mapper page
+    * simple API like
+      * void update_free_space_mapper_page_in_availability_cache_UNSAFE(mini_transaction_engine* mte, const void* free_space_mapper_page, uint64_t free_space_mapper_page_id); // to be called when ever you release a latch on the free space mapper page
+      * uint64_t get_any_free_space_mapper_page_from_availability_cache_UNSAFE(mini_transaction_engine* mte); // return of 0, implies nothing available
+        * this will not give you enough information as you also need to check that the corresponding page we decide to allocate also needs to be not write locked
 
  FAR FUTURE 
- * remove headers not required for public api from publicly installed headers
-   * like dirty_page_table_entry.h and log_record.h
  * configure this in future MINIMIM_CHECKPOINTING_LSN_DIFF
 
 
 Tasks necessary to develop MinTxEngine
- * check pointing occurs every T minutes
+ * do following after checkpointing
    * discard any WALe files whose log records are not visible/required by anyone
    * truncate the database file, if the last page is either a free space mapper page OR is a free page from a committed - not active mini transaction
  * add a disk pager module that is allocation module plus Bufferpool + No logging page modification methods + a truncate functionality
