@@ -336,7 +336,7 @@ static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_
 	}
 
 	// grab the new_page_id that this new_page will have
-	uint64_t new_page_id = mte->database_page_count++;
+	uint64_t new_page_id = mte->database_page_count;
 	// grab write latch on this new page
 	void* new_page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, new_page_id, 1, 1); // evict_dirty_if_necessary -> AND to be overwritten
 	if(new_page == NULL) // abort if you fail to acquire lock on the new page
@@ -345,37 +345,42 @@ static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_
 		mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
 		return NULL;
 	}
+	// now this function can not fail, so we can safely increment the database_page_count
+	mte->database_page_count++;
 
-	// this only time we will modify the page first and then perform a FULL_PAGE_WRITE, as this is a new page to the database, untracked until now
-	{
-		void* page_content = get_page_contents_for_page(new_page, new_page_id, &(mte->stats));
-		uint32_t page_content_size = get_page_content_size_for_page(new_page_id, &(mte->stats));
-		if(content_template == NULL)
-			memory_set(page_content, 0, page_content_size);
-		else
-			memory_move(page_content, content_template, page_content_size);
-	}
-
-	// construct full page write log record, with writerLSN = INVALID_LOG_SEQUENCE_NUMBER as we are just creating the page
-	log_record fpw_lr = {
-		.type = FULL_PAGE_WRITE,
-		.fpwlr = {
-			.mini_transaction_id = mt->mini_transaction_id,
-			.prev_log_record_LSN = mt->lastLSN,
-			.page_id = new_page_id,
-			.writerLSN = INVALID_LOG_SEQUENCE_NUMBER, // even here we can not give mt->mini_transaction_id as writerLSN as we may just be a reader transaction until we append this log record
-			.page_contents = get_page_contents_for_page(new_page, new_page_id, &(mte->stats)),
+	// below piece of code does not need to be done with global lock held
+	pthread_mutex_unlock(&(mte->global_lock));
+		// this only time we will modify the page first and then perform a FULL_PAGE_WRITE, as this is a new page to the database, untracked until now
+		{
+			void* page_content = get_page_contents_for_page(new_page, new_page_id, &(mte->stats));
+			uint32_t page_content_size = get_page_content_size_for_page(new_page_id, &(mte->stats));
+			if(content_template == NULL)
+				memory_set(page_content, 0, page_content_size);
+			else
+				memory_move(page_content, content_template, page_content_size);
 		}
-	};
 
-	// serialize full page write log record
-	uint32_t serialized_fpw_lr_size = 0;
-	const void* serialized_fpw_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
-	if(serialized_fpw_lr == NULL)
-	{
-		printf("ISSUE :: unable to serialize full page write log record\n");
-		exit(-1);
-	}
+		// construct full page write log record, with writerLSN = INVALID_LOG_SEQUENCE_NUMBER as we are just creating the page
+		log_record fpw_lr = {
+			.type = FULL_PAGE_WRITE,
+			.fpwlr = {
+				.mini_transaction_id = mt->mini_transaction_id,
+				.prev_log_record_LSN = mt->lastLSN,
+				.page_id = new_page_id,
+				.writerLSN = INVALID_LOG_SEQUENCE_NUMBER, // even here we can not give mt->mini_transaction_id as writerLSN as we may just be a reader transaction until we append this log record
+				.page_contents = get_page_contents_for_page(new_page, new_page_id, &(mte->stats)),
+			}
+		};
+
+		// serialize full page write log record
+		uint32_t serialized_fpw_lr_size = 0;
+		const void* serialized_fpw_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
+		if(serialized_fpw_lr == NULL)
+		{
+			printf("ISSUE :: unable to serialize full page write log record\n");
+			exit(-1);
+		}
+	pthread_mutex_lock(&(mte->global_lock));
 
 	{
 		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
