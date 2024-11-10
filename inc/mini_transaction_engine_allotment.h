@@ -15,7 +15,7 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 // finally the mini transaction reference counter is decremented and returned to be used by someone else
 // this function must be called only on a non-complete mini transaction, and must be called only once, any reuse of the pointer *mt after calling this function is an undefined behaviour
 // you must never use the pointer mt again after calling this function
-uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, int flush_on_completion, const void* complete_info, uint32_t complete_info_size);
+uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, int flush_on_abortion, int flush_on_completion, const void* complete_info, uint32_t complete_info_size);
 
 // this function only gives a user level api to mark a transaction aborted, you will still need to call mte_complete_mini_tx
 // abort_error can not be non-negative
