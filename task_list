@@ -1,7 +1,23 @@
 PICKED
+
   * provide api to append and read user level log records
   * NOTE :: after adding any type of log record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
     * do this by performing `grep --include "*.c" -inr "switch(.*type)" .`
+
+ * DISK SPACE RENUNCIATION BACK TO OS
+  * management in perform_checkpoint_UNSAFE(mte)
+   * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpoint_begin_LSN, user defined value from the call back)
+     * discard old wal files if possible
+   * if last wal file is greater than Y MBs, then create a new wal file and insert it in wa_list
+   * start from the last page and count new size of the database
+     * truncate database file
+     * update database_page_count variable
+     * need some mechanism to explicitly discard those pages from the cache - OR not, everything is already flushed to disk
+
+  * there can be torn writes, if the database crashes during a write page call
+  * to avoid this do not perform checksum validation while reading a page into the dsk during the recovery
+  * need some mechanism to let the bufferpool callbacks know that it is recovery time so they can skip checking checksum
+  * do not worry our FULL_PAGE_WRITEs and recovery fixes torn writes
 
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
@@ -13,21 +29,6 @@ PICKED
       * void update_free_space_mapper_page_in_availability_cache_UNSAFE(mini_transaction_engine* mte, const void* free_space_mapper_page, uint64_t free_space_mapper_page_id); // to be called when ever you release a latch on the free space mapper page
       * uint64_t get_any_free_space_mapper_page_from_availability_cache_UNSAFE(mini_transaction_engine* mte); // return of 0, implies nothing available
         * this will not give you enough information as you also need to check that the corresponding page we decide to allocate also needs to be not write locked
-
-  * DISK SPACE RENUNCIATION BACK TO OS
-  * management in perform_checkpoint_UNSAFE(mte)
-   * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpoint_begin_LSN, user defined value from the call back)
-     * discard old wal files if possible
-   * if last wal file is greater than Y MBs, then create a new wal file and insert it in wa_list
-   * start from the last page and count new size of the database
-     * truncate database file
-     * update database_page_count variable
-     * need some mechanism to explicitly discard those pages from the cache - OR not, everything is already flushed to disk
-
- * there can be torn writes, if the database crashes during a write page call
-  * to avoid this do not perform checksum validation while reading a page into the dsk during the recovery
-  * need some mechanism to let the bufferpool callbacks know that it is recovery time so they can skip checking checksum
-  * do not worry our FULL_PAGE_WRITEs and recovery fixes torn writes
 
 TESTS
   * main1, main2 and main3 with variable length tuples
@@ -54,6 +55,10 @@ char *number_to_words(int n) {
   return output;
 }
   * write test to initialize and print wale_LSNs_from for all wa_list wal_accessors and ensure that they are correctly initialized
+
+ * use zlib to compress serialized wal logs one at a time, FULL_PAGE_WRITES are costliest to wal
+   * build a util to serialize and compress wal logs that is to be called by everyone to serialize logs
+   * parsing wal log does not need global lock, you may release it while parsing
 
  NOTES
   * mini transaction commit does not have to make its changes permanent, so no wal flushing is necessary until it is the last mini transaction operation of the transaction
