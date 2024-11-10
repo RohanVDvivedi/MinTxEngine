@@ -150,6 +150,7 @@ int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_
 	if(serialized_log_record == NULL)
 		return 0;
 
+	// TODO :: (only) parsing can possibly done outside global mutex
 	(*lr) = parse_log_record(&(mte->lrtd), serialized_log_record, serialized_log_record_size);
 
 	if(lr->type != UNIDENTIFIED && are_equal_uint256(get_mini_transaction_id_for_log_record(lr), INVALID_LOG_SEQUENCE_NUMBER))
