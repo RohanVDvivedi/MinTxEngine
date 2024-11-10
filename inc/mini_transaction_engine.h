@@ -132,6 +132,11 @@ struct mini_transaction_engine
 	// used by get_new_page_with_write_latch_for_mini_tx, only while creating a brand new database page
 	// this lock only ensures that there will always be a single thread creating a new page in the engine
 	pthread_mutex_t database_expansion_lock;
+
+	// special flag that is checked by the bufferpool to ensure that the mini transaction engine is in recovery mode or not
+	// and a mutex to protect it
+	int is_in_recovery_mode;
+	pthread_mutex_t recovery_mode_lock;
 };
 
 // page_size, page_id_width and log_sequence_number_width parameter is only used if passed as non-zero

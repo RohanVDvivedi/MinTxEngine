@@ -2,6 +2,7 @@
 
 #include<mini_transaction_engine.h>
 #include<dirty_page_table_entry.h>
+#include<system_page_header_util.h>
 
 #include<block_io.h>
 
@@ -12,20 +13,6 @@
 static off_t get_first_block_id_for_page_id(uint64_t page_id, uint32_t page_size, size_t block_size)
 {
 	return ((page_id * page_size) / block_size) + 1; // this +1 ensures that we do not read/write the first read-only header block
-}
-
-static uint32_t _calculate_checksum(const void* data, uint32_t data_size)
-{
-	uint32_t result = 0;
-	for(uint32_t i = 0; i < data_size; i++)
-		result += ((const char*)data)[i];
-	return result;
-}
-
-static int _validate_page_checksum(const void* page, uint32_t page_size)
-{
-	uint32_t checksum = _calculate_checksum(page + sizeof(uint32_t), page_size - sizeof(uint32_t));
-	return checksum == deserialize_uint32(page, sizeof(uint32_t));
 }
 
 int read_page_for_bufferpool(const void* page_io_ops_handle, void* frame_dest, uint64_t page_id, uint32_t page_size)
@@ -43,9 +30,14 @@ int read_page_for_bufferpool(const void* page_io_ops_handle, void* frame_dest, u
 		exit(-1);
 	}
 
-	if(!_validate_page_checksum(frame_dest, page_size))
+	pthread_mutex_lock(&(mte->recovery_mode_lock));
+	int is_in_recovery_mode = mte->is_in_recovery_mode;
+	pthread_mutex_unlock(&(mte->recovery_mode_lock));
+
+	// if we are not in recovery mode and the checksum fails to match then fail with an exit signalling corruption
+	if(!is_in_recovery_mode && !validate_page_checksum(frame_dest, &(mte->stats)))
 	{
-		printf("ISSUE :: page checksum validation failed on bufferpool, databse file corrupted\n");
+		printf("ISSUE :: page checksum validation failed on bufferpool, database file corrupted\n");
 		exit(-1);
 	}
 

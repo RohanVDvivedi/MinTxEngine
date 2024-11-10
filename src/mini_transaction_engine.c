@@ -31,6 +31,8 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	mte->is_checkpointer_running = 0;
 	mte->shutdown_called = 0;
 	pthread_mutex_init(&(mte->database_expansion_lock), NULL);
+	mte->is_in_recovery_mode = 0;
+	pthread_mutex_init(&(mte->recovery_mode_lock), NULL);
 
 	// with less than 2 buffers in bufferpool you can not redo all types of log records
 	// with less than 1 buffer in append only buffers of writer WALe, no log records can be appended
@@ -145,11 +147,21 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 
 	if(recovery_required)
 	{
+		// put the mini transaction engine in recovery mode
+		pthread_mutex_lock(&(mte->recovery_mode_lock));
+		mte->is_in_recovery_mode = 1;
+		pthread_mutex_unlock(&(mte->recovery_mode_lock));
+
 		// all recovery function here
 		recover(mte);
 
 		// recovery may lead to creation of new pages so we update the database_page_count
 		mte->database_page_count = (get_total_size_for_block_file(&(mte->database_block_file)) - get_block_size_for_block_file(&(mte->database_block_file))) / mte->stats.page_size;
+
+		// remove the mini transaction engine from recovery mode
+		pthread_mutex_lock(&(mte->recovery_mode_lock));
+		mte->is_in_recovery_mode = 0;
+		pthread_mutex_unlock(&(mte->recovery_mode_lock));
 	}
 
 	// allocate enough mini transaction structures to survive safely
@@ -266,4 +278,6 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 	deinitialize_log_record_tuple_defs(&(mte->lrtd));
 
 	pthread_mutex_destroy(&(mte->database_expansion_lock));
+
+	pthread_mutex_destroy(&(mte->recovery_mode_lock));
 }
