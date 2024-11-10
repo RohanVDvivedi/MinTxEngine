@@ -51,9 +51,10 @@ char *number_to_words(int n) {
 }
   * write test to initialize and print wale_LSNs_from for all wa_list wal_accessors and ensure that they are correctly initialized
 
- * use zlib to compress serialized wal logs one at a time, FULL_PAGE_WRITES are costliest to wal
-   * build a util to serialize and compress wal logs that is to be called by everyone to serialize logs
-   * parsing wal log does not need global lock, you may release it while parsing
+ * use zlib to compress wal logs
+   * build this functionality directly into the serialize_log_record and parse_log_record functions
+   * make compressing the part of serialize_log_record and uncompressing part of parse_log_record
+   * parsing stores uncompressed log record instead of parsed_from
 
  FAR FUTURE 
  * remove headers not required for public api from publicly installed headers
