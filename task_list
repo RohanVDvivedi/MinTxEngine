@@ -19,6 +19,12 @@ PICKED
   * need some mechanism to let the bufferpool callbacks know that it is recovery time so they can skip checking checksum
   * do not worry our FULL_PAGE_WRITEs and recovery fixes torn writes
 
+  NOTES ON IMPROVEMENT
+  * mini transaction commit does not have to make its changes permanent, so no wal flushing is necessary until it is the last mini transaction operation of the transaction
+  * flushing of abort_mini_tx log record is necessary as you can read changes of its prior log records that are to be undine until the abort log record of minitransaction is flushed
+  * always flush on writing ABORT_MINI_TX log record, flush COMPLTE_MINI_TX only if you are asked to do so in the flag
+   ** then see the performance of main3 improve by only flushing certain completed mini transactions
+
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
     * like a separate faster allocation case which checks these free space mapper pages first, then fall backs to current code
@@ -59,13 +65,6 @@ char *number_to_words(int n) {
  * use zlib to compress serialized wal logs one at a time, FULL_PAGE_WRITES are costliest to wal
    * build a util to serialize and compress wal logs that is to be called by everyone to serialize logs
    * parsing wal log does not need global lock, you may release it while parsing
-
- NOTES
-  * mini transaction commit does not have to make its changes permanent, so no wal flushing is necessary until it is the last mini transaction operation of the transaction
-  * flushing of abort_mini_tx log record is necessary as you can read changes of its prior log records that are to be undine until the abort log record of minitransaction is flushed
-  * flushing wal makes up the use amount of the latency of the operation of the mini transaction engine, for main1 test case in test_mindb, flushing wal after every operation jumps the latency from 0.2 seconds 50 seconds
-    * current main3 execution time is 13 seconds with 30 threads, by not flushing mini transactions you can bring it down, provind a flag in the mte_complete_mini_tx function that siggests if the changes are permanent
-    * find ways to not make mini transactions permanent, while save us 250 folds of latency improvement in a snap
 
  FAR FUTURE 
  * remove headers not required for public api from publicly installed headers
