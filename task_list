@@ -1,5 +1,11 @@
 PICKED
 
+  NOTES ON IMPROVEMENT
+  * mini transaction commit does not have to make its changes permanent, so no wal flushing is necessary until it is the last mini transaction operation of the transaction
+  * flushing of abort_mini_tx log record is necessary as you can read changes of its prior log records that are to be undine until the abort log record of minitransaction is flushed
+  * always flush on writing ABORT_MINI_TX log record, flush COMPLTE_MINI_TX only if you are asked to do so in the flag
+   ** then see the performance of main3 improve by only flushing certain completed mini transactions
+
   * provide api to append and read user level log records
   * NOTE :: after adding any type of log record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
     * do this by performing `grep --include "*.c" -inr "switch(.*type)" .`
@@ -13,12 +19,6 @@ PICKED
      * truncate database file
      * update database_page_count variable
      * need some mechanism to explicitly discard those pages from the cache - OR not, everything is already flushed to disk
-
-  NOTES ON IMPROVEMENT
-  * mini transaction commit does not have to make its changes permanent, so no wal flushing is necessary until it is the last mini transaction operation of the transaction
-  * flushing of abort_mini_tx log record is necessary as you can read changes of its prior log records that are to be undine until the abort log record of minitransaction is flushed
-  * always flush on writing ABORT_MINI_TX log record, flush COMPLTE_MINI_TX only if you are asked to do so in the flag
-   ** then see the performance of main3 improve by only flushing certain completed mini transactions
 
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
