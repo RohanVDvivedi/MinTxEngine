@@ -133,7 +133,7 @@ static uint256 append_abortion_log_record_and_flush_INTERNAL(mini_transaction_en
 	return log_record_LSN;
 }
 
-static uint256 append_completion_log_record_and_flush_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, const void* complete_info, uint32_t complete_info_size)
+static uint256 append_completion_log_record_and_flush_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, int flush_on_completion, const void* complete_info, uint32_t complete_info_size)
 {
 	if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
 	{
@@ -189,9 +189,12 @@ static uint256 append_completion_log_record_and_flush_INTERNAL(mini_transaction_
 		free((void*)serialized_lr);
 	}
 
-	pthread_mutex_lock(&(mte->global_lock));
-	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
-	pthread_mutex_unlock(&(mte->global_lock));
+	if(flush_on_completion)
+	{
+		pthread_mutex_lock(&(mte->global_lock));
+		flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
+		pthread_mutex_unlock(&(mte->global_lock));
+	}
 
 	return log_record_LSN;
 }
@@ -580,7 +583,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 	}
 }
 
-uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, const void* complete_info, uint32_t complete_info_size)
+uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, int flush_on_completion, const void* complete_info, uint32_t complete_info_size)
 {
 	pthread_mutex_lock(&(mte->global_lock));
 
@@ -611,7 +614,7 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 	{
 		// state change must happen only after logging it, the correct ordering it below
 		pthread_mutex_unlock(&(mte->global_lock));
-		uint256 completion_log_record_LSN = append_completion_log_record_and_flush_INTERNAL(mte, mt, complete_info, complete_info_size);
+		uint256 completion_log_record_LSN = append_completion_log_record_and_flush_INTERNAL(mte, mt, flush_on_completion, complete_info, complete_info_size);
 		pthread_mutex_lock(&(mte->global_lock));
 		mt->state = MIN_TX_COMPLETED;
 		pthread_cond_broadcast(&(mt->write_lock_wait));
@@ -733,7 +736,7 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 	// mark it completed and exit
 	// state change must happen only after logging it, the correct ordering it below
 	pthread_mutex_unlock(&(mte->global_lock));
-	uint256 completion_log_record_LSN = append_completion_log_record_and_flush_INTERNAL(mte, mt, complete_info, complete_info_size);
+	uint256 completion_log_record_LSN = append_completion_log_record_and_flush_INTERNAL(mte, mt, flush_on_completion, complete_info, complete_info_size);
 	pthread_mutex_lock(&(mte->global_lock));
 	mt->state = MIN_TX_COMPLETED;
 	pthread_cond_broadcast(&(mt->write_lock_wait));

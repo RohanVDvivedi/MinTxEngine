@@ -1030,7 +1030,8 @@ static void undo(mini_transaction_engine* mte)
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// formally complete mt
-		mte_complete_mini_tx(mte, mt, NULL, 0);
+		// flush_on_completion = 0
+		mte_complete_mini_tx(mte, mt, 0, NULL, 0);
 
 		pthread_mutex_lock(&(mte->global_lock));
 	}
