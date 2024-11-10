@@ -24,7 +24,8 @@ void print_checkpoint(const checkpoint* ckpt);
 uint256 read_checkpoint_from_wal_UNSAFE(mini_transaction_engine* mte, uint256 checkpointLSN, checkpoint* ckpt);
 
 // returns checkpoint end LSN and begin_LSN
-uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, const checkpoint* ckpt, uint256* begin_LSN);
+// is made and left as internal function, noone except the checkpointer is allowed to create checkpoint log record
+//uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, const checkpoint* ckpt, uint256* begin_LSN);
 
 // run this function for checkpointing
 void* checkpointer(void* mte_vp);
