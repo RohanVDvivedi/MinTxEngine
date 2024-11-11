@@ -843,6 +843,37 @@ void main_2()
 	deinitialize_mini_transaction_engine(&mte);
 }
 
+void main_3()
+{
+	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
+	{
+		printf("failed to initialize mini transaction engine\n");
+		exit(-1);
+	}
+
+	uint256 LSN = INVALID_LOG_SEQUENCE_NUMBER;
+	LSN = get_next_LSN_of_LSN_for_mini_transaction_engine(&mte, LSN);
+	while(1)
+	{
+		if(are_equal_uint256(LSN, INVALID_LOG_SEQUENCE_NUMBER))
+			break;
+
+		log_record lr;
+		int lr_read = get_log_record_at_LSN_for_mini_transaction_engine(&mte, LSN, &lr);
+		if(!lr_read)
+			break;
+
+		printf("LSN : "); print_uint256(LSN); printf("\n");
+		print_log_record(&lr, &(mte.stats));printf("\n");
+
+		destroy_and_free_parsed_log_record(&lr);
+
+		LSN = get_next_LSN_of_LSN_for_mini_transaction_engine(&mte, LSN);
+	}
+
+	deinitialize_mini_transaction_engine(&mte);
+}
+
 void main4(uint64_t _root_page_id)
 {
 	root_page_id = _root_page_id;
@@ -911,6 +942,7 @@ int main()
 	// seed random number generator
 	srand(time(NULL));
 
+	//main_3(); 	// prints logs and exits
 	//main_2(); 	// prints logs and exits
 	//main_1();
 	//main0();
