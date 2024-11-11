@@ -141,6 +141,11 @@ int main1()
 	}
 
 	{
+		uint256 uLSN = append_user_info_log_record_for_mini_transaction_engine(&mte, 1, "started insertions", strlen("started insertions"));
+		printf("user log at "); print_uint256(uLSN); printf("\n");
+	}
+
+	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
 		for(uint32_t i = 0; i < JOBS_COUNT; i++)
@@ -167,6 +172,11 @@ int main1()
 
 		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"));
 		printf("completed printing at "); print_uint256(cLSN); printf("\n");
+	}
+
+	{
+		uint256 uLSN = append_user_info_log_record_for_mini_transaction_engine(&mte, 1, "started deletions", strlen("started deletions"));
+		printf("user log at "); print_uint256(uLSN); printf("\n");
 	}
 
 	{
@@ -417,6 +427,11 @@ int main2(uint64_t bucket_count)
 	}
 
 	{
+		uint256 uLSN = append_user_info_log_record_for_mini_transaction_engine(&mte, 1, "started insertions", strlen("started insertions"));
+		printf("user log at "); print_uint256(uLSN); printf("\n");
+	}
+
+	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
 		for(uint32_t i = 0; i < JOBS_COUNT; i++)
@@ -443,6 +458,11 @@ int main2(uint64_t bucket_count)
 
 		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"));
 		printf("completed printing at "); print_uint256(cLSN); printf("\n");
+	}
+
+	{
+		uint256 uLSN = append_user_info_log_record_for_mini_transaction_engine(&mte, 1, "started deletions", strlen("started deletions"));
+		printf("user log at "); print_uint256(uLSN); printf("\n");
 	}
 
 	{
