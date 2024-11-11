@@ -672,7 +672,7 @@ int main()
 		log_record a = {
 			.type = USER_INFO,
 			.uilr = {
-				.info = (uint8_t [3]){4,5,6,7},
+				.info = (uint8_t [4]){4,5,6,7},
 				.info_size = 4,
 			}
 		};
