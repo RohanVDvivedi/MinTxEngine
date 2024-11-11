@@ -668,6 +668,32 @@ int main()
 	}
 	printf("\n\n");
 
+	{
+		log_record a = {
+			.type = USER_INFO,
+			.uilr = {
+				.info = (uint8_t [3]){4,5,6,7},
+				.info_size = 4,
+			}
+		};
+
+		uint32_t serialized_size;
+		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+
+		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+
+		printf("size = %"PRIu32"\n", serialized_size);
+
+		printf("a :: \n");
+		print_log_record(&a, &stats);
+		printf("\nb :: \n");
+		print_log_record(&b, &stats);
+		printf("\n");
+
+		destroy_and_free_parsed_log_record(&b);
+	}
+	printf("\n\n");
+
 	deinitialize_log_record_tuple_defs(&lrtd);
 
 	return 0;
