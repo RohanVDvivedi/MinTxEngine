@@ -1114,6 +1114,24 @@ log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* ser
 			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
+		case USER_INFO :
+		{
+			log_record lr;
+			lr.type = USER_INFO;
+
+			user_value info = get_value_from_element_from_tuple(&(lrtd_p->uilr_def), STATIC_POSITION(0), log_record_contents);
+			if(is_user_value_NULL(&info))
+				lr.uilr.info = NULL;
+			else
+			{
+				lr.uilr.info = info.blob_value;
+				lr.uilr.info_size = info.blob_size;
+			}
+
+			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
+			return lr;
+		}
 	}
 }
 
@@ -1943,6 +1961,34 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 			(*result_size) = get_tuple_size(&(lrtd_p->ckptelr_def), result + 1) + 1;
 			return result;
 		}
+		case USER_INFO :
+		{
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->uilr_def));
+			if(lr->uilr.info != NULL)
+				capacity += (4 + lr->uilr.info_size);
+
+			void* result = malloc(capacity);
+			if(result == NULL)
+				goto ERROR;
+
+			((unsigned char*)result)[0] = USER_INFO;
+
+			init_tuple(&(lrtd_p->uilr_def), result + 1);
+
+			if(lr->uilr.info == NULL)
+			{
+				if(!set_element_in_tuple(&(lrtd_p->uilr_def), STATIC_POSITION(0), result + 1, NULL_USER_VALUE, UINT32_MAX))
+					goto ERROR;
+			}
+			else
+			{
+				if(!set_element_in_tuple(&(lrtd_p->uilr_def), STATIC_POSITION(0), result + 1, &(user_value){.blob_value = lr->uilr.info, .blob_size = lr->uilr.info_size}, UINT32_MAX))
+					goto ERROR;
+			}
+
+			(*result_size) = get_tuple_size(&(lrtd_p->uilr_def), result + 1) + 1;
+			return result;
+		}
 	}
 
 	ERROR :;
@@ -2150,6 +2196,11 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 		{
 			printf("prev_log_record_LSN : "); print_uint256(lr->ckptelr.prev_log_record_LSN); printf("\n");
 			printf("begin_LSN : "); print_uint256(lr->ckptelr.begin_LSN); printf("\n");
+			return;
+		}
+		case USER_INFO :
+		{
+			printf("info : "); print_blob(lr->uilr.info, lr->uilr.info_size); printf("\n");
 			return;
 		}
 	}
