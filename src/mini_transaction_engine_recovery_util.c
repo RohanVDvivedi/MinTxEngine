@@ -188,7 +188,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 				break;
 			}
 
-			// if it is abort_mini_tx, completed_mini_tx or some later checkpoint log record then do nothing
+			// if it is abort_mini_tx, completed_mini_tx or some later checkpoint log record OR user_info then do nothing
 			default :
 			{
 				break;
@@ -335,7 +335,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 				break;
 			}
 
-			// for checkpoint log records nothing needs to be done
+			// for checkpoint and user_info log records nothing needs to be done
 			default :
 			{
 				break;
@@ -963,7 +963,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 				break;
 			}
 
-			// on any other log record nothing needs to be done
+			// on any other log record like checkpoint OR user_info, then nothing needs to be done
 			default :
 			{
 				break;
