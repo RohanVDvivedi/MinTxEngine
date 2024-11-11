@@ -181,6 +181,44 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	return 1;
 }
 
+uint256 append_user_info_log_record_for_mini_transaction_engine(mini_transaction_engine* mte, int flush_after_append, const void* info, uint32_t info_size)
+{
+	// construct user log record
+	log_record lr = {
+		.type = USER_INFO,
+		.uilr = {
+			.info = info,
+			.info_size = info_size,
+		}
+	};
+
+	// serialize it
+	uint32_t serialized_lr_size = 0;
+	const void* serialized_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &lr, &serialized_lr_size);
+	if(serialized_lr == NULL)
+		return INVALID_LOG_SEQUENCE_NUMBER;
+
+	// going futher we need global_lock and manager_lock (in shared mode)
+	pthread_mutex_lock(&(mte->global_lock));
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
+
+		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+
+		int wal_error = 0;
+		uint256 log_record_LSN = append_log_record(wale_p, serialized_lr, serialized_lr_size, 0, &wal_error); //this can never be a checkpoint
+
+		// if log_record_LSN != INVALID and flush_after_append is set then return
+		if(!are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER) && flush_after_append)
+			flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
+
+	shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	free((void*)serialized_lr);
+
+	return log_record_LSN;
+}
+
 void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine* mte)
 {
 	pthread_mutex_lock(&(mte->global_lock));
