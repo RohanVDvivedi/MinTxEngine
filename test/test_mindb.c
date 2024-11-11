@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<string.h>
 #include<stdlib.h>
 
 #include<mini_transaction_engine.h>
@@ -135,7 +136,8 @@ int main1()
 
 		print_uint_bplus_tree(mt);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "creation_done", strlen("creation_done"));
+		printf("completed creation at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
@@ -154,7 +156,8 @@ int main1()
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "inserions_done", strlen("insertions_done"));
+		printf("completed insertions at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
@@ -162,7 +165,8 @@ int main1()
 
 		print_uint_bplus_tree(mt);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"));
+		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
@@ -181,7 +185,8 @@ int main1()
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "deletions_done", strlen("deletions_done"));
+		printf("completed deletions at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
@@ -189,7 +194,8 @@ int main1()
 
 		print_uint_bplus_tree(mt);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"));
+		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
@@ -200,7 +206,8 @@ int main1()
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "destruction_done", strlen("destruction_done"));
+		printf("completed destruction at "); print_uint256(cLSN); printf("\n");
 	}
 
 	/*{
@@ -208,7 +215,8 @@ int main1()
 
 		print_uint_bplus_tree(mt);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"));
+		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}*/
 
 	{
@@ -218,7 +226,8 @@ int main1()
 
 		print_uint_bplus_tree(mt);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "creation_done", strlen("creation_done"));
+		printf("completed creation at "); print_uint256(cLSN); printf("\n");
 	}
 
 	/*printf("PRINTING LOGS\n");
@@ -403,7 +412,8 @@ int main2(uint64_t bucket_count)
 
 		print_uint_hash_table(mt);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "creation_done", strlen("creation_done"));
+		printf("completed creation at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
@@ -422,7 +432,8 @@ int main2(uint64_t bucket_count)
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "inserions_done", strlen("insertions_done"));
+		printf("completed insertions at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
@@ -430,7 +441,8 @@ int main2(uint64_t bucket_count)
 
 		print_uint_hash_table(mt);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"));
+		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
@@ -449,7 +461,8 @@ int main2(uint64_t bucket_count)
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "deletions_done", strlen("deletions_done"));
+		printf("completed deletions at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
@@ -457,7 +470,8 @@ int main2(uint64_t bucket_count)
 
 		print_uint_hash_table(mt);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"));
+		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
@@ -468,7 +482,8 @@ int main2(uint64_t bucket_count)
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "destruction_done", strlen("destruction_done"));
+		printf("completed destruction at "); print_uint256(cLSN); printf("\n");
 	}
 
 	/*{
@@ -476,7 +491,8 @@ int main2(uint64_t bucket_count)
 
 		print_uint_hash_table(mt);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"));
+		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}*/
 
 	{
@@ -486,7 +502,8 @@ int main2(uint64_t bucket_count)
 
 		print_uint_hash_table(mt);
 
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "creation_done", strlen("creation_done"));
+		printf("completed creation at "); print_uint256(cLSN); printf("\n");
 	}
 
 	/*printf("PRINTING LOGS\n");
