@@ -108,7 +108,7 @@ void destroy_uint_bplus_tree(mini_transaction* mt)
 int main1()
 {
 	initialize_tuple_defs();
-	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, KEY_ELEMENT_COUNT))
+	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, RECORD_S_KEY_ELEMENT_COUNT))
 	{
 		printf("failed to initialize bplus tree tuple definitions\n");
 		exit(-1);
@@ -397,7 +397,7 @@ void destroy_uint_hash_table(mini_transaction* mt)
 int main2(uint64_t bucket_count)
 {
 	initialize_tuple_defs();
-	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, KEY_ELEMENT_COUNT, hash_func))
+	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, RECORD_S_KEY_ELEMENT_COUNT, hash_func))
 	{
 		printf("failed to initialize hash table tuple definitions\n");
 		exit(-1);
@@ -577,7 +577,7 @@ void* perform_insert(void* param)
 int main3()
 {
 	initialize_tuple_defs();
-	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, KEY_ELEMENT_COUNT))
+	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, RECORD_S_KEY_ELEMENT_COUNT))
 	{
 		printf("failed to initialize bplus tree tuple definitions\n");
 		exit(-1);
