@@ -1,10 +1,5 @@
 PICKED
 
-VARIABLE LENGTH TESTS
-  * main1, main2 and main3 with variable length tuples
-    same key but value = output of the following with either val % 1000 OR (val / 1000) % 1000 or value of (val / 1000000) % 1000
-  * simple function to construct tuple for a given value and order_1000 = 0, 1, OR 2
-
  * DISK SPACE RENUNCIATION BACK TO OS
   * management in perform_checkpoint_UNSAFE(mte)
    * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpoint_begin_LSN, user defined value from the call back)
@@ -37,7 +32,6 @@ VARIABLE LENGTH TESTS
 
  FAR FUTURE 
  * configure this in future MINIMIM_CHECKPOINTING_LSN_DIFF
-
 
 Tasks necessary to develop MinTxEngine
  * do following after checkpointing
