@@ -156,6 +156,14 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 // an ideal thing to be done when you couldn't append your user_info log record is to exit(-1)
 uint256 append_user_info_log_record_for_mini_transaction_engine(mini_transaction_engine* mte, int flush_after_append, const void* info, uint32_t info_size);
 
+#include<log_record.h>
+
+// returns a valud log record only if return value is 1
+int get_log_record_at_LSN_for_mini_transaction_engine(mini_transaction_engine* mte, uint256 LSN, log_record* lr);
+
+// if you pass in LSN == INVALID_LOG_SEQUENCE_NUMBER, then you get the oldest LSN available in the system
+uint256 get_next_LSN_of_LSN_for_mini_transaction_engine(mini_transaction_engine* mte, uint256 LSN);
+
 // if your mini transaction is huge perform this intermediately to allow more changes to be left in bufferpool
 void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine* mte);
 

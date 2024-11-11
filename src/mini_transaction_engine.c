@@ -219,6 +219,46 @@ uint256 append_user_info_log_record_for_mini_transaction_engine(mini_transaction
 	return log_record_LSN;
 }
 
+int get_log_record_at_LSN_for_mini_transaction_engine(mini_transaction_engine* mte, uint256 LSN, log_record* lr)
+{
+	int result = 0;
+
+	pthread_mutex_lock(&(mte->global_lock));
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
+
+	uint256 first_available_LSN = ((wal_accessor*)get_front_of_arraylist(&(mte->wa_list)))->wale_LSNs_from;
+
+	if(compare_uint256(LSN, first_available_LSN) < 0) // if LSN < first_available_LSN, return 0
+		result = 0;
+	else // above if case ensures that we fail instead of crashing at LSN < first_available_LSN
+		result = get_parsed_log_record_UNSAFE(mte, LSN, lr);
+
+	shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	return result;
+}
+
+uint256 get_next_LSN_of_LSN_for_mini_transaction_engine(mini_transaction_engine* mte, uint256 LSN)
+{
+	uint256 nextLSN = INVALID_LOG_SEQUENCE_NUMBER;
+
+	pthread_mutex_lock(&(mte->global_lock));
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
+
+	uint256 first_available_LSN = ((wal_accessor*)get_front_of_arraylist(&(mte->wa_list)))->wale_LSNs_from;
+
+	if(compare_uint256(LSN, first_available_LSN) < 0) // if LSN < first_available_LSN, return first_available_LSN
+		nextLSN = first_available_LSN;
+	else
+		nextLSN = get_next_LSN_for_LSN_UNSAFE(mte, LSN);
+
+	shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	return nextLSN;
+}
+
 void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine* mte)
 {
 	pthread_mutex_lock(&(mte->global_lock));
