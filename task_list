@@ -4,12 +4,6 @@ PICKED
   * NOTE :: after adding any type of log record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
     * do this by performing `grep --include "*.c" -inr "switch(.*type)" .`
 
- * use zlib to compress wal logs
-   * build this functionality directly into the serialize_log_record and parse_log_record functions
-   * make compressing the part of serialize_log_record and uncompressing part of parse_log_record
-   * parsing stores uncompressed log record instead of parsed_from
-   * compare compressed and uncompressed wal logs
-
 VARIABLE LENGTH TESTS
   * main1, main2 and main3 with variable length tuples
     same key but value = output of the following with either val % 1000 OR (val / 1000) % 1000 or value of (val / 1000000) % 1000
@@ -46,6 +40,14 @@ char *number_to_words(int n) {
      * truncate database file
      * update database_page_count variable
      * need some mechanism to explicitly discard those pages from the cache - OR not, everything is already flushed to disk
+
+  * LOG SIZE OPTIMIZATION
+  * use zlib to compress wal logs
+   * build this functionality directly into the serialize_log_record and parse_log_record functions
+   * make compressing the part of serialize_log_record and uncompressing part of parse_log_record
+   * parsing stores uncompressed log record instead of parsed_from
+   * compare sizes of with compressed and without uncompression wal logs
+   * NOTE :: need mechanism to figure out if a wal log is compressed or not, zlib may expand the data instead of compressing it if the data is too short
 
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
