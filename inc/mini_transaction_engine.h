@@ -151,6 +151,10 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 
 #include<mini_transaction_engine_allotment.h>
 
+// appends a user generated log info, this can be used to log begin, abort and commit log records for the higher level transactions of the user
+// returns INVALID_LOG_SEQUENCE_NUMBER if this could not be done
+uint256 append_user_info_log_record_for_mini_transaction_engine(mini_transaction_engine* mte, int flush_after_append, const void* info, uint32_t info_size);
+
 // if your mini transaction is huge perform this intermediately to allow more changes to be left in bufferpool
 void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine* mte);
 
