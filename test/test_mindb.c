@@ -4,6 +4,7 @@
 
 #include<mini_transaction_engine.h>
 #include<callbacks_tupleindexer.h>
+#include<test_tuple_infos.h>
 
 #include<bplus_tree.h>
 #include<hash_table.h>
@@ -26,11 +27,6 @@ mini_transaction_engine mte;
 const char* db_filename = "test.db";
 
 uint64_t root_page_id;
-
-tuple_def record_def;
-
-positional_accessor KEY_POS[1] = {SELF};
-compare_direction CMP_DIR[1] = {ASC};
 
 #define JOBS_COUNT 100000
 uint64_t input[JOBS_COUNT];
@@ -105,14 +101,6 @@ void destroy_uint_bplus_tree(mini_transaction* mt)
 
 int main1()
 {
-	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
-	{
-		printf("failed to initialize mini transaction engine\n");
-		exit(-1);
-	}
-	init_pam_for_mini_tx_engine(&mte);
-	init_pmm_for_mini_tx_engine(&mte);
-	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
 	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, 1))
 	{
 		printf("failed to initialize bplus tree tuple definitions\n");
@@ -242,8 +230,6 @@ int main1()
 
 	/*printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
-
-	deinitialize_mini_transaction_engine(&mte);
 
 	return 0;
 }
@@ -391,14 +377,6 @@ void destroy_uint_hash_table(mini_transaction* mt)
 
 int main2(uint64_t bucket_count)
 {
-	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
-	{
-		printf("failed to initialize mini transaction engine\n");
-		exit(-1);
-	}
-	init_pam_for_mini_tx_engine(&mte);
-	init_pmm_for_mini_tx_engine(&mte);
-	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
 	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, 1, hash_func))
 	{
 		printf("failed to initialize hash table tuple definitions\n");
@@ -529,8 +507,6 @@ int main2(uint64_t bucket_count)
 	/*printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
 
-	deinitialize_mini_transaction_engine(&mte);
-
 	return 0;
 }
 
@@ -579,14 +555,6 @@ void* perform_insert(void* param)
 
 int main3()
 {
-	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
-	{
-		printf("failed to initialize mini transaction engine\n");
-		exit(-1);
-	}
-	init_pam_for_mini_tx_engine(&mte);
-	init_pmm_for_mini_tx_engine(&mte);
-	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
 	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, 1))
 	{
 		printf("failed to initialize bplus tree tuple definitions\n");
@@ -631,8 +599,6 @@ int main3()
 	/*printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
 
-	deinitialize_mini_transaction_engine(&mte);
-
 	return 0;
 }
 
@@ -650,14 +616,6 @@ void construct_tuple(char* tuple, const tuple_def* tpl_def, const char* a, uint6
 
 void main0()
 {
-	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
-	{
-		printf("failed to initialize mini transaction engine\n");
-		exit(-1);
-	}
-	init_pam_for_mini_tx_engine(&mte);
-	init_pmm_for_mini_tx_engine(&mte);
-
 	data_type_info str = get_variable_length_string_type("", SYSTEM_PAGE_SIZE);
 	data_type_info* tup = malloc(sizeof_tuple_data_type_info(2));
 	initialize_tuple_data_type_info((tup), "tuple", 1, SYSTEM_PAGE_SIZE, 2);
@@ -725,7 +683,6 @@ void main0()
 	printf("-x-x-x-x- tx3 complete\n");
 
 	free(tup);
-	deinitialize_mini_transaction_engine(&mte);
 }
 
 #define ACTIVE_MINI_TRANSACTIONS_TO_TEST 10
@@ -734,14 +691,6 @@ void main0()
 
 void main_1()
 {
-	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
-	{
-		printf("failed to initialize mini transaction engine\n");
-		exit(-1);
-	}
-	init_pam_for_mini_tx_engine(&mte);
-	init_pmm_for_mini_tx_engine(&mte);
-
 	data_type_info str = get_variable_length_string_type("", SYSTEM_PAGE_SIZE);
 	data_type_info* tup = malloc(sizeof_tuple_data_type_info(2));
 	initialize_tuple_data_type_info((tup), "tuple", 1, SYSTEM_PAGE_SIZE, 2);
@@ -844,33 +793,17 @@ void main_1()
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);
 
 	free(tup);
-	deinitialize_mini_transaction_engine(&mte);
 }
 
 void main_2()
 {
-	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
-	{
-		printf("failed to initialize mini transaction engine\n");
-		exit(-1);
-	}
-	init_pam_for_mini_tx_engine(&mte);
-	init_pmm_for_mini_tx_engine(&mte);
-
 	printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);
-
-	deinitialize_mini_transaction_engine(&mte);
 }
 
 void main_3()
 {
-	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
-	{
-		printf("failed to initialize mini transaction engine\n");
-		exit(-1);
-	}
-
+	printf("PRINTING LOGS\n");
 	uint256 LSN = INVALID_LOG_SEQUENCE_NUMBER;
 	LSN = get_next_LSN_of_LSN_for_mini_transaction_engine(&mte, LSN);
 	while(1)
@@ -890,20 +823,12 @@ void main_3()
 
 		LSN = get_next_LSN_of_LSN_for_mini_transaction_engine(&mte, LSN);
 	}
-
-	deinitialize_mini_transaction_engine(&mte);
 }
 
 void main4(uint64_t _root_page_id)
 {
 	root_page_id = _root_page_id;
-	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
-	{
-		printf("failed to initialize mini transaction engine\n");
-		exit(-1);
-	}
-	init_pam_for_mini_tx_engine(&mte);
-	init_pmm_for_mini_tx_engine(&mte);
+
 	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
 	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, 1))
 	{
@@ -922,20 +847,12 @@ void main4(uint64_t _root_page_id)
 
 	printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);
-
-	deinitialize_mini_transaction_engine(&mte);
 }
 
 void main5(uint64_t _root_page_id)
 {
 	root_page_id = _root_page_id;
-	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
-	{
-		printf("failed to initialize mini transaction engine\n");
-		exit(-1);
-	}
-	init_pam_for_mini_tx_engine(&mte);
-	init_pmm_for_mini_tx_engine(&mte);
+
 	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
 	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, 1, hash_func))
 	{
@@ -953,12 +870,18 @@ void main5(uint64_t _root_page_id)
 
 	printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);
-
-	deinitialize_mini_transaction_engine(&mte);
 }
 
 int main()
 {
+	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US))
+	{
+		printf("failed to initialize mini transaction engine\n");
+		exit(-1);
+	}
+	init_pam_for_mini_tx_engine(&mte);
+	init_pmm_for_mini_tx_engine(&mte);
+
 	// seed random number generator
 	srand(time(NULL));
 
@@ -974,4 +897,6 @@ int main()
 	//main4(1);		// prints bplus tree at root page id = 1
 	//main5(1); 	// prints hash table at root page_id = 1
 	printf("total pages used = %"PRIu64"\n", mte.database_page_count);
+
+	deinitialize_mini_transaction_engine(&mte);
 }
