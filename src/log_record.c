@@ -45,7 +45,12 @@ static uint32_t bytes_for_page_index(uint32_t page_size)
 
 void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_transaction_engine_stats* stats)
 {
-	lrtd->max_log_record_size = stats->page_size * 6; // TODO :: to be configured
+	if(will_unsigned_mul_overflow(uint32_t, stats->page_size, 16))
+	{
+		printf("ISSUE :: page_size to big for log_record_tuple_defs, (page_size * 16) must fir 32 bit unsigned integer\n");
+		exit(-1);
+	}
+	lrtd->max_log_record_size = stats->page_size * 16;
 
 	// first initialize the dtis required
 	lrtd->page_id_type = define_uint_non_nullable_type("page_id", stats->page_id_width);
@@ -56,6 +61,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	lrtd->data_in_bytes_type = get_variable_length_blob_type("data", stats->page_size + 4);
 	lrtd->size_def_in_bytes_type = get_variable_length_blob_type("size_def", 13 + 4);
 	lrtd->type_info_in_bytes_type = get_variable_length_blob_type("type_info", stats->page_size + 4);
+	lrtd->info_in_bytes_type = get_variable_length_blob_type("info_data_type", 6 * stats->page_size + 4);
 
 	// mark all the above initilaized data types to static
 	lrtd->page_id_type.is_static = 1;
@@ -577,7 +583,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		dti->containees[2].type_info = BIT_FIELD_NON_NULLABLE[1];
 
 		strcpy(dti->containees[3].field_name, "info");
-		dti->containees[3].type_info = &(lrtd->data_in_bytes_type);
+		dti->containees[3].type_info = &(lrtd->info_in_bytes_type);
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd->cmtlr_def), dti);
@@ -650,7 +656,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		initialize_tuple_data_type_info(dti, "uilr_def", 0, lrtd->max_log_record_size, 1);
 
 		strcpy(dti->containees[0].field_name, "info");
-		dti->containees[0].type_info = &(lrtd->data_in_bytes_type);
+		dti->containees[0].type_info = &(lrtd->info_in_bytes_type);
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd->uilr_def), dti);

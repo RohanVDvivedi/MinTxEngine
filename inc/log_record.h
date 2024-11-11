@@ -396,6 +396,7 @@ struct log_record_tuple_defs
 	data_type_info data_in_bytes_type; // BLOB type atmost as big as max_size = page_size, for tuples and elements
 	data_type_info size_def_in_bytes_type; // BLOB type atmost as big as 13 bytes -> dictated by tuplestore
 	data_type_info type_info_in_bytes_type; // for data_type_info of type_info for tuple types atmost page size bytes
+	data_type_info info_in_bytes_type; // BLOB type atmost as big as max_size = 6 * page_size, for user info that gets posted in cmtlr and uilr
 
 	data_type_info* mini_transaction_type; // tuple type that consists of mini_transaction_id, lastLSN and state
 	data_type_info* dirty_page_table_entry_type; // tuple type that consists of page_id and recLSN
