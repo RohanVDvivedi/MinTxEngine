@@ -51,7 +51,7 @@ void initialize_tuple_defs()
 	printf("\n\n");
 }
 
-#define BUFFER_SIZE 900
+#define BUFFER_SIZE 300
 
 const char *ones[] = {
   "zero", "one", "two", "three", "four", "five", "six", "seven",
