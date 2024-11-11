@@ -101,6 +101,7 @@ void destroy_uint_bplus_tree(mini_transaction* mt)
 
 int main1()
 {
+	initialize_tuple_defs();
 	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, 1))
 	{
 		printf("failed to initialize bplus tree tuple definitions\n");
@@ -231,6 +232,7 @@ int main1()
 	/*printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
 
+	deinitialize_tuple_defs();
 	return 0;
 }
 
@@ -377,6 +379,7 @@ void destroy_uint_hash_table(mini_transaction* mt)
 
 int main2(uint64_t bucket_count)
 {
+	initialize_tuple_defs();
 	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, 1, hash_func))
 	{
 		printf("failed to initialize hash table tuple definitions\n");
@@ -507,6 +510,7 @@ int main2(uint64_t bucket_count)
 	/*printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
 
+	deinitialize_tuple_defs();
 	return 0;
 }
 
@@ -555,6 +559,7 @@ void* perform_insert(void* param)
 
 int main3()
 {
+	initialize_tuple_defs();
 	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, 1))
 	{
 		printf("failed to initialize bplus tree tuple definitions\n");
@@ -599,6 +604,7 @@ int main3()
 	/*printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
 
+	deinitialize_tuple_defs();
 	return 0;
 }
 
@@ -829,7 +835,7 @@ void main4(uint64_t _root_page_id)
 {
 	root_page_id = _root_page_id;
 
-	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
+	initialize_tuple_defs();
 	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, 1))
 	{
 		printf("failed to initialize bplus tree tuple definitions\n");
@@ -847,13 +853,15 @@ void main4(uint64_t _root_page_id)
 
 	printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);
+
+	deinitialize_tuple_defs();
 }
 
 void main5(uint64_t _root_page_id)
 {
 	root_page_id = _root_page_id;
 
-	initialize_tuple_def(&record_def, UINT_NON_NULLABLE[8]);
+	initialize_tuple_defs();
 	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, 1, hash_func))
 	{
 		printf("failed to initialize hash table tuple definitions\n");
@@ -870,6 +878,8 @@ void main5(uint64_t _root_page_id)
 
 	printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);
+
+	deinitialize_tuple_defs();
 }
 
 int main()
