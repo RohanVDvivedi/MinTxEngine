@@ -37,7 +37,7 @@ char *number_to_words(int n) {
      * update database_page_count variable
      * need some mechanism to explicitly discard those pages from the cache - OR not, everything is already flushed to disk
 
-  * LOG SIZE OPTIMIZATION
+  * LOG SIZE OPTIMIZATION using compression
   * use zlib to compress wal logs
    * build this functionality directly into the serialize_log_record and parse_log_record functions
    * make compressing the part of serialize_log_record and uncompressing part of parse_log_record
