@@ -853,7 +853,7 @@ void main4(uint64_t _root_page_id)
 	root_page_id = _root_page_id;
 
 	initialize_tuple_defs();
-	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, 1))
+	if(!init_bplus_tree_tuple_definitions(&bpttd, &(pam.pas), &record_def, KEY_POS, CMP_DIR, RECORD_S_KEY_ELEMENT_COUNT))
 	{
 		printf("failed to initialize bplus tree tuple definitions\n");
 		exit(-1);
@@ -879,7 +879,7 @@ void main5(uint64_t _root_page_id)
 	root_page_id = _root_page_id;
 
 	initialize_tuple_defs();
-	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, 1, hash_func))
+	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, RECORD_S_KEY_ELEMENT_COUNT, hash_func))
 	{
 		printf("failed to initialize hash table tuple definitions\n");
 		exit(-1);
