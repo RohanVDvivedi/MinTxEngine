@@ -1,7 +1,5 @@
 PICKED
 
-  * provide api to append (flush_on_append flag taken) and read user level log records
-
 VARIABLE LENGTH TESTS
   * main1, main2 and main3 with variable length tuples
     same key but value = output of the following with either val % 1000 OR (val / 1000) % 1000 or value of (val / 1000000) % 1000
