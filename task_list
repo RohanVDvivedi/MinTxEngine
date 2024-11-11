@@ -4,27 +4,6 @@ VARIABLE LENGTH TESTS
   * main1, main2 and main3 with variable length tuples
     same key but value = output of the following with either val % 1000 OR (val / 1000) % 1000 or value of (val / 1000000) % 1000
   * simple function to construct tuple for a given value and order_1000 = 0, 1, OR 2
-    const char *ones[] = {
-  "zero", "one", "two", "three", "four", "five", "six", "seven",
-  "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen",
-  "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"
-};
-
-const char *tens[] = {
-  ", ", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"
-};
-
-char *number_to_words(int n) {
-  static char output[20];
-  if (n < 20) {
-    strcpy(output, ones[n]);
-  } else if (n < 100) {
-    sprintf(output, "%s-%s", tens[n / 10], ones[n % 10]);
-  } else {
-    sprintf(output, "%s hundred %s", ones[n / 100], number_to_words(n % 100));
-  }
-  return output;
-}
 
  * DISK SPACE RENUNCIATION BACK TO OS
   * management in perform_checkpoint_UNSAFE(mte)
