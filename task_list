@@ -1,9 +1,6 @@
 PICKED
 
   * provide api to append (flush_on_append flag taken) and read user level log records
-  * add a new type of info_type_info that is atmost 6 pages wide
-  * NOTE :: after adding any type of log record ensure that it's case is covered explicityly in undo (*allotment.c) and redo-recovery functions (*recovery.c)
-    * do this by performing `grep --include "*.c" -inr "switch(.*type)" .`
 
 VARIABLE LENGTH TESTS
   * main1, main2 and main3 with variable length tuples
