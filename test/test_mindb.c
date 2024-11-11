@@ -156,7 +156,7 @@ int main1()
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "inserions_done", strlen("insertions_done"));
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "insertions_done", strlen("insertions_done"));
 		printf("completed insertions at "); print_uint256(cLSN); printf("\n");
 	}
 
@@ -432,7 +432,7 @@ int main2(uint64_t bucket_count)
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "inserions_done", strlen("insertions_done"));
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "insertions_done", strlen("insertions_done"));
 		printf("completed insertions at "); print_uint256(cLSN); printf("\n");
 	}
 
