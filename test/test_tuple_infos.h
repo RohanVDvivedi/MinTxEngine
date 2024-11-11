@@ -60,7 +60,7 @@ const char *ones[] = {
 };
 
 const char *tens[] = {
-  ", ", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"
+  "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"
 };
 
 void num_in_words(char* output, uint16_t n) {
@@ -118,7 +118,7 @@ void construct_record(void* buffer, uint64_t num, int order)
 	while(num > 0)
 	{
 		uint8_t d = num % 10;
-		if(!expand_element_count_for_element_in_tuple(&record_def, STATIC_POSITION(3), buffer, 0, 1, UINT32_MAX))
+		if(!expand_element_count_for_element_in_tuple(&record_def, STATIC_POSITION(3), buffer, size, 1, UINT32_MAX))
 			break;
 		size++;
 		set_element_in_tuple(&record_def, STATIC_POSITION(3,(size-1)), buffer, &(user_value){.uint_value = d}, UINT32_MAX);
@@ -139,15 +139,16 @@ int validate_record(const void* buffer)
 		const char* t2 = get_value_from_element_from_tuple(&record_def, STATIC_POSITION(2), buffer).string_value;
 		if(strlen(t1) != get_value_from_element_from_tuple(&record_def, STATIC_POSITION(2), buffer).string_size)
 			return 0;
-		if(strcmp(t1, t2))
+		if(strncmp(t1, t2, strlen(t1)))
 			return 0;
 	}
 
 	uint32_t index = 0;
+	uint32_t size = get_element_count_for_element_from_tuple(&record_def, STATIC_POSITION(3), buffer);
 	while(num)
 	{
 		uint8_t d = num % 10;
-		if(index >= get_element_count_for_element_from_tuple(&record_def, STATIC_POSITION(3), buffer))
+		if(index >= size)
 			return 0;
 		if(d != get_value_from_element_from_tuple(&record_def, STATIC_POSITION(3,index), buffer).uint_value)
 			return 0;
