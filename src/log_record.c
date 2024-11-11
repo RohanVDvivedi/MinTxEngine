@@ -5,7 +5,7 @@
 #include<stdlib.h>
 #include<string.h>
 
-const char log_record_type_strings[22][64] = {
+const char log_record_type_strings[23][64] = {
 	"UNIDENTIFIED",
 	"PAGE_ALLOCATION",
 	"PAGE_DEALLOCATION",
@@ -28,6 +28,7 @@ const char log_record_type_strings[22][64] = {
 	"CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY",
 	"CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY",
 	"CHECKPOINT_END",
+	"USER_INFO",
 };
 
 static uint32_t bytes_for_page_index(uint32_t page_size)
@@ -637,6 +638,22 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd->ckptelr_def), dti);
+	}
+
+	{
+		data_type_info* dti = malloc(sizeof_tuple_data_type_info(1));
+		if(dti == NULL)
+		{
+			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
+			exit(-1);
+		}
+		initialize_tuple_data_type_info(dti, "uilr_def", 0, lrtd->max_log_record_size, 1);
+
+		strcpy(dti->containees[0].field_name, "info");
+		dti->containees[0].type_info = &(lrtd->data_in_bytes_type);
+
+		// this shall never fail
+		initialize_tuple_def(&(lrtd->uilr_def), dti);
 	}
 }
 

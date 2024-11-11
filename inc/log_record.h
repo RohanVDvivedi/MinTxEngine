@@ -55,6 +55,10 @@ enum log_record_type
 	CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY = 20,
 
 	CHECKPOINT_END = 21,
+
+// below are log records that are used for the user to log begin, abort and end log records of the higher level transactions
+
+	USER_INFO = 22,
 };
 
 /*
@@ -65,7 +69,7 @@ enum log_record_type
 	  -> while redoing them they get writerLSN as in the log record, if their page_id suggests that they have one (if theyr are not a free space mapper page)
 */
 
-extern const char log_record_type_strings[22][64];
+extern const char log_record_type_strings[23][64];
 
 /*
 	NOTE :: for the first log record for any mini transaction
@@ -335,6 +339,13 @@ struct checkpoint_end_log_record
 	uint256 begin_LSN; // LSN of the first log record in the WALe for this very same checkpoint
 };
 
+typedef struct user_info_log_record user_info_log_record;
+struct user_info_log_record
+{
+	const void* info; // must not be more than 1 page in size
+	uint32_t info_size;
+};
+
 typedef struct log_record log_record;
 struct log_record
 {
@@ -363,6 +374,8 @@ struct log_record
 		checkpoint_mini_transaction_table_entry_log_record ckptmttelr;
 		checkpoint_dirty_page_table_entry_log_record ckptdptelr;
 		checkpoint_end_log_record ckptelr;
+
+		user_info_log_record uilr;
 	};
 
 	const void* parsed_from;
@@ -410,6 +423,8 @@ struct log_record_tuple_defs
 	tuple_def ckptmttelr_def;
 	tuple_def ckptdptelr_def;
 	tuple_def ckptelr_def;
+
+	tuple_def uilr_def;
 };
 
 // this function is crucial in succeeding the creation of mini_transaction_engine
