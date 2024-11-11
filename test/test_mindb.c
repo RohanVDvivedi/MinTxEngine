@@ -50,7 +50,10 @@ void create_uint_bplus_tree(mini_transaction* mt)
 int insert_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 {
 	int abort_error = 0;
-	int res = insert_in_bplus_tree(root_page_id, &x, &bpttd, &pam, &pmm, mt, &abort_error);
+
+	char record[BUFFER_SIZE];
+	construct_record(record, x, 0);
+	int res = insert_in_bplus_tree(root_page_id, record, &bpttd, &pam, &pmm, mt, &abort_error);
 
 	if(is_aborted_for_mini_tx(&mte, mt))
 	{
@@ -64,7 +67,10 @@ int insert_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 int delete_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 {
 	int abort_error = 0;
-	int res = delete_from_bplus_tree(root_page_id, &x, &bpttd, &pam, &pmm, mt, &abort_error);
+
+	char key[BUFFER_SIZE];
+	construct_key(key, x, 0);
+	int res = delete_from_bplus_tree(root_page_id, key, &bpttd, &pam, &pmm, mt, &abort_error);
 
 	if(is_aborted_for_mini_tx(&mte, mt))
 	{
@@ -260,14 +266,21 @@ void create_uint_hash_table(mini_transaction* mt, uint64_t bucket_count)
 int insert_uint_hash_table(mini_transaction* mt, uint64_t x)
 {
 	int abort_error = 0;
-	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, &x, &httd, &pam, &pmm, mt, &abort_error);
+
+	char key[BUFFER_SIZE];
+	construct_key(key, x, 0);
+
+	char record[BUFFER_SIZE];
+	construct_record(record, x, 0);
+
+	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, key, &httd, &pam, &pmm, mt, &abort_error);
 	if(is_aborted_for_mini_tx(&mte, mt))
 	{
 		printf("aborted %d while inserting\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 
-	int res = insert_in_hash_table_iterator(hti, &x, mt, &abort_error);
+	int res = insert_in_hash_table_iterator(hti, record, mt, &abort_error);
 	if(is_aborted_for_mini_tx(&mte, mt))
 	{
 		printf("aborted %d while inserting\n", get_abort_error_for_mini_tx(&mte, mt));
@@ -295,7 +308,11 @@ int insert_uint_hash_table(mini_transaction* mt, uint64_t x)
 int delete_uint_hash_table(mini_transaction* mt, uint64_t x)
 {
 	int abort_error = 0;
-	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, &x, &httd, &pam, &pmm, mt, &abort_error);
+
+	char key[BUFFER_SIZE];
+	construct_key(key, x, 0);
+
+	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, key, &httd, &pam, &pmm, mt, &abort_error);
 	if(is_aborted_for_mini_tx(&mte, mt))
 	{
 		printf("aborted %d while deleting\n", get_abort_error_for_mini_tx(&mte, mt));
