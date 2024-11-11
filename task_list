@@ -32,6 +32,7 @@ PICKED
 
  FAR FUTURE 
  * configure this in future MINIMIM_CHECKPOINTING_LSN_DIFF
+ * update and element_in_place_update has not been tested yet
 
 Tasks necessary to develop MinTxEngine
  * do following after checkpointing
