@@ -516,6 +516,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 								printf("ISSUE :: unable to redo page init\n");
 								exit(-1);
 							}
+							zero_out_free_space_on_page(page_contents, mte->user_stats.page_size, &(lr.pilr.new_size_def)); // this is done on success in wale_only_functions so do it here as well
 							break;
 						}
 						case PAGE_SET_HEADER :
