@@ -804,6 +804,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 												printf("ISSUE :: unable to redo the undo of tuple update, due to failure to callocate memory for page compaction\n");
 												exit(-1);
 											}
+											zero_out_free_space_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tulr.size_def));
 											if(!update_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tulr.size_def), undo_lr.tulr.update_index, undo_lr.tulr.old_tuple)) // this should never happen if write locks were held
 											{
 												printf("ISSUE :: unable to redo the undo of tuple update\n");
@@ -824,6 +825,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 												printf("ISSUE :: unable to redo the undo of tuple discard, due to failure to allocate memory for page compaction\n");
 												exit(-1);
 											}
+											zero_out_free_space_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tdlr.size_def));
 											if(!insert_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tdlr.size_def), undo_lr.tdlr.discard_index, undo_lr.tdlr.old_tuple)) // this should never happen if write locks were held
 											{
 												printf("ISSUE :: unable to redo the undo of tuple discard, even after a compaction\n");
@@ -851,6 +853,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 												printf("ISSUE :: unable to redo the undo of tuple discard trailing tombstones, due to failure to callocate memory for page compaction\n");
 												exit(-1);
 											}
+											zero_out_free_space_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tdttlr.size_def));
 											if(!append_tuple_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tdttlr.size_def), NULL)) // this should never happen if write locks were held
 											{
 												printf("ISSUE :: unable to redo the undo of tuple discard trailing tombstones, even after a compaction\n");
@@ -914,6 +917,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 													printf("ISSUE :: unable to redo the undo of tuple update element in place, due to failure to allocate memory for page compaction\n");
 													exit(-1);
 												}
+												zero_out_free_space_on_page(page_contents, mte->user_stats.page_size, &(undo_lr.tueiplr.tpl_def.size_def));
 											}
 
 											// perform update for new tuple on the page
