@@ -1,5 +1,10 @@
 PICKED
 
+ * zero out free space after every init_page and run_page_compaction
+
+ * implement multi threaded hashtable inserts in test case
+   * check improvement right after you minimize lock improvement in TupleIndexer
+
  * DISK SPACE RENUNCIATION BACK TO OS
   * management in perform_checkpoint_UNSAFE(mte)
    * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpoint_begin_LSN, user defined value from the call back)
@@ -18,7 +23,6 @@ PICKED
    * parsing stores uncompressed log record instead of parsed_from
    * compare sizes of with compressed and without uncompression wal logs
    * NOTE :: need mechanism to figure out if a wal log is compressed or not, zlib may expand the data instead of compressing it if the data is too short
-  * this must be done after OPTIMIZATION FOR COMPRESSION TASKS of TupleStore, as this task's efficacy will be improved by this TupleStore task
 
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
