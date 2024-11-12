@@ -841,7 +841,7 @@ void main_3()
 	}
 }
 
-void main4(uint64_t _root_page_id)
+void main5(uint64_t _root_page_id)
 {
 	root_page_id = _root_page_id;
 
@@ -867,7 +867,7 @@ void main4(uint64_t _root_page_id)
 	deinitialize_tuple_defs();
 }
 
-void main5(uint64_t _root_page_id)
+void main6(uint64_t _root_page_id)
 {
 	root_page_id = _root_page_id;
 
@@ -913,9 +913,10 @@ int main()
 	//main2(100);  	// linked_page_list heavy hash_table
 	//main2(300);	// sweet spot
 	//main2(2000);	// array_table heavy hash_table
-	main3();		// concurrent test for bplus tree insertion
-	//main4(1);		// prints bplus tree at root page id = 1
-	//main5(1); 	// prints hash table at root page_id = 1
+	//main3();		// concurrent test for bplus tree insertion
+	main4();		// concurrent test for hash table insertion
+	//main5(1);		// prints bplus tree at root page id = 1
+	//main6(1); 	// prints hash table at root page_id = 1
 	printf("total pages used = %"PRIu64"\n", mte.database_page_count);
 
 	deinitialize_mini_transaction_engine(&mte);
