@@ -890,6 +890,8 @@ int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 		printf("ISSUE :: memory allocation error while compacting the page\n");
 		exit(-1);
 	}
+	if(result)
+		zero_out_free_space_on_page(page_contents, mte->user_stats.page_size, tpl_sz_d); // doing this resets all free space bits on the page, this will help with compression
 
 	if(result)
 	{

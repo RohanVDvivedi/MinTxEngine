@@ -609,6 +609,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 								printf("ISSUE :: memory allocation error while compacting the page for redo phase of recovery\n");
 								exit(-1);
 							}
+							zero_out_free_space_on_page(page_contents, mte->user_stats.page_size, &(lr.pcptlr.size_def));
 							break;
 						}
 						default :
