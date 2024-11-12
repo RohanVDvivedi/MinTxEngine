@@ -1,10 +1,11 @@
 PICKED
 
  * implement multi threaded hashtable inserts in test case
-   * check improvement right after you minimize lock improvement in TupleIndexer
 
  * zero out free space after every init_page and run_page_compaction
    * run all tests again
+
+   * check improvement right after you minimize lock improvement in TupleIndexer
 
  * DISK SPACE RENUNCIATION BACK TO OS
   * management in perform_checkpoint_UNSAFE(mte)
