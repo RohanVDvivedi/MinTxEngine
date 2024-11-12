@@ -244,13 +244,6 @@ int main1()
 
 hash_table_tuple_defs httd;
 
-uint64_t hash_func(const void* data, uint32_t data_size)
-{
-	uint64_t res;
-	memory_move(&res, data, 4);
-	return res;
-}
-
 void create_uint_hash_table(mini_transaction* mt, uint64_t bucket_count)
 {
 	int abort_error = 0;
@@ -397,7 +390,7 @@ void destroy_uint_hash_table(mini_transaction* mt)
 int main2(uint64_t bucket_count)
 {
 	initialize_tuple_defs();
-	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, RECORD_S_KEY_ELEMENT_COUNT, hash_func))
+	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, RECORD_S_KEY_ELEMENT_COUNT, FNV_64_TUPLE_HASHER))
 	{
 		printf("failed to initialize hash table tuple definitions\n");
 		exit(-1);
@@ -879,7 +872,7 @@ void main5(uint64_t _root_page_id)
 	root_page_id = _root_page_id;
 
 	initialize_tuple_defs();
-	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, RECORD_S_KEY_ELEMENT_COUNT, hash_func))
+	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, RECORD_S_KEY_ELEMENT_COUNT, FNV_64_TUPLE_HASHER))
 	{
 		printf("failed to initialize hash table tuple definitions\n");
 		exit(-1);
