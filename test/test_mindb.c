@@ -532,7 +532,7 @@ pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 int duplicates_encountered = 0;
 int writable_aborts_done = 0;
 
-void* perform_insert(void* param)
+void* perform_insert_bplus_tree(void* param)
 {
 	uint64_t p = *(uint64_t*)(param);
 
@@ -591,7 +591,7 @@ int main3()
 	for(uint32_t i = 0; i < JOBS_COUNT; i++)
 	{
 		input[i] = (((uint64_t)rand()) % (5*(JOBS_COUNT+13)));
-		failed_job_submissions += (0 == submit_job_executor(exe, perform_insert, input+i, NULL, NULL, 1000000));
+		failed_job_submissions += (0 == submit_job_executor(exe, perform_insert_bplus_tree, input+i, NULL, NULL, 1000000));
 	}
 
 	shutdown_executor(exe, 0);
@@ -608,6 +608,92 @@ int main3()
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 		print_uint_bplus_tree(mt);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+	}
+
+	/*printf("PRINTING LOGS\n");
+	debug_print_wal_logs_for_mini_transaction_engine(&mte);*/
+
+	deinitialize_tuple_defs();
+	return 0;
+}
+
+void* perform_insert_hash_table(void* param)
+{
+	uint64_t p = *(uint64_t*)(param);
+
+	mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+	int res = insert_uint_hash_table(mt, p);
+
+	if(res == 0)
+	{
+		if(!are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
+		{
+			printf("Bug in bplus tree insert, insert failed but mini_transaction_id is assigned\n");
+			exit(-1);
+		}
+		pthread_mutex_lock(&mtx);
+		duplicates_encountered++;
+		pthread_mutex_unlock(&mtx);
+	}
+
+	if((9 <= (p % 23)) && ((p % 23) <= 12))
+	{
+		int aborted = mark_aborted_for_mini_tx(&mte, mt, -55);
+		if(!aborted)
+			printf("Abortion failed\n");
+		pthread_mutex_lock(&mtx);
+		writable_aborts_done += (res && aborted);
+		pthread_mutex_unlock(&mtx);
+	}
+
+	mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+
+	return NULL;
+}
+
+int main4(uint64_t bucket_count)
+{
+	initialize_tuple_defs();
+	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, RECORD_S_KEY_ELEMENT_COUNT, FNV_64_TUPLE_HASHER))
+	{
+		printf("failed to initialize hash table tuple definitions\n");
+		exit(-1);
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+		create_uint_hash_table(mt, bucket_count);
+		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
+	}
+	/*{
+		root_page_id = 1;
+	}*/
+
+	executor* exe = new_executor(FIXED_THREAD_COUNT_EXECUTOR, WORKER_COUNT, JOBS_COUNT + 32, 1000000, NULL, NULL, NULL);
+
+	int failed_job_submissions = 0;
+	for(uint32_t i = 0; i < JOBS_COUNT; i++)
+	{
+		input[i] = (((uint64_t)rand()) % (5*(JOBS_COUNT+13)));
+		failed_job_submissions += (0 == submit_job_executor(exe, perform_insert_hash_table, input+i, NULL, NULL, 1000000));
+	}
+
+	shutdown_executor(exe, 0);
+	wait_for_all_executor_workers_to_complete(exe);
+	delete_executor(exe);
+
+	pthread_mutex_lock(&mtx);
+	printf("jobs_count = %d\n", JOBS_COUNT);
+	printf("failed_job_submissions = %d\n", failed_job_submissions);
+	printf("duplicates_encountered = %d\n", duplicates_encountered);
+	printf("writable_aborts_done = %d\n", writable_aborts_done);
+	pthread_mutex_unlock(&mtx);
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+		print_uint_hash_table(mt);
 		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
@@ -914,7 +1000,7 @@ int main()
 	//main2(300);	// sweet spot
 	//main2(2000);	// array_table heavy hash_table
 	//main3();		// concurrent test for bplus tree insertion
-	main4();		// concurrent test for hash table insertion
+	main4(1000);	// concurrent test for hash table insertion
 	//main5(1);		// prints bplus tree at root page id = 1
 	//main6(1); 	// prints hash table at root page_id = 1
 	printf("total pages used = %"PRIu64"\n", mte.database_page_count);
