@@ -1,8 +1,5 @@
 PICKED
 
- * zero out free space after every init_page and run_page_compaction
-   * run all tests again
-
  * DISK SPACE RENUNCIATION BACK TO OS
   * management in perform_checkpoint_UNSAFE(mte)
    * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpoint_begin_LSN, user defined value from the call back)
