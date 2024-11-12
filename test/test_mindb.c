@@ -999,8 +999,8 @@ int main()
 	//main2(100);  	// linked_page_list heavy hash_table
 	//main2(300);	// sweet spot
 	//main2(2000);	// array_table heavy hash_table
-	//main3();		// concurrent test for bplus tree insertion
-	main4(1000);	// concurrent test for hash table insertion
+	main3();		// concurrent test for bplus tree insertion
+	//main4(1000);	// concurrent test for hash table insertion
 	//main5(1);		// prints bplus tree at root page id = 1
 	//main6(1); 	// prints hash table at root page_id = 1
 	printf("total pages used = %"PRIu64"\n", mte.database_page_count);
