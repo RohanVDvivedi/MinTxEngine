@@ -198,7 +198,11 @@ int initialize_wal_list(mini_transaction_engine* mte)
 	{
 		wale* prev = &(((wal_accessor*)get_from_front_of_arraylist(&(mte->wa_list), i-1))->wale_handle);
 		wale* curr = &(((wal_accessor*)get_from_front_of_arraylist(&(mte->wa_list), i))->wale_handle);
-		if(compare_uint256(get_next_log_sequence_number(prev), get_first_log_sequence_number(curr))) // if they are different then we fail
+		uint256 prev_next_LSN = get_next_log_sequence_number(prev);
+		uint256 curr_first_LSN = get_first_log_sequence_number(curr);
+		if(are_equal_uint256(curr_first_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // if the curr file has no logs (for some unknown reason), then its first is equal to its next LSN
+			curr_first_LSN = get_next_log_sequence_number(curr);
+		if(compare_uint256(prev_next_LSN, curr_first_LSN)) // if they are different then we fail
 		{
 			pthread_mutex_unlock(&(mte->global_lock));
 			goto FAILURE;
