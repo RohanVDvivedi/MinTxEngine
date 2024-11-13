@@ -20,6 +20,10 @@ cy_uint find_relevant_from_wal_list_UNSAFE(arraylist* wa_list, uint256 LSN);
 // deletes the oldest wale file present in the wa_list
 int drop_oldest_from_wal_list_UNSAFE(mini_transaction_engine* mte);
 
+// makes oldest wal file as read only
+// then creates a new wale file and pushes it to wal_list
+int create_newest_in_wal_list_UNSAFE(mini_transaction_engine* mte);
+
 // close all from the wal_list
 void close_all_in_wal_list(arraylist* wa_list);
 

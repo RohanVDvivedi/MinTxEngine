@@ -255,7 +255,10 @@ int drop_oldest_from_wal_list_UNSAFE(mini_transaction_engine* mte)
 
 	char* filename = malloc(strlen(mte->database_file_name) + 20 + 64);
 	if(filename == NULL)
-		return 0;
+	{
+		printf("ISSUE :: failure to allocate memory for filename\n");
+		exit(-1);
+	}
 
 	wal_accessor* wa = (wal_accessor*) get_front_of_arraylist(&(mte->wa_list));
 	pop_front_from_arraylist(&(mte->wa_list));
@@ -270,6 +273,67 @@ int drop_oldest_from_wal_list_UNSAFE(mini_transaction_engine* mte)
 	sprint_uint256(filename + dirname_length, file_id);
 	remove(filename);
 	free(filename);
+	return 1;
+}
+
+int create_newest_in_wal_list_UNSAFE(mini_transaction_engine* mte)
+{
+	if(is_empty_arraylist(&(mte->wa_list))) // can not create wal file from empty wa_list
+		return 0;
+
+	int err = 0;
+	uint256 file_id = INVALID_LOG_SEQUENCE_NUMBER;
+
+	{
+		wal_accessor* curr_wa = (wal_accessor*) get_back_of_arraylist(&(mte->wa_list));
+
+		file_id = get_next_log_sequence_number(&(curr_wa->wale_handle));
+
+		// turn off writing to curr_wa
+		if(!modify_append_only_buffer_block_count(&(curr_wa->wale_handle), 0, &err))
+		{
+			printf("ISSUE :: failure to turn off reading in the current writable wale, (to be dine in attemot to create a new one)\n");
+			exit(-1);
+		}
+	}
+
+	char* filename = malloc(strlen(mte->database_file_name) + 20 + 64);
+	if(filename == NULL)
+	{
+		printf("ISSUE :: failure to allocate memory for filename\n");
+		exit(-1);
+	}
+	strcpy(filename, mte->database_file_name);
+	strcat(filename, "_logs/");
+	int dirname_length = strlen(filename);
+	sprint_uint256(filename + dirname_length, file_id);
+
+	wal_accessor* wa = malloc(sizeof(wal_accessor));
+	if(wa == NULL)
+	{
+		printf("ISSUE :: unable to allocate memory for a new wal file\n");
+		exit(-1);
+	}
+	wa->wale_LSNs_from = file_id;
+	if(!create_and_open_block_file(&(wa->wale_block_file), filename, 0))
+	{
+		printf("ISSUE :: unable to create a new block file for new wal_accessor\n");
+		exit(-1);
+	}
+	if(!initialize_wale(&(wa->wale_handle), mte->stats.log_sequence_number_width, wa->wale_LSNs_from, &(mte->global_lock), get_block_io_ops_for_wale(&(wa->wale_block_file)), mte->wale_append_only_buffer_block_count, &err))
+	{
+		printf("ISSUE :: unable to create a new wale for new wal_accessor\n");
+		exit(-1);
+	}
+
+	if(is_full_arraylist(&(mte->wa_list)))
+		expand_arraylist(&(mte->wa_list));
+	if(!push_back_to_arraylist(&(mte->wa_list), wa))
+	{
+		printf("ISSUE :: unable to push new wal_accessor to wa_list in mini transaction engine\n");
+		exit(-1);
+	}
+
 	return 1;
 }
 
