@@ -248,6 +248,8 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 	return checkpointLSN;
 }
 
+#include<wal_list_utils.h>
+
 static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 {
 	// flush wal logs, no one will be woken up, as no one is waiting, since we are here with an exclusive lock
