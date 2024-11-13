@@ -112,6 +112,14 @@ struct mini_transaction_engine
 	// as the name suggests check pointing is done every this many microseconds
 	uint64_t checkpointing_period_in_microseconds;
 
+	// checkpoint will occur only if there are these many bytes after the last checkpoint, this must be in some MBs
+	uint64_t checkpointing_LSN_diff_in_bytes;
+
+	// size of wal file after which a new one is created, this is done only on successfull checkpoints
+	// i.e. after checkpointing_period_in_microseconds and that there are atleast checkpointing_LSN_diff_in_bytes after the last checkpoint
+	// so in reality the minimum wal filse size is governed by checkpointing_LSN_diff_in_bytes
+	uint64_t max_wal_file_size_in_bytes;
+
 	// the checkpointer thread waits here for checkpointing_period_in_microseconds
 	// you can signal here, if shutdown is called OR if checkpointing_period_in_microseconds change
 	pthread_cond_t wait_for_checkpointer_period;
@@ -141,7 +149,7 @@ struct mini_transaction_engine
 
 // page_size, page_id_width and log_sequence_number_width parameter is only used if passed as non-zero
 // else they are either used for a new database OR are ensured to be correct for an existing database if non-zero
-int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds);
+int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds, uint64_t checkpointing_LSN_diff_in_bytes, uint64_t max_wal_file_size_in_bytes);
 
 #include<mini_transaction_engine_wale_only_functions.h>
 
