@@ -271,8 +271,12 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 	// flush bufferpool, reducing the number of dirty pages
 	flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
 
+	// -------------- MANAGEMENT TASK : create a new wal file if the last one exceed the max allowable size
+	{
+
+	}
+
 	// appending checkpoint log record
-	printf("CHECKPOINTING active_writers = %"PRIu_cy_uint", dirty_pages = %"PRIu_cy_uint"\n", get_element_count_hashmap(&(mte->writer_mini_transactions)), get_element_count_hashmap(&(mte->dirty_page_table)));
 	uint256 checkpoint_begin_LSN;
 	mte->checkpointLSN = append_checkpoint_to_wal_UNSAFE(mte, &(const checkpoint){.mini_transaction_table = mte->writer_mini_transactions, .dirty_page_table = mte->dirty_page_table}, &checkpoint_begin_LSN);
 
@@ -282,12 +286,16 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 	// start the periodic flush job at the prior state
 	modify_periodic_flush_job_status(&(mte->bufferpool_handle), old_state);
 
-	// ------ officially checkpointing here is completed
-	// you can do management tasks here, like truncating, deleting and creating wal files or database file
-	uint256 min_mini_transaction_id = get_minimum_mini_transaction_id_for_mini_transaction_table(&(mte->writer_mini_transactions));
-	printf("min mini_tx_id = "); print_uint256(min_mini_transaction_id); printf("\n");
-	uint256 min_recLSN = get_minimum_recLSN_for_dirty_page_table(&(mte->dirty_page_table));
-	printf("min recLSN = "); print_uint256(min_recLSN); printf("\n");
+	// -------------- officially checkpointing here is completed
+
+	// -------------- MANAGEMENT TASK : destroy the old wale files, which are no longer being referenced
+	{
+		// you can do management tasks here, like truncating, deleting and creating wal files or database file
+		uint256 min_mini_transaction_id = get_minimum_mini_transaction_id_for_mini_transaction_table(&(mte->writer_mini_transactions));
+		printf("min mini_tx_id = "); print_uint256(min_mini_transaction_id); printf("\n");
+		uint256 min_recLSN = get_minimum_recLSN_for_dirty_page_table(&(mte->dirty_page_table));
+		printf("min recLSN = "); print_uint256(min_recLSN); printf("\n");
+	}
 }
 
 #include<errno.h>
