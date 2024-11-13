@@ -687,6 +687,8 @@ void deinitialize_log_record_tuple_defs(log_record_tuple_defs* lrtd)
 	free(lrtd->ckptdptelr_def.type_info);
 	free(lrtd->ckptelr_def.type_info);
 
+	free(lrtd->uilr_def.type_info);
+
 	free(lrtd->mini_transaction_type);
 	free(lrtd->dirty_page_table_entry_type);
 
