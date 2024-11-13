@@ -248,21 +248,17 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 	return checkpointLSN;
 }
 
-// TODO :: to be configured
-// a checkpoint will occur only if there has been MINIMIM_CHECKPOINTING_LSN_DIFF LSNs flushed after the last checkpoint
-#define MINIMIM_CHECKPOINTING_LSN_DIFF 10240 /*(2 * 1000000)*/ // set this value to a few 10 of MBs in production
-
 static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 {
 	// flush wal logs, no one will be woken up, as no one is waiting, since we are here with an exclusive lock
 	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
 
-	// flushedLSN - checkpointLSN < MINIMIM_CHECKPOINTING_LSN_DIFF
+	// flushedLSN - checkpointLSN < mte->checkpointing_LSN_diff_in_bytes
 	// then there are not enough log records to be checkpointed
 	{
 		uint256 lsn_diff;
 		sub_uint256(&lsn_diff, mte->flushedLSN, mte->checkpointLSN);
-		if(compare_uint256(lsn_diff, get_uint256(MINIMIM_CHECKPOINTING_LSN_DIFF)) < 0)
+		if(compare_uint256(lsn_diff, get_uint256(mte->checkpointing_LSN_diff_in_bytes)) < 0)
 			return;
 	}
 
