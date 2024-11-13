@@ -299,7 +299,7 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 
 	// -------------- MANAGEMENT TASK : destroy the old wale files, which are no longer being referenced
 	{
-		// calculate oldest LSN that is visible
+		// calculate oldest LSN that is visible, begin LSN of the checkpoint is ofcourse visible and is never INVALID
 		uint256 oldest_visible_LSN = checkpoint_begin_LSN;
 
 		{
