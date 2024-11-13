@@ -2,10 +2,6 @@ PICKED
 
  * DISK SPACE RENUNCIATION BACK TO OS
   * management in perform_checkpoint_UNSAFE(mte)
-   * calculate the minimum LSN that can stay alive min(mt->mini_transaction_id-s, dpte->recLSN-s, checkpoint_begin_LSN, user defined value from the call back)
-     * discard old wal files if possible
-   * if last wal file is greater than Y MBs, then create a new wal file and insert it in wa_list
-     * write test to initialize and print wale_LSNs_from for all wa_list wal_accessors and ensure that they are correctly initialized
    * start from the last page and count new size of the database
      * truncate database file
      * update database_page_count variable
@@ -36,7 +32,6 @@ PICKED
 
 Tasks necessary to develop MinTxEngine
  * do following after checkpointing
-   * discard any WALe files whose log records are not visible/required by anyone
    * truncate the database file, if the last page is either a free space mapper page OR is a free page from a committed - not active mini transaction
  * add a disk pager module that is allocation module plus Bufferpool + No logging page modification methods + a truncate functionality
    * to be used by transaction and lock table, i.e. non persistent storage of the database for higher level fuinctions
