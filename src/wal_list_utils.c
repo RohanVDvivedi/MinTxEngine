@@ -334,6 +334,8 @@ int create_newest_in_wal_list_UNSAFE(mini_transaction_engine* mte)
 		exit(-1);
 	}
 
+	free(filename);
+
 	return 1;
 }
 
