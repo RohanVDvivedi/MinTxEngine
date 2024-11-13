@@ -299,11 +299,41 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 
 	// -------------- MANAGEMENT TASK : destroy the old wale files, which are no longer being referenced
 	{
-		// you can do management tasks here, like truncating, deleting and creating wal files or database file
-		uint256 min_mini_transaction_id = get_minimum_mini_transaction_id_for_mini_transaction_table(&(mte->writer_mini_transactions));
-		printf("min mini_tx_id = "); print_uint256(min_mini_transaction_id); printf("\n");
-		uint256 min_recLSN = get_minimum_recLSN_for_dirty_page_table(&(mte->dirty_page_table));
-		printf("min recLSN = "); print_uint256(min_recLSN); printf("\n");
+		// calculate oldest LSN that is visible
+		uint256 oldest_visible_LSN = checkpoint_begin_LSN;
+
+		{
+			uint256 min_mini_transaction_id = get_minimum_mini_transaction_id_for_mini_transaction_table(&(mte->writer_mini_transactions));
+			if(!are_equal_uint256(min_mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
+				oldest_visible_LSN = min_uint256(oldest_visible_LSN, min_mini_transaction_id);
+		}
+
+		{
+			uint256 min_recLSN = get_minimum_recLSN_for_dirty_page_table(&(mte->dirty_page_table));
+			if(!are_equal_uint256(min_recLSN, INVALID_LOG_SEQUENCE_NUMBER))
+				oldest_visible_LSN = min_uint256(oldest_visible_LSN, min_recLSN);
+		}
+
+		// get the index of wa_list where the oldest visible LSN resides
+		cy_uint wa_list_index = find_relevant_from_wal_list_UNSAFE(&(mte->wa_list), oldest_visible_LSN);
+		if(wa_list_index != INVALID_INDEX)
+		{
+			// discard all old wal files
+			cy_uint wals_to_discard = wa_list_index;
+			while(wals_to_discard > 0)
+			{
+				if(!drop_oldest_from_wal_list_UNSAFE(mte))
+				{
+					printf("ISSUE :: failed to discard an old wal file while checkpointing\n");
+					exit(-1);
+				}
+				wals_to_discard--;
+			}
+		}
+		else  // oldest visible LSN belongs to a non existing wal file, this is possibly a bug but only the user needs to care
+		{
+			printf("ISSUE :: oldest visible lsn calcualted for the checkpoint is already discarded, terrible implementation by the user\n");
+		}
 	}
 }
 
