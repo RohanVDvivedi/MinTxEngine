@@ -1000,11 +1000,11 @@ int main()
 	//main_2(); 	// prints logs and exits
 	//main_1();
 	//main0();
-	main1();		// bplus_tree
+	//main1();		// bplus_tree
 	//main2(100);  	// linked_page_list heavy hash_table
 	//main2(300);	// sweet spot
 	//main2(2000);	// array_table heavy hash_table
-	//main3();		// concurrent test for bplus tree insertion
+	main3();		// concurrent test for bplus tree insertion
 	//main4(1000);	// concurrent test for hash table insertion
 	//main5(1);		// prints bplus tree at root page id = 1
 	//main6(1); 	// prints hash table at root page_id = 1
