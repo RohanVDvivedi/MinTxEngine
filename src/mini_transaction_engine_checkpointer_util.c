@@ -273,7 +273,14 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 
 	// -------------- MANAGEMENT TASK : create a new wal file if the last one exceed the max allowable size
 	{
-
+		if(get_total_size_for_block_file(&(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_block_file)) > mte->max_wal_file_size_in_bytes)
+		{
+			if(!create_newest_in_wal_list_UNSAFE(mte))
+			{
+				printf("ISSUE :: failed to create a new wal file while checkpointing\n");
+				exit(-1);
+			}
+		}
 	}
 
 	// appending checkpoint log record
