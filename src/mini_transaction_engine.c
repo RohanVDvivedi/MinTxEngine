@@ -10,7 +10,11 @@
 #include<mini_transaction_engine_checkpointer_util.h>
 #include<mini_transaction_engine_recovery_util.h>
 
-#define MINIMUM_CHECKPOINTER_PERIOD 5000000 // checkpoint period no lesser than 5 seconds
+#define MINIMUM_CHECKPOINTER_PERIOD UINT64_C(5000000) // checkpoint period no lesser than 5 seconds
+
+#define MINIMUM_WAL_FILE_SIZE UINT64_C(  1000000) // minimum wale file size is 1 MB
+
+#define MAXIMUM_WAL_FILE_SIZE UINT64_C(100000000) // maximum wale file size is 100 MB
 
 int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds, uint64_t checkpointing_LSN_diff_in_bytes, uint64_t max_wal_file_size_in_bytes)
 {
@@ -43,6 +47,10 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 
 	// latch and lock wait timeouts can not be 0, checkpointing period must be more than a second
 	if(mte->latch_wait_timeout_in_microseconds == 0 || mte->write_lock_wait_timeout_in_microseconds == 0 || mte->checkpointing_period_in_microseconds < MINIMUM_CHECKPOINTER_PERIOD)
+		return 0;
+
+	// adding checks to ensure the limits of the mini transaction engine
+	if(mte->checkpointing_LSN_diff_in_bytes < MINIMUM_WAL_FILE_SIZE || mte->max_wal_file_size_in_bytes > MAXIMUM_WAL_FILE_SIZE)
 		return 0;
 
 	int recovery_required = 0;
