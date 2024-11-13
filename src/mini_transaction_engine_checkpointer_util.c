@@ -331,6 +331,13 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 		}
 	}
 
+	// -------------- MANAGEMENT TASK : find all trailing database file pages that are not allocated OR are free space mapper pages and truncate the database file
+	{
+
+	}
+
+	// bufferpool may still have these trailing pages that we just discarded using the truncate call, but since they were already flushed to disk WE DO NOT CARE
+
 	// start the periodic flush job at the prior state
 	modify_periodic_flush_job_status(&(mte->bufferpool_handle), old_state);
 }
