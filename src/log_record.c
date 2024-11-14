@@ -45,12 +45,12 @@ static uint32_t bytes_for_page_index(uint32_t page_size)
 
 void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_transaction_engine_stats* stats)
 {
-	if(will_unsigned_mul_overflow(uint32_t, stats->page_size, 16))
+	if(will_unsigned_mul_overflow(uint32_t, stats->page_size, 20))
 	{
-		printf("ISSUE :: page_size to big for log_record_tuple_defs, (page_size * 16) must fir 32 bit unsigned integer\n");
+		printf("ISSUE :: page_size to big for log_record_tuple_defs, (page_size * 20) must f0r 32 bit unsigned integer\n");
 		exit(-1);
 	}
-	lrtd->max_log_record_size = stats->page_size * 16;
+	lrtd->max_log_record_size = stats->page_size * 20;
 
 	// first initialize the dtis required
 	lrtd->page_id_type = define_uint_non_nullable_type("page_id", stats->page_id_width);
@@ -60,7 +60,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	// in the below 4 data types 4 is added to include the element count in sizes for the corresponding types
 	lrtd->data_in_bytes_type = get_variable_length_blob_type("data", stats->page_size + 4);
 	lrtd->size_def_in_bytes_type = get_variable_length_blob_type("size_def", 13 + 4);
-	lrtd->type_info_in_bytes_type = get_variable_length_blob_type("type_info", stats->page_size + 4);
+	lrtd->type_info_in_bytes_type = get_variable_length_blob_type("type_info", 4 * stats->page_size + 4);
 	lrtd->info_in_bytes_type = get_variable_length_blob_type("info_data_type", 6 * stats->page_size + 4);
 
 	// mark all the above initilaized data types to static
@@ -1224,7 +1224,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 		}
 		case PAGE_INIT :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pilr_def)) + (4 + get_page_content_size_for_page(lr->pilr.page_id, stats)) + 16;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pilr_def)) + (4 + get_page_content_size_for_page(lr->pilr.page_id, stats)) + 17;
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1289,7 +1289,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 		}
 		case TUPLE_APPEND :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->talr_def)) + 16;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->talr_def)) + 17;
 			if(lr->talr.new_tuple != NULL)
 				capacity += (4 + get_tuple_size_using_tuple_size_def(&(lr->talr.size_def), lr->talr.new_tuple));
 
@@ -1331,7 +1331,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 		}
 		case TUPLE_INSERT :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tilr_def)) + 16;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tilr_def)) + 17;
 			if(lr->tilr.new_tuple != NULL)
 				capacity += (4 + get_tuple_size_using_tuple_size_def(&(lr->tilr.size_def), lr->tilr.new_tuple));
 
@@ -1376,7 +1376,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 		}
 		case TUPLE_UPDATE :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tulr_def)) + 16;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tulr_def)) + 17;
 			if(lr->tulr.old_tuple != NULL)
 				capacity += (4 + get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.old_tuple));
 			if(lr->tulr.new_tuple != NULL)
@@ -1434,7 +1434,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 		}
 		case TUPLE_DISCARD :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdlr_def)) + 16;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdlr_def)) + 17;
 			if(lr->tdlr.old_tuple != NULL)
 				capacity += (4 + get_tuple_size_using_tuple_size_def(&(lr->tdlr.size_def), lr->tdlr.old_tuple));
 
@@ -1479,7 +1479,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 		}
 		case TUPLE_DISCARD_ALL :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdalr_def)) + 16 + (4 + get_page_content_size_for_page(lr->tdalr.page_id, stats));
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdalr_def)) + 17 + (4 + get_page_content_size_for_page(lr->tdalr.page_id, stats));
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1511,7 +1511,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 		}
 		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdttlr_def)) + 16;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdttlr_def)) + 17;
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1543,7 +1543,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 		}
 		case TUPLE_SWAP :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tslr_def)) + 16;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tslr_def)) + 17;
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1717,7 +1717,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 		}
 		case PAGE_CLONE :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pclr_def)) + 16 + 2 * (4 + get_page_content_size_for_page(lr->pclr.page_id, stats));
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pclr_def)) + 17 + 2 * (4 + get_page_content_size_for_page(lr->pclr.page_id, stats));
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1752,7 +1752,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 		}
 		case PAGE_COMPACTION :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pcptlr_def)) + 16;
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pcptlr_def)) + 17;
 
 			void* result = malloc(capacity);
 			if(result == NULL)
@@ -1781,7 +1781,7 @@ const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini
 		}
 		case FULL_PAGE_WRITE :
 		{
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->fpwlr_def)) + 16 + (4 + get_page_content_size_for_page(lr->fpwlr.page_id, stats));
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->fpwlr_def)) + 17 + (4 + get_page_content_size_for_page(lr->fpwlr.page_id, stats));
 
 			void* result = malloc(capacity);
 			if(result == NULL)
