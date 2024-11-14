@@ -1,5 +1,10 @@
 # MinTxEngine
 A Mini Transaction Engine similar to the one found in the internals of MySQL. Supported by WALe and Bufferpool libraries.
+It works on the tuples with layout as specified by the TupleStore library, fully compatible with the data structures like BplusTree, HashTable, LinkedPageList, ArrayTable, PageTable, and Sorter of TupleIndexer.
+
+Limitations:
+ User level log records can not be more than 6 times the page size of the database.
+ data_type_info's of the Tuples being used with this engine may not serialize to more than 4 times the page size of the database.
 
 ## Setup instructions
 **Install dependencies :**
