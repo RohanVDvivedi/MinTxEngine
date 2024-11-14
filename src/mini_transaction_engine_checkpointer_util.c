@@ -332,6 +332,13 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 	}
 
 	// -------------- MANAGEMENT TASK : find all trailing database file pages that are not allocated OR are free space mapper pages and truncate the database file
+	// THINGS TO NOTE
+	/*
+		1. Here we loop over the pages from the last page, trying to find out the new size for the database
+		2. we truncate the page if it is either a free-space-mapper page OR it is free and is not write locked by any transaction
+		3. we can use bufferpool to access pages but this will just thrash the bufferpool, also there is a possibility of frames available, as they all may be latched and since we hold the exclusive lock on the manager, there is no way that those user threads caould proceed
+		4. So here we will directly read pages from disk, all free pages (by committed mini transactions) and free space mapper pages could not be latched under exclusive lock on the manager, and since we already flushed them from bufferpool, we are sure of reading their most recent state
+	*/
 	{
 
 	}
