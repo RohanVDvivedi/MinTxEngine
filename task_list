@@ -1,12 +1,32 @@
 PICKED
 
   * LOG SIZE OPTIMIZATION using compression
-  * use zlib to compress wal logs
-   * build this functionality directly into the serialize_log_record and parse_log_record functions
-   * make compressing the part of serialize_log_record and uncompressing part of parse_log_record
-   * parsing stores uncompressed log record instead of parsed_from
-   * compare sizes of with compressed and without uncompression wal logs
-   * NOTE :: need mechanism to figure out if a wal log is compressed or not, zlib may expand the data instead of compressing it if the data is too short
+    * in the first byte's 7th bit of the log record store if the log record is compressed or not, call this COMPRESSION_BIT
+    * build static compress_log_record_idempotently
+      * checks compression bit, if set, returns record as is, as it is already compressed
+      * checks size if it is lesser than 130 return as is, as compression is not fruitfull
+      * consumes first byte as is, and sets compression bit
+      * consumes the rest of the bytes and stores it in the same buffer, right after the first byte
+      * returns compressed log record OR NULL if compression fails
+      * old buffer is consumed regardless
+    * call compress_log_record_idempotently in serialize_log_record function
+    * build static uncompress_log_record_idempotently
+      * checks compression bit, if unset, returns record as is, as it is not compressed
+      * consumes first byte as is and resets the compression bit
+      * consumes rest of the bytes and reallocs as new bytes come in
+      * free old buffer and exit
+      * old buffer is consumed regardless
+    * call uncompress_log_record_idempotently before parsing the log record
+    * use zlib to compress wal logs
+    * if compression and uncompression of log records fail with an error then printf and exit(-1)
+
+  * TEST CASE REVAMP
+   * insert in hash table only if unique
+   * delete from hash table to take a flag to not perform vaccum
+   * update for both bplus tree and hash table, storing strings corresponding to the key
+     * first update in same order as insert, to value = "Rohan Vipulkumar Dvivedi" and then to "Rohan"
+     * print if compression was used while performing undo for the update
+   * iterator test for hash table and bplus tree to iterate over all and count tuples and make sure that they are all valid
 
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
@@ -18,10 +38,6 @@ PICKED
       * void update_free_space_mapper_page_in_availability_cache_UNSAFE(mini_transaction_engine* mte, const void* free_space_mapper_page, uint64_t free_space_mapper_page_id); // to be called when ever you release a latch on the free space mapper page
       * uint64_t get_any_free_space_mapper_page_from_availability_cache_UNSAFE(mini_transaction_engine* mte); // return of 0, implies nothing available
         * this will not give you enough information as you also need to check that the corresponding page we decide to allocate also needs to be not write locked
-
- FAR FUTURE 
- * configure this in future MINIMIM_CHECKPOINTING_LSN_DIFF
- * update (for varibale length tuples) and element_in_place_update has not been vigorously tested yet
 
 Tasks necessary to develop MinTxEngine
  * add a disk pager module that is allocation module plus Bufferpool + No logging page modification methods + a truncate functionality
