@@ -249,6 +249,8 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 }
 
 #include<wal_list_utils.h>
+#include<system_page_header_util.h>
+#include<bitmap.h>
 
 static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 {
@@ -339,8 +341,91 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 		3. we can use bufferpool to access pages but this will just thrash the bufferpool, also there is a possibility of frames available, as they all may be latched and since we hold the exclusive lock on the manager, there is no way that those user threads caould proceed
 		4. So here we will directly read pages from disk, all free pages (by committed mini transactions) and free space mapper pages could not be latched under exclusive lock on the manager, and since we already flushed them from bufferpool, we are sure of reading their most recent state
 	*/
+	if(mte->database_page_count > 0)
 	{
+		uint64_t new_database_page_count = mte->database_page_count;
 
+		uint64_t block_count_per_page = mte->stats.page_size / get_block_size_for_block_file(&(mte->database_block_file));
+
+		#define page_id_to_first_block_id(page_id) (((page_id) * block_count_per_page) + 1)
+
+		void* free_space_mapper_page = aligned_alloc(mte->stats.page_size, mte->stats.page_size);
+		void* page = aligned_alloc(mte->stats.page_size, mte->stats.page_size);
+		// set page ids to the ones that we will never see
+		uint64_t free_space_mapper_page_id = mte->user_stats.max_page_count;
+		uint64_t page_id = mte->user_stats.max_page_count;
+
+		if(free_space_mapper_page == NULL || page == NULL)
+		{
+			printf("ISSUE :: failed to allocate page size worth memory required for database file truncation\n");
+			exit(-1);
+		}
+
+		while(new_database_page_count > 0)
+		{
+			page_id = new_database_page_count - 1;
+
+			// we can directly truncate a trailing free space mapper page
+			if(is_free_space_mapper_page(page_id, &(mte->stats)))
+			{
+				new_database_page_count--;
+				continue;
+			}
+
+			if(free_space_mapper_page_id != get_is_valid_bit_page_id_for_page(page_id, &(mte->stats)))
+			{
+				free_space_mapper_page_id = get_is_valid_bit_page_id_for_page(page_id, &(mte->stats));
+				if(!read_blocks_from_block_file(&(mte->database_block_file), free_space_mapper_page, page_id_to_first_block_id(free_space_mapper_page_id), block_count_per_page))
+				{
+					printf("ISSUE :: failed read call on reading free space mapper page for database file truncation\n");
+					exit(-1);
+				}
+			}
+
+			// if the corresponding allocation bit is set, then break out
+			{
+				uint64_t free_space_mapper_bit_pos = get_is_valid_bit_position_for_page(page_id, &(mte->stats));
+				void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
+				if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos))
+					break;
+			}
+
+			// now the bit is not set, so it is surely not latched, but it could be locked
+
+			// we need to ensure that the page is currently not locked by any one, so first read it
+			if(!read_blocks_from_block_file(&(mte->database_block_file), page, page_id_to_first_block_id(page_id), block_count_per_page))
+			{
+				printf("ISSUE :: failed read call on reading some data page for database file truncation\n");
+				exit(-1);
+			}
+
+			// if it is locked by some one then break out
+			{
+				mini_transaction* mt_locked_by = get_mini_transaction_that_last_persistent_write_locked_this_page_UNSAFE(mte, page);
+				if(mt_locked_by != NULL)
+					break;
+				else
+				{
+					new_database_page_count--;
+					continue;
+				}
+			}
+		}
+
+		// free the memory acquired to perform reads for truncation
+		free(free_space_mapper_page);
+		free(page);
+
+		// truncate only if there is more than 20% of unused space at the end of the database file
+		if(mte->database_page_count - new_database_page_count > (mte->database_page_count * 0.2))
+		{
+			mte->database_page_count = new_database_page_count;
+			if(!truncate_block_file(&(mte->database_block_file), 1 + (block_count_per_page * new_database_page_count)))
+			{
+				printf("ISSUE :: unable to truncate block file\n");
+				exit(-1);
+			}
+		}
 	}
 
 	// bufferpool may still have these trailing pages that we just discarded using the truncate call, but since they were already flushed to disk WE DO NOT CARE
