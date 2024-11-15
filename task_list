@@ -1,12 +1,5 @@
 PICKED
 
- * DISK SPACE RENUNCIATION BACK TO OS
-  * management in perform_checkpoint_UNSAFE(mte)
-   * start from the last page and count new size of the database
-     * truncate database file
-     * update database_page_count variable
-     * need some mechanism to explicitly discard those pages from the cache - OR not, everything is already flushed to disk
-
   * LOG SIZE OPTIMIZATION using compression
   * use zlib to compress wal logs
    * build this functionality directly into the serialize_log_record and parse_log_record functions
@@ -31,7 +24,5 @@ PICKED
  * update (for varibale length tuples) and element_in_place_update has not been vigorously tested yet
 
 Tasks necessary to develop MinTxEngine
- * do following after checkpointing
-   * truncate the database file, if the last page is either a free space mapper page OR is a free page from a committed - not active mini transaction
  * add a disk pager module that is allocation module plus Bufferpool + No logging page modification methods + a truncate functionality
    * to be used by transaction and lock table, i.e. non persistent storage of the database for higher level fuinctions
