@@ -21,9 +21,6 @@ PICKED
     * if compression and uncompression of log records fail with an error then printf and exit(-1)
 
   * TEST CASE REVAMP
-   * update for both bplus tree and hash table, storing strings corresponding to the key
-     * first update in same order as insert, to value = "Rohan Vipulkumar Dvivedi" and then to "Rohan"
-     * print if compression was used while performing undo for the update
    * iterator test for hash table and bplus tree to iterate over all and count tuples and make sure that they are all valid
 
   * PAGE_ALLOCATION OPTIMIZATION
