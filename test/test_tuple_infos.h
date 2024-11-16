@@ -79,6 +79,7 @@ void num_in_words(char* output, uint16_t n) {
     }
   } else if (n < 1000) {
   	strcpy(output, ones[(n / 100) % 10]);
+  	strcat(output, " hundred");
   	if(n % 100 != 0) {
   		strcat(output, " ");
 			char temp[100];
