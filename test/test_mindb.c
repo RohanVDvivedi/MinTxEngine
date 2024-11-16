@@ -950,6 +950,9 @@ int main3()
 	{
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 		print_uint_bplus_tree(mt);
+		uint64_t count = 0;
+		int validated = validate_records_uint_bplus_tree(mt, &count);
+		printf("VALIDATION_RESULTS :: count = %"PRIu64", valid = %d\n", count, validated);
 		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0);
 	}
 
