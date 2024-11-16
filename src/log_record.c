@@ -1392,7 +1392,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->palr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case PAGE_DEALLOCATION :
 		{
@@ -1416,7 +1416,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->palr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case PAGE_INIT :
 		{
@@ -1451,7 +1451,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->pilr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case PAGE_SET_HEADER :
 		{
@@ -1481,7 +1481,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->pshlr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case TUPLE_APPEND :
 		{
@@ -1523,7 +1523,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			}
 
 			(*result_size) = get_tuple_size(&(lrtd_p->talr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case TUPLE_INSERT :
 		{
@@ -1568,7 +1568,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			}
 
 			(*result_size) = get_tuple_size(&(lrtd_p->tilr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case TUPLE_UPDATE :
 		{
@@ -1626,7 +1626,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			}
 
 			(*result_size) = get_tuple_size(&(lrtd_p->tulr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case TUPLE_DISCARD :
 		{
@@ -1671,7 +1671,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			}
 
 			(*result_size) = get_tuple_size(&(lrtd_p->tdlr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case TUPLE_DISCARD_ALL :
 		{
@@ -1703,7 +1703,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->tdalr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
 		{
@@ -1735,7 +1735,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->tdttlr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case TUPLE_SWAP :
 		{
@@ -1770,7 +1770,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->tslr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
 		{
@@ -1909,7 +1909,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			}
 
 			(*result_size) = get_tuple_size(&(lrtd_p->tueiplr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case PAGE_CLONE :
 		{
@@ -1944,7 +1944,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->pclr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case PAGE_COMPACTION :
 		{
@@ -1973,7 +1973,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->pcptlr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case FULL_PAGE_WRITE :
 		{
@@ -2003,7 +2003,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->fpwlr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case COMPENSATION_LOG :
 		{
@@ -2027,7 +2027,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->clr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case ABORT_MINI_TX :
 		{
@@ -2051,7 +2051,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->amtlr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case COMPLETE_MINI_TX :
 		{
@@ -2088,7 +2088,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			}
 
 			(*result_size) = get_tuple_size(&(lrtd_p->cmtlr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY :
 		{
@@ -2118,7 +2118,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->ckptmttelr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY :
 		{
@@ -2142,7 +2142,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->ckptdptelr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case CHECKPOINT_END :
 		{
@@ -2163,7 +2163,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			(*result_size) = get_tuple_size(&(lrtd_p->ckptelr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 		case USER_INFO :
 		{
@@ -2191,9 +2191,11 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			}
 
 			(*result_size) = get_tuple_size(&(lrtd_p->uilr_def), result + 1) + 1;
-			return result;
+			break;
 		}
 	}
+
+	return compress_serialized_log_record_idempotently(result, (*result_size), result_size);
 
 	ERROR :;
 	free(result);
