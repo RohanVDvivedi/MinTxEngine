@@ -1251,7 +1251,7 @@ void destroy_and_free_parsed_log_record(log_record* lr)
 }
 
 // compression limit should be set in some 100s of bytes
-#define COMPRESSION_LIMIT 100 // all log records with size greater than COMPRESSION_LIMIT will be compressed
+#define COMPRESSION_LIMIT 250 // all log records with size greater than COMPRESSION_LIMIT will be compressed
 
 // input is always consumed and freed
 static void* compress_serialized_log_record_idempotently(void* input, uint32_t input_size, uint32_t* output_size)
