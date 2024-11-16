@@ -2,6 +2,8 @@
 
 #include<system_page_header_util.h>
 
+#include<zlib.h>
+
 #include<stdlib.h>
 #include<string.h>
 
@@ -1160,6 +1162,106 @@ void destroy_and_free_parsed_log_record(log_record* lr)
 	free((void*)(lr->parsed_from));
 
 	(*lr) = (log_record){};
+}
+
+// compression limit should be set in some 100s of bytes
+#define COMPRESSION_LIMIT 100 // all log records with size greater than COMPRESSION_LIMIT will be compressed
+
+// input is always consumed and freed
+static void* compress_serialized_log_record_idempotently(void* input, uint32_t input_size, uint32_t* output_size)
+{
+	if(input_size == 0)
+	{
+		printf("ISSUE :: invalid serialized log record of size 0, requested to be compressed\n");
+		exit(-1);
+	}
+
+	// if the log record is already compressed OR the input_size is smaller than 100 , return input as is
+	if(((char*)input)[0] & (1<<7))
+	{
+		(*output_size) = input_size;
+		return input;
+	}
+
+	if(input_size < COMPRESSION_LIMIT)
+	{
+		(*output_size) = input_size;
+		return input;
+	}
+
+	{
+		// initialize output
+		uint32_t output_capacity = 50;
+		void* output = malloc(50);
+		if(output == NULL)
+		{
+			printf("ISSUE :: failure to allocate memory for compression of log record\n");
+			exit(-1);
+		}
+
+		// consume first byte
+		((char*)output)[0] = ((char*)input)[0] | (1<<7);
+
+		z_stream zstrm;
+		zstrm.zalloc = Z_NULL;
+		zstrm.zfree = Z_NULL;
+		zstrm.opaque = Z_NULL;
+
+		zstrm.next_in = input + 1;
+		zstrm.avail_in = input_size - 1;
+
+		zstrm.next_out = output + 1;
+		zstrm.avail_out = output_capacity - 1;
+
+		if(Z_OK != deflateInit(&zstrm, Z_DEFAULT_COMPRESSION))
+		{
+			printf("ISSUE :: failure to initialize zlib compression stream for compressing log record\n");
+			exit(-1);
+		}
+
+		while(1)
+		{
+			int res = deflate(&zstrm, Z_FINISH);
+
+			if(res == Z_OK)
+			{
+				if(zstrm.avail_out == 0)
+				{
+					uint32_t new_output_capacity = output_capacity * 2;
+					output = realloc(output, new_output_capacity);
+					if(output == NULL)
+					{
+						printf("ISSUE :: failure to allocate memory for compression of log record\n");
+						exit(-1);
+					}
+
+					zstrm.next_out = output + output_capacity;
+					zstrm.avail_out = new_output_capacity - output_capacity;
+
+					output_capacity = new_output_capacity;
+				}
+				else // this should never happen
+				{
+					printf("ISSUE :: zlib returned Z_OK for compression but has not produced all of the available output even on Z_FINISH\n");
+					exit(-1);
+				}
+			}
+			else if(res == Z_STREAM_END)
+				break;
+			else
+			{
+				printf("ISSUE :: %d error encountered while compressing log record inside zlib\n", res);
+				exit(-1);
+			}
+		}
+
+		(*output_size) = zstrm.total_out + 1;
+
+		deflateEnd(&zstrm);
+
+		free(input);
+		return output;
+	}
 }
 
 const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size)
