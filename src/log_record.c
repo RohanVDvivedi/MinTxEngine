@@ -793,6 +793,9 @@ log_record uncompress_and_parse_log_record(const log_record_tuple_defs* lrtd_p, 
 	if(serialized_log_record_size <= 1 || serialized_log_record_size > lrtd_p->max_log_record_size)
 		return (log_record){};
 
+	// uncompress it before parsing
+	serialized_log_record = uncompress_serialized_log_record_idempotently((void*)serialized_log_record, serialized_log_record_size, &serialized_log_record_size);
+
 	unsigned char log_record_type = ((const unsigned char*)serialized_log_record)[0];
 	const void* log_record_contents = serialized_log_record + 1;
 
