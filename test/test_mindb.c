@@ -303,7 +303,7 @@ int insert_uint_hash_table(mini_transaction* mt, uint64_t x, int allow_vaccum)
 	return res;
 }
 
-int delete_uint_hash_table(mini_transaction* mt, uint64_t x)
+int delete_uint_hash_table(mini_transaction* mt, uint64_t x, int allow_vaccum)
 {
 	int abort_error = 0;
 
@@ -358,11 +358,14 @@ int delete_uint_hash_table(mini_transaction* mt, uint64_t x)
 		exit(-1);
 	}
 
-	perform_vaccum_hash_table(root_page_id, &htvp, 1, &httd, &pam, &pmm, mt, &abort_error);
-	if(is_aborted_for_mini_tx(&mte, mt))
+	if(allow_vaccum)
 	{
-		printf("aborted %d while vaccumming after delete\n", get_abort_error_for_mini_tx(&mte, mt));
-		exit(-1);
+		perform_vaccum_hash_table(root_page_id, &htvp, 1, &httd, &pam, &pmm, mt, &abort_error);
+		if(is_aborted_for_mini_tx(&mte, mt))
+		{
+			printf("aborted %d while vaccumming after delete\n", get_abort_error_for_mini_tx(&mte, mt));
+			exit(-1);
+		}
 	}
 
 	return res;
@@ -466,7 +469,7 @@ int main2(uint64_t bucket_count)
 
 		for(uint32_t i = 0; i < JOBS_COUNT; i++)
 		{
-			delete_uint_hash_table(mt, input[i]);
+			delete_uint_hash_table(mt, input[i], 1); // allowing cleanup
 
 			/*if(i % 500 == 0)
 				intermediate_wal_flush_for_mini_transaction_engine(&mte);*/
