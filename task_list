@@ -20,9 +20,6 @@ PICKED
     * use zlib to compress wal logs
     * if compression and uncompression of log records fail with an error then printf and exit(-1)
 
-  * TEST CASE REVAMP
-   * iterator test for hash table and bplus tree to iterate over all and count tuples and make sure that they are all valid
-
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
     * like a separate faster allocation case which checks these free space mapper pages first, then fall backs to current code
