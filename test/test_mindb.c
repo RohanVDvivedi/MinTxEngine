@@ -304,6 +304,19 @@ int main1()
 		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
+	// validation
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		uint64_t count = 0;
+		int validated = validate_records_uint_bplus_tree(mt, &count);
+
+		printf("VALIDATION_RESULTS :: count = %"PRIu64", valid = %d\n", count, validated);
+
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "validation_done", strlen("validation_done"));
+		printf("completed validation at "); print_uint256(cLSN); printf("\n");
+	}
+
 	// deletions
 	{
 		uint256 uLSN = append_user_info_log_record_for_mini_transaction_engine(&mte, 1, "started deletions", strlen("started deletions"));
