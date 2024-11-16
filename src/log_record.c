@@ -2240,7 +2240,12 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 			printf("prev_log_record_LSN : "); print_uint256(lr->talr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->talr.page_id);
 			printf("size_def : \n"); print_tuple_size_def(&(lr->talr.size_def)); printf("\n");
-			printf("new_tuple : "); print_blob(lr->talr.new_tuple, get_tuple_size_using_tuple_size_def(&(lr->talr.size_def), lr->talr.new_tuple)); printf("\n");
+			printf("new_tuple : ");
+			if(lr->talr.new_tuple != NULL)
+				print_blob(lr->talr.new_tuple, get_tuple_size_using_tuple_size_def(&(lr->talr.size_def), lr->talr.new_tuple));
+			else
+				print_blob(NULL, 0);
+			printf("\n");
 			return;
 		}
 		case TUPLE_INSERT :
@@ -2250,7 +2255,12 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 			printf("page_id : %"PRIu64"\n", lr->tilr.page_id);
 			printf("size_def : \n"); print_tuple_size_def(&(lr->tilr.size_def)); printf("\n");
 			printf("insert_index : %"PRIu32"\n", lr->tilr.insert_index);
-			printf("new_tuple : "); print_blob(lr->tilr.new_tuple, get_tuple_size_using_tuple_size_def(&(lr->tilr.size_def), lr->tilr.new_tuple)); printf("\n");
+			printf("new_tuple : ");
+			if(lr->tilr.new_tuple != NULL)
+				print_blob(lr->tilr.new_tuple, get_tuple_size_using_tuple_size_def(&(lr->tilr.size_def), lr->tilr.new_tuple));
+			else
+				print_blob(NULL, 0);
+			printf("\n");
 			return;
 		}
 		case TUPLE_UPDATE :
@@ -2260,8 +2270,18 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 			printf("page_id : %"PRIu64"\n", lr->tulr.page_id);
 			printf("size_def : \n"); print_tuple_size_def(&(lr->tulr.size_def)); printf("\n");
 			printf("update_index : %"PRIu32"\n", lr->tulr.update_index);
-			printf("old_tuple : "); print_blob(lr->tulr.old_tuple, get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.old_tuple)); printf("\n");
-			printf("new_tuple : "); print_blob(lr->tulr.new_tuple, get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.new_tuple)); printf("\n");
+			printf("old_tuple : ");
+			if(lr->tulr.old_tuple != NULL)
+				print_blob(lr->tulr.old_tuple, get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.old_tuple));
+			else
+				print_blob(NULL, 0);
+			printf("\n");
+			printf("new_tuple : ");
+			if(lr->tulr.new_tuple != NULL)
+				print_blob(lr->tulr.new_tuple, get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.new_tuple));
+			else
+				print_blob(NULL, 0);
+			printf("\n");
 			return;
 		}
 		case TUPLE_DISCARD :
@@ -2271,7 +2291,12 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 			printf("page_id : %"PRIu64"\n", lr->tdlr.page_id);
 			printf("size_def : \n"); print_tuple_size_def(&(lr->tdlr.size_def)); printf("\n");
 			printf("discard_index : %"PRIu32"\n", lr->tdlr.discard_index);
-			printf("old_tuple : "); print_blob(lr->tdlr.old_tuple, get_tuple_size_using_tuple_size_def(&(lr->tdlr.size_def), lr->tdlr.old_tuple)); printf("\n");
+			printf("old_tuple : ");
+			if(lr->tdlr.old_tuple != NULL)
+				print_blob(lr->tdlr.old_tuple, get_tuple_size_using_tuple_size_def(&(lr->tdlr.size_def), lr->tdlr.old_tuple));
+			else
+				print_blob(NULL, 0);
+			printf("\n");
 			return;
 		}
 		case TUPLE_DISCARD_ALL :
