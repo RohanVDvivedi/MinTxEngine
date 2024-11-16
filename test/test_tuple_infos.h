@@ -72,13 +72,19 @@ void num_in_words(char* output, uint16_t n) {
   if (n < 20) {
     strcpy(output, ones[n]);
   } else if (n < 100) {
-    sprintf(output, "%s-%s", tens[(n / 10) % 10], ones[n % 10]);
+    strcpy(output, tens[(n / 10) % 10]);
+    if((n % 10) != 0) {
+    	strcat(output, " ");
+    	strcat(output, ones[n % 10]);
+    }
   } else if (n < 1000) {
-  	{
-  		char temp[100];
-  		num_in_words(temp, n % 100);
-    	sprintf(output, "%s hundred %s", ones[(n / 100) % 10], temp);
-	}
+  	strcpy(output, ones[(n / 100) % 10]);
+  	if(n % 100 != 0) {
+  		strcat(output, " ");
+			char temp[100];
+			num_in_words(temp, n % 100);
+  		strcat(output, temp);
+  	}
   } else {
   	strcpy(output, "TOO00-BIG");
   }
