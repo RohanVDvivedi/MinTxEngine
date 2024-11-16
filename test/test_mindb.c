@@ -218,8 +218,8 @@ int main1()
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "insertions_done", strlen("insertions_done"));
-		printf("completed insertions at "); print_uint256(cLSN); printf("\n");
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "updations_done", strlen("updations_done"));
+		printf("completed updations at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
@@ -253,8 +253,8 @@ int main1()
 		// abort here
 		//mark_aborted_for_mini_tx(&mte, mt, -55);
 
-		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "insertions_done", strlen("insertions_done"));
-		printf("completed insertions at "); print_uint256(cLSN); printf("\n");
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "updations_done", strlen("updations_done"));
+		printf("completed updations at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
@@ -632,6 +632,7 @@ int main2(uint64_t bucket_count)
 		printf("completed creation at "); print_uint256(cLSN); printf("\n");
 	}
 
+	// insertions
 	{
 		uint256 uLSN = append_user_info_log_record_for_mini_transaction_engine(&mte, 1, "started insertions", strlen("started insertions"));
 		printf("user log at "); print_uint256(uLSN); printf("\n");
@@ -666,6 +667,77 @@ int main2(uint64_t bucket_count)
 		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
+	// updations
+	{
+		uint256 uLSN = append_user_info_log_record_for_mini_transaction_engine(&mte, 1, "started updations 1", strlen("started updations 1"));
+		printf("user log at "); print_uint256(uLSN); printf("\n");
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		for(uint32_t i = 0; i < JOBS_COUNT; i++)
+		{
+			update_uint_hash_table(mt, input[i], "Rohan Vipulkumar Dvivedi", 1);
+
+			/*if(i % 500 == 0)
+				intermediate_wal_flush_for_mini_transaction_engine(&mte);*/
+		}
+
+		print_uint_hash_table(mt);
+
+		// abort here
+		//mark_aborted_for_mini_tx(&mte, mt, -55);
+
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "updations_done", strlen("updations_done"));
+		printf("completed updations at "); print_uint256(cLSN); printf("\n");
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		print_uint_hash_table(mt);
+
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"));
+		printf("completed printing at "); print_uint256(cLSN); printf("\n");
+	}
+
+	// updations
+	{
+		uint256 uLSN = append_user_info_log_record_for_mini_transaction_engine(&mte, 1, "started updations 2", strlen("started updations 2"));
+		printf("user log at "); print_uint256(uLSN); printf("\n");
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		for(uint32_t i = 0; i < JOBS_COUNT; i++)
+		{
+			update_uint_hash_table(mt, input[i], "Rohan", 1);
+
+			/*if(i % 500 == 0)
+				intermediate_wal_flush_for_mini_transaction_engine(&mte);*/
+		}
+
+		print_uint_hash_table(mt);
+
+		// abort here
+		//mark_aborted_for_mini_tx(&mte, mt, -55);
+
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "updations_done", strlen("updations_done"));
+		printf("completed updations at "); print_uint256(cLSN); printf("\n");
+	}
+
+	{
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
+
+		print_uint_hash_table(mt);
+
+		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"));
+		printf("completed printing at "); print_uint256(cLSN); printf("\n");
+	}
+
+	// deletions
 	{
 		uint256 uLSN = append_user_info_log_record_for_mini_transaction_engine(&mte, 1, "started deletions", strlen("started deletions"));
 		printf("user log at "); print_uint256(uLSN); printf("\n");
