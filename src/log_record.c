@@ -747,28 +747,20 @@ static void* uncompress_serialized_log_record_idempotently(void* input, uint32_t
 		{
 			int res = inflate(&zstrm, Z_FINISH);
 
-			if(res == Z_OK)
+			if(res == Z_OK || res == Z_BUF_ERROR)
 			{
-				if(zstrm.avail_out == 0)
+				uint32_t new_output_capacity = output_capacity * 2;
+				output = realloc(output, new_output_capacity);
+				if(output == NULL)
 				{
-					uint32_t new_output_capacity = output_capacity * 2;
-					output = realloc(output, new_output_capacity);
-					if(output == NULL)
-					{
-						printf("ISSUE :: failure to allocate memory for uncompression of log record\n");
-						exit(-1);
-					}
-
-					zstrm.next_out = output + output_capacity;
-					zstrm.avail_out = new_output_capacity - output_capacity;
-
-					output_capacity = new_output_capacity;
-				}
-				else // this should never happen
-				{
-					printf("ISSUE :: zlib returned Z_OK for uncompression but has not produced all of the available output even on Z_FINISH\n");
+					printf("ISSUE :: failure to allocate memory for uncompression of log record\n");
 					exit(-1);
 				}
+
+				zstrm.next_out = output + output_capacity;
+				zstrm.avail_out = new_output_capacity - output_capacity;
+
+				output_capacity = new_output_capacity;
 			}
 			else if(res == Z_STREAM_END)
 				break;
@@ -1317,28 +1309,20 @@ static void* compress_serialized_log_record_idempotently(void* input, uint32_t i
 		{
 			int res = deflate(&zstrm, Z_FINISH);
 
-			if(res == Z_OK)
+			if(res == Z_OK || res == Z_BUF_ERROR)
 			{
-				if(zstrm.avail_out == 0)
+				uint32_t new_output_capacity = output_capacity * 2;
+				output = realloc(output, new_output_capacity);
+				if(output == NULL)
 				{
-					uint32_t new_output_capacity = output_capacity * 2;
-					output = realloc(output, new_output_capacity);
-					if(output == NULL)
-					{
-						printf("ISSUE :: failure to allocate memory for compression of log record\n");
-						exit(-1);
-					}
-
-					zstrm.next_out = output + output_capacity;
-					zstrm.avail_out = new_output_capacity - output_capacity;
-
-					output_capacity = new_output_capacity;
-				}
-				else // this should never happen
-				{
-					printf("ISSUE :: zlib returned Z_OK for compression but has not produced all of the available output even on Z_FINISH\n");
+					printf("ISSUE :: failure to allocate memory for compression of log record\n");
 					exit(-1);
 				}
+
+				zstrm.next_out = output + output_capacity;
+				zstrm.avail_out = new_output_capacity - output_capacity;
+
+				output_capacity = new_output_capacity;
 			}
 			else if(res == Z_STREAM_END)
 				break;
