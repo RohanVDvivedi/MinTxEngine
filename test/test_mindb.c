@@ -111,10 +111,15 @@ int validate_records_uint_bplus_tree(mini_transaction* mt, uint64_t* count)
 {
 	int abort_error = 0;
 
-	bplus_tree_iterator* bpi = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, MIN, 0, READ_LOCK, &bpttd, &pam, &pmm, mt, &abort_error);
+	bplus_tree_iterator* bpi = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, MIN, 0, READ_LOCK, &bpttd, &pam, NULL, mt, &abort_error);
 	if(is_aborted_for_mini_tx(&mte, mt))
 	{
 		printf("aborted %d while validating records\n", get_abort_error_for_mini_tx(&mte, mt));
+		exit(-1);
+	}
+	if(bpi == NULL)
+	{
+		printf("failed to initialize bplus tree unstackedread iterator\n");
 		exit(-1);
 	}
 
@@ -127,12 +132,19 @@ int validate_records_uint_bplus_tree(mini_transaction* mt, uint64_t* count)
 		(*count)++;
 		res = res && validate_record(curr_tuple);
 
-		next_bplus_tree_iterator(bpi, mt, &abort_error);
+		int next_res = next_bplus_tree_iterator(bpi, mt, &abort_error);
 		if(is_aborted_for_mini_tx(&mte, mt))
 		{
 			printf("aborted %d while going next for validating records\n", get_abort_error_for_mini_tx(&mte, mt));
 			exit(-1);
 		}
+		if(!next_res)
+		{
+			printf("failed to go next\n");
+			break;
+		}
+
+		curr_tuple = get_tuple_bplus_tree_iterator(bpi);
 	}
 
 	delete_bplus_tree_iterator(bpi, mt, &abort_error);
