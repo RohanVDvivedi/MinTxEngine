@@ -121,7 +121,7 @@ int validate_records_uint_bplus_tree(mini_transaction* mt, uint64_t* count)
 	int res = 1;
 
 	(*count) = 0;
-	const void* curr_tuple = get_tuple_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
+	const void* curr_tuple = get_tuple_bplus_tree_iterator(bpi);
 	while(curr_tuple != NULL && res == 1)
 	{
 		(*count)++;
@@ -135,7 +135,7 @@ int validate_records_uint_bplus_tree(mini_transaction* mt, uint64_t* count)
 		}
 	}
 
-	delete_bplus_tree_iterator(&bpi, mt, &abort_error);
+	delete_bplus_tree_iterator(bpi, mt, &abort_error);
 	if(is_aborted_for_mini_tx(&mte, mt))
 	{
 		printf("aborted %d while deleting iterator after validating records\n", get_abort_error_for_mini_tx(&mte, mt));
