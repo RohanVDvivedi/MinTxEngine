@@ -83,7 +83,7 @@ int update_uint_bplus_tree(mini_transaction* mt, uint64_t x, char* value)
 
 	if(is_aborted_for_mini_tx(&mte, mt))
 	{
-		printf("aborted %d while inserting\n", get_abort_error_for_mini_tx(&mte, mt));
+		printf("aborted %d while updating\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
 	}
 
@@ -426,6 +426,80 @@ int insert_uint_hash_table(mini_transaction* mt, uint64_t x, char* value, int al
 		if(is_aborted_for_mini_tx(&mte, mt))
 		{
 			printf("aborted %d while vaccumming after insert\n", get_abort_error_for_mini_tx(&mte, mt));
+			exit(-1);
+		}
+	}
+
+	return res;
+}
+
+int update_uint_hash_table(mini_transaction* mt, uint64_t x, char* value, int allow_vaccum)
+{
+	int abort_error = 0;
+
+	char key[BUFFER_SIZE];
+	construct_key(key, x, 0);
+
+	char record[BUFFER_SIZE];
+	construct_record(record, x, 0, value);
+
+	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, key, &httd, &pam, &pmm, mt, &abort_error);
+	if(is_aborted_for_mini_tx(&mte, mt))
+	{
+		printf("aborted %d while deleting\n", get_abort_error_for_mini_tx(&mte, mt));
+		exit(-1);
+	}
+
+	int res = 0;
+
+	if(!is_curr_bucket_empty_for_hash_table_iterator(hti))
+	{
+		const void* curr = get_tuple_hash_table_iterator(hti);
+		while(1)
+		{
+			if(curr != NULL) // i.e. key matches
+			{
+				res += update_at_hash_table_iterator(hti, record, mt, &abort_error);
+				if(is_aborted_for_mini_tx(&mte, mt))
+				{
+					printf("aborted %d while updating\n", get_abort_error_for_mini_tx(&mte, mt));
+					exit(-1);
+				}
+
+				// update completed so we break
+				break;
+			}
+			else
+			{
+				int next_res = next_hash_table_iterator(hti, 0, mt, &abort_error);
+				if(is_aborted_for_mini_tx(&mte, mt))
+				{
+					printf("aborted %d while goinf next for update\n", get_abort_error_for_mini_tx(&mte, mt));
+					exit(-1);
+				}
+
+				if(next_res == 0)
+					break;
+			}
+
+			curr = get_tuple_hash_table_iterator(hti);
+		}
+	}
+
+	hash_table_vaccum_params htvp;
+	delete_hash_table_iterator(hti, &htvp, mt, &abort_error);
+	if(is_aborted_for_mini_tx(&mte, mt))
+	{
+		printf("aborted %d while updating\n", get_abort_error_for_mini_tx(&mte, mt));
+		exit(-1);
+	}
+
+	if(allow_vaccum)
+	{
+		perform_vaccum_hash_table(root_page_id, &htvp, 1, &httd, &pam, &pmm, mt, &abort_error);
+		if(is_aborted_for_mini_tx(&mte, mt))
+		{
+			printf("aborted %d while vaccumming after update\n", get_abort_error_for_mini_tx(&mte, mt));
 			exit(-1);
 		}
 	}
