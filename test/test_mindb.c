@@ -275,11 +275,45 @@ int insert_uint_hash_table(mini_transaction* mt, uint64_t x, int allow_vaccum)
 		exit(-1);
 	}
 
-	int res = insert_in_hash_table_iterator(hti, record, mt, &abort_error);
-	if(is_aborted_for_mini_tx(&mte, mt))
+	int res = 0;
+	int found = 0;
+
+	if(!is_curr_bucket_empty_for_hash_table_iterator(hti))
 	{
-		printf("aborted %d while inserting\n", get_abort_error_for_mini_tx(&mte, mt));
-		exit(-1);
+		const void* curr = get_tuple_hash_table_iterator(hti);
+		while(1)
+		{
+			if(curr != NULL) // i.e. key matches
+			{
+				found = 1;
+				break;
+			}
+			else
+			{
+				int next_res = next_hash_table_iterator(hti, 0, mt, &abort_error);
+				if(is_aborted_for_mini_tx(&mte, mt))
+				{
+					printf("aborted %d while going next for inserting\n", get_abort_error_for_mini_tx(&mte, mt));
+					exit(-1);
+				}
+
+				if(next_res == 0)
+					break;
+			}
+
+			curr = get_tuple_hash_table_iterator(hti);
+		}
+	}
+
+	// insert only if not found
+	if(!found)
+	{
+		res = insert_in_hash_table_iterator(hti, record, mt, &abort_error);
+		if(is_aborted_for_mini_tx(&mte, mt))
+		{
+			printf("aborted %d while inserting\n", get_abort_error_for_mini_tx(&mte, mt));
+			exit(-1);
+		}
 	}
 
 	hash_table_vaccum_params htvp;
@@ -341,7 +375,7 @@ int delete_uint_hash_table(mini_transaction* mt, uint64_t x, int allow_vaccum)
 				int next_res = next_hash_table_iterator(hti, 0, mt, &abort_error);
 				if(is_aborted_for_mini_tx(&mte, mt))
 				{
-					printf("aborted %d while deleting\n", get_abort_error_for_mini_tx(&mte, mt));
+					printf("aborted %d while goinf next for deleting\n", get_abort_error_for_mini_tx(&mte, mt));
 					exit(-1);
 				}
 
