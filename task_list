@@ -21,7 +21,6 @@ PICKED
     * if compression and uncompression of log records fail with an error then printf and exit(-1)
 
   * TEST CASE REVAMP
-   * insert in hash table only if unique
    * update for both bplus tree and hash table, storing strings corresponding to the key
      * first update in same order as insert, to value = "Rohan Vipulkumar Dvivedi" and then to "Rohan"
      * print if compression was used while performing undo for the update
