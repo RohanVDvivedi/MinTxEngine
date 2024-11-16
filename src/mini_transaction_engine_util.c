@@ -278,9 +278,9 @@ uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(
 	if(!is_free_space_mapper_page(page_id, &(mte->stats)))
 		fpw_lr.fpwlr.writerLSN = get_writerLSN_for_page(page, &(mte->stats));
 
-	// serialize full page write log record
+	// serialize full page write log record, and compress it, compression can be costly, so it is done with global lock not held
 	uint32_t serialized_fpw_lr_size = 0;
-	const void* serialized_fpw_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
+	const void* serialized_fpw_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
 	if(serialized_fpw_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize full page write log record\n");

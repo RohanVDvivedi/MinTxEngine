@@ -1355,7 +1355,7 @@ static void* compress_serialized_log_record_idempotently(void* input, uint32_t i
 	}
 }
 
-const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size)
+const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size)
 {
 	void* result = NULL;
 	(*result_size) = 0;
