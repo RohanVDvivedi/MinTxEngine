@@ -697,6 +697,97 @@ void deinitialize_log_record_tuple_defs(log_record_tuple_defs* lrtd)
 	(*lrtd) = (log_record_tuple_defs){};
 }
 
+// input is always consumed and freed
+static void* uncompress_serialized_log_record_idempotently(void* input, uint32_t input_size, uint32_t* output_size)
+{
+	if(input_size == 0)
+	{
+		printf("ISSUE :: invalid serialized log record of size 0, requested to be uncompressed\n");
+		exit(-1);
+	}
+
+	// if the log record is already uncompressed , return input as is
+	if(!(((char*)input)[0] & (1<<7)))
+	{
+		(*output_size) = input_size;
+		return input;
+	}
+
+	{
+		// initialize output
+		uint32_t output_capacity = 50;
+		void* output = malloc(50);
+		if(output == NULL)
+		{
+			printf("ISSUE :: failure to allocate memory for uncompression of log record\n");
+			exit(-1);
+		}
+
+		// consume first byte
+		((char*)output)[0] = ((char*)input)[0] & (~(1<<7));
+
+		z_stream zstrm;
+		zstrm.zalloc = Z_NULL;
+		zstrm.zfree = Z_NULL;
+		zstrm.opaque = Z_NULL;
+
+		zstrm.next_in = input + 1;
+		zstrm.avail_in = input_size - 1;
+
+		zstrm.next_out = output + 1;
+		zstrm.avail_out = output_capacity - 1;
+
+		if(Z_OK != inflateInit(&zstrm))
+		{
+			printf("ISSUE :: failure to initialize zlib uncompression stream for uncompressing log record\n");
+			exit(-1);
+		}
+
+		while(1)
+		{
+			int res = inflate(&zstrm, Z_FINISH);
+
+			if(res == Z_OK)
+			{
+				if(zstrm.avail_out == 0)
+				{
+					uint32_t new_output_capacity = output_capacity * 2;
+					output = realloc(output, new_output_capacity);
+					if(output == NULL)
+					{
+						printf("ISSUE :: failure to allocate memory for uncompression of log record\n");
+						exit(-1);
+					}
+
+					zstrm.next_out = output + output_capacity;
+					zstrm.avail_out = new_output_capacity - output_capacity;
+
+					output_capacity = new_output_capacity;
+				}
+				else // this should never happen
+				{
+					printf("ISSUE :: zlib returned Z_OK for uncompression but has not produced all of the available output even on Z_FINISH\n");
+					exit(-1);
+				}
+			}
+			else if(res == Z_STREAM_END)
+				break;
+			else
+			{
+				printf("ISSUE :: %d error encountered while uncompressing log record inside zlib\n", res);
+				exit(-1);
+			}
+		}
+
+		(*output_size) = zstrm.total_out + 1;
+
+		inflateEnd(&zstrm);
+
+		free(input);
+		return output;
+	}
+}
+
 log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size)
 {
 	if(serialized_log_record_size <= 1 || serialized_log_record_size > lrtd_p->max_log_record_size)
