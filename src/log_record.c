@@ -1374,7 +1374,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->palr_def));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1398,7 +1398,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->palr_def));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1422,7 +1422,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pilr_def)) + (4 + get_page_content_size_for_page(lr->pilr.page_id, stats)) + 16;
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1457,7 +1457,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pshlr_def)) + 2 * (4 + lr->pshlr.page_header_size);
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1489,7 +1489,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			if(lr->talr.new_tuple != NULL)
 				capacity += (4 + get_tuple_size_using_tuple_size_def(&(lr->talr.size_def), lr->talr.new_tuple));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1531,7 +1531,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			if(lr->tilr.new_tuple != NULL)
 				capacity += (4 + get_tuple_size_using_tuple_size_def(&(lr->tilr.size_def), lr->tilr.new_tuple));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1578,7 +1578,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			if(lr->tulr.new_tuple != NULL)
 				capacity += (4 + get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.new_tuple));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1634,7 +1634,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			if(lr->tdlr.old_tuple != NULL)
 				capacity += (4 + get_tuple_size_using_tuple_size_def(&(lr->tdlr.size_def), lr->tdlr.old_tuple));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1677,7 +1677,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdalr_def)) + 16 + (4 + get_page_content_size_for_page(lr->tdalr.page_id, stats));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1709,7 +1709,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tdttlr_def)) + 16;
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1741,7 +1741,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tslr_def)) + 16;
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1803,7 +1803,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 					capacity += (4 + stats->page_size);
 			}
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1915,7 +1915,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pclr_def)) + 16 + 2 * (4 + get_page_content_size_for_page(lr->pclr.page_id, stats));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1950,7 +1950,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->pcptlr_def)) + 16;
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -1979,7 +1979,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->fpwlr_def)) + 16 + (4 + get_page_content_size_for_page(lr->fpwlr.page_id, stats));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -2009,7 +2009,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->clr_def));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -2033,7 +2033,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->amtlr_def));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -2059,7 +2059,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			if(lr->cmtlr.info != NULL)
 				capacity += (4 + lr->cmtlr.info_size);
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -2094,7 +2094,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->ckptmttelr_def));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -2124,7 +2124,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->ckptdptelr_def));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -2148,7 +2148,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->ckptelr_def));
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
@@ -2171,7 +2171,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			if(lr->uilr.info != NULL)
 				capacity += (4 + lr->uilr.info_size);
 
-			void* result = malloc(capacity);
+			result = malloc(capacity);
 			if(result == NULL)
 				goto ERROR;
 
