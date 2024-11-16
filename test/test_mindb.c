@@ -49,12 +49,12 @@ void create_uint_bplus_tree(mini_transaction* mt)
 	}
 }
 
-int insert_uint_bplus_tree(mini_transaction* mt, uint64_t x)
+int insert_uint_bplus_tree(mini_transaction* mt, uint64_t x, char* value)
 {
 	int abort_error = 0;
 
 	char record[BUFFER_SIZE];
-	construct_record(record, x, 0);
+	construct_record(record, x, 0, value);
 	int res = insert_in_bplus_tree(root_page_id, record, &bpttd, &pam, &pmm, mt, &abort_error);
 
 	if(is_aborted_for_mini_tx(&mte, mt))
@@ -147,7 +147,7 @@ int main1()
 
 		for(uint32_t i = 0; i < JOBS_COUNT; i++)
 		{
-			insert_uint_bplus_tree(mt, input[i]);
+			insert_uint_bplus_tree(mt, input[i], NULL);
 
 			/*if(i % 500 == 0)
 				intermediate_wal_flush_for_mini_transaction_engine(&mte);*/
@@ -258,7 +258,7 @@ void create_uint_hash_table(mini_transaction* mt, uint64_t bucket_count)
 	}
 }
 
-int insert_uint_hash_table(mini_transaction* mt, uint64_t x, int allow_vaccum)
+int insert_uint_hash_table(mini_transaction* mt, uint64_t x, char* value, int allow_vaccum)
 {
 	int abort_error = 0;
 
@@ -266,7 +266,7 @@ int insert_uint_hash_table(mini_transaction* mt, uint64_t x, int allow_vaccum)
 	construct_key(key, x, 0);
 
 	char record[BUFFER_SIZE];
-	construct_record(record, x, 0);
+	construct_record(record, x, 0, value);
 
 	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, key, &httd, &pam, &pmm, mt, &abort_error);
 	if(is_aborted_for_mini_tx(&mte, mt))
@@ -472,7 +472,7 @@ int main2(uint64_t bucket_count)
 
 		for(uint32_t i = 0; i < JOBS_COUNT; i++)
 		{
-			insert_uint_hash_table(mt, input[i], 1); // allowing cleanup
+			insert_uint_hash_table(mt, input[i], NULL, 1); // allowing cleanup
 
 			/*if(i % 500 == 0)
 				intermediate_wal_flush_for_mini_transaction_engine(&mte);*/
@@ -583,7 +583,7 @@ void* perform_insert_bplus_tree(void* param)
 
 	mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
-	int res = insert_uint_bplus_tree(mt, p);
+	int res = insert_uint_bplus_tree(mt, p, "concurrent-inserts");
 
 	if(res == 0)
 	{
@@ -669,7 +669,7 @@ void* perform_insert_hash_table(void* param)
 
 	mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000);
 
-	int res = insert_uint_hash_table(mt, p, 0); // do not allow cleanup
+	int res = insert_uint_hash_table(mt, p, "concurrent-inserts", 0); // do not allow cleanup
 
 	if(res == 0)
 	{
