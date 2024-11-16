@@ -145,6 +145,8 @@ void construct_record(void* buffer, uint64_t num, int order, char* value)
 
 int validate_record(const void* buffer)
 {
+	int reason = 0;
+
 	uint64_t num = get_value_from_element_from_tuple(&record_def, STATIC_POSITION(0), buffer).uint_value;
 
 	int order = get_value_from_element_from_tuple(&record_def, STATIC_POSITION(1), buffer).int_value;
@@ -154,10 +156,14 @@ int validate_record(const void* buffer)
 		char t1[1000];
 		num_in_words(t1, o);
 		const char* t2 = get_value_from_element_from_tuple(&record_def, STATIC_POSITION(2), buffer).string_value;
-		if(strlen(t1) != get_value_from_element_from_tuple(&record_def, STATIC_POSITION(2), buffer).string_size)
-			return 0;
-		if(strncmp(t1, t2, strlen(t1)))
-			return 0;
+		if(strlen(t1) != get_value_from_element_from_tuple(&record_def, STATIC_POSITION(2), buffer).string_size) {
+			reason = -1;
+			goto INVALID;
+		}
+		if(strncmp(t1, t2, strlen(t1)))  {
+			reason = -2;
+			goto INVALID;
+		}
 	}
 
 	uint32_t index = 0;
@@ -165,18 +171,29 @@ int validate_record(const void* buffer)
 	while(num)
 	{
 		uint8_t d = num % 10;
-		if(index >= size)
-			return 0;
-		if(d != get_value_from_element_from_tuple(&record_def, STATIC_POSITION(3,index), buffer).uint_value)
-			return 0;
+		if(index >= size) {
+			reason = -3;
+			goto INVALID;
+		}
+		if(d != get_value_from_element_from_tuple(&record_def, STATIC_POSITION(3,index), buffer).uint_value) {
+			reason = -4;
+			goto INVALID;
+		}
 		index++;
 		num /= 10;
 	}
 
-	if(index < get_element_count_for_element_from_tuple(&record_def, STATIC_POSITION(3), buffer))
-		return 0;
+	if(index < get_element_count_for_element_from_tuple(&record_def, STATIC_POSITION(3), buffer)) {
+		reason = -5;
+		goto INVALID;
+	}
 
 	return 1;
+
+	INVALID :;
+	print_tuple(buffer, &record_def);
+	printf("is in valid for reason = %d\n", reason);
+	return 0;
 }
 
 void construct_key(void* buffer, uint64_t num, int order)
