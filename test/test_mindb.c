@@ -107,6 +107,37 @@ int delete_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 	return res;
 }
 
+int validate_records_uint_bplus_tree(mini_transaction* mt, uint64_t* count)
+{
+	int abort_error = 0;
+
+	bplus_tree_iterator* bpi = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, MIN, 0, READ_LOCK, &bpttd, &pam, &pmm, mt, &abort_error);
+	if(is_aborted_for_mini_tx(&mte, mt))
+	{
+		printf("aborted %d while validating records\n", get_abort_error_for_mini_tx(&mte, mt));
+		exit(-1);
+	}
+
+	int res = 1;
+
+	(*count) = 0;
+	const void* curr_tuple = get_tuple_bplus_tree_iterator(bplus_tree_iterator* bpi_p);
+	while(curr_tuple != NULL && res == 1)
+	{
+		(*count)++;
+		res = res && validate_record(curr_tuple);
+
+		next_bplus_tree_iterator(bpi, mt, &abort_error);
+		if(is_aborted_for_mini_tx(&mte, mt))
+		{
+			printf("aborted %d while going next for validating records\n", get_abort_error_for_mini_tx(&mte, mt));
+			exit(-1);
+		}
+	}
+
+	return res;
+}
+
 void print_uint_bplus_tree(mini_transaction* mt)
 {
 	int abort_error = 0;
