@@ -435,12 +435,12 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 // destroys all memeory allocated by the above function
 void deinitialize_log_record_tuple_defs(log_record_tuple_defs* lrtd);
 
-log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size);
+log_record uncompress_and_parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size);
 
 // to be called only on parsed log record, it will also free the memory of the parsed log record
 void destroy_and_free_parsed_log_record(log_record* lr);
 
-const void* serialize_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size);
+const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size);
 
 void print_log_record(const log_record* lr, const mini_transaction_engine_stats* stats);
 

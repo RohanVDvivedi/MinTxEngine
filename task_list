@@ -1,25 +1,5 @@
 PICKED
 
-  * LOG SIZE OPTIMIZATION using compression
-    * in the first byte's 7th bit of the log record store if the log record is compressed or not, call this COMPRESSION_BIT
-    * build static compress_log_record_idempotently
-      * checks compression bit, if set, returns record as is, as it is already compressed
-      * checks size if it is lesser than 130 return as is, as compression is not fruitfull
-      * consumes first byte as is, and sets compression bit
-      * consumes the rest of the bytes and stores it in the same buffer, right after the first byte
-      * returns compressed log record OR NULL if compression fails
-      * old buffer is consumed regardless
-    * call compress_log_record_idempotently in serialize_log_record function
-    * build static uncompress_log_record_idempotently
-      * checks compression bit, if unset, returns record as is, as it is not compressed
-      * consumes first byte as is and resets the compression bit
-      * consumes rest of the bytes and reallocs as new bytes come in
-      * free old buffer and exit
-      * old buffer is consumed regardless
-    * call uncompress_log_record_idempotently before parsing the log record
-    * use zlib to compress wal logs
-    * if compression and uncompression of log records fail with an error then printf and exit(-1)
-
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
     * like a separate faster allocation case which checks these free space mapper pages first, then fall backs to current code

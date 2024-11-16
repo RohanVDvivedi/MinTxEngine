@@ -202,9 +202,9 @@ uint256 append_user_info_log_record_for_mini_transaction_engine(mini_transaction
 		}
 	};
 
-	// serialize it
+	// serialize it, and compress it, compression can be costly so it is done without any locks held
 	uint32_t serialized_lr_size = 0;
-	const void* serialized_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &lr, &serialized_lr_size);
+	const void* serialized_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &lr, &serialized_lr_size);
 	if(serialized_lr == NULL)
 		return INVALID_LOG_SEQUENCE_NUMBER;
 

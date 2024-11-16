@@ -155,7 +155,8 @@ int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_
 	// parsing can be expensive so temporarily release global lock
 	pthread_mutex_unlock(&(mte->global_lock));
 	{
-		(*lr) = parse_log_record(&(mte->lrtd), serialized_log_record, serialized_log_record_size);
+		// uncompressing can be costly so call it with global mutex not held
+		(*lr) = uncompress_and_parse_log_record(&(mte->lrtd), serialized_log_record, serialized_log_record_size);
 
 		if(lr->type != UNIDENTIFIED && are_equal_uint256(get_mini_transaction_id_for_log_record(lr), INVALID_LOG_SEQUENCE_NUMBER))
 			set_mini_transaction_id_for_log_record(lr, LSN);
@@ -277,9 +278,9 @@ uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(
 	if(!is_free_space_mapper_page(page_id, &(mte->stats)))
 		fpw_lr.fpwlr.writerLSN = get_writerLSN_for_page(page, &(mte->stats));
 
-	// serialize full page write log record
+	// serialize full page write log record, and compress it, compression can be costly, so it is done with global lock not held
 	uint32_t serialized_fpw_lr_size = 0;
-	const void* serialized_fpw_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
+	const void* serialized_fpw_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
 	if(serialized_fpw_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize full page write log record\n");

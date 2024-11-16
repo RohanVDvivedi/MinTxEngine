@@ -45,9 +45,9 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 		},
 	};
 
-	// serialize log record object
+	// serialize log record, and compress it, compression can be costly so we do it outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");
@@ -155,9 +155,9 @@ static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine*
 		},
 	};
 
-	// serialize log record object
+	// serialize log record, and compress it, compression can be costly so we do it outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");
@@ -372,9 +372,9 @@ static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_
 			}
 		};
 
-		// serialize full page write log record
+		// serialize full page write log record and compress it, compression can be costly so we do it outside global lock
 		uint32_t serialized_fpw_lr_size = 0;
-		const void* serialized_fpw_lr = serialize_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
+		const void* serialized_fpw_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
 		if(serialized_fpw_lr == NULL)
 		{
 			printf("ISSUE :: unable to serialize full page write log record\n");

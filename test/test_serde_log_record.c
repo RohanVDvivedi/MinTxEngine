@@ -73,9 +73,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -100,9 +100,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -130,9 +130,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -160,9 +160,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -189,9 +189,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -219,9 +219,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -250,9 +250,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -280,9 +280,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -309,9 +309,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -338,9 +338,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -368,9 +368,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -398,9 +398,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -426,9 +426,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -455,9 +455,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -482,9 +482,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -509,9 +509,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -538,9 +538,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -570,9 +570,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -599,9 +599,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -626,9 +626,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -652,9 +652,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
@@ -678,9 +678,9 @@ int main()
 		};
 
 		uint32_t serialized_size;
-		const void* serialized = serialize_log_record(&lrtd, &stats, &a, &serialized_size);
+		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
 
-		log_record b = parse_log_record(&lrtd, serialized, serialized_size);
+		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
 		printf("size = %"PRIu32"\n", serialized_size);
 
