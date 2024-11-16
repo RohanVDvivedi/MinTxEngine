@@ -155,7 +155,8 @@ int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_
 	// parsing can be expensive so temporarily release global lock
 	pthread_mutex_unlock(&(mte->global_lock));
 	{
-		(*lr) = parse_log_record(&(mte->lrtd), serialized_log_record, serialized_log_record_size);
+		// uncompressing can be costly so call it with global mutex not held
+		(*lr) = uncompress_and_parse_log_record(&(mte->lrtd), serialized_log_record, serialized_log_record_size);
 
 		if(lr->type != UNIDENTIFIED && are_equal_uint256(get_mini_transaction_id_for_log_record(lr), INVALID_LOG_SEQUENCE_NUMBER))
 			set_mini_transaction_id_for_log_record(lr, LSN);

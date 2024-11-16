@@ -788,7 +788,7 @@ static void* uncompress_serialized_log_record_idempotently(void* input, uint32_t
 	}
 }
 
-log_record parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size)
+log_record uncompress_and_parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size)
 {
 	if(serialized_log_record_size <= 1 || serialized_log_record_size > lrtd_p->max_log_record_size)
 		return (log_record){};
