@@ -2,6 +2,7 @@
 
 data_type_info digits_type_info;
 data_type_info num_in_words_type_info;
+data_type_info value_string_type_info;
 data_type_info* record_type_info;
 tuple_def record_def;
 
@@ -14,8 +15,8 @@ compare_direction CMP_DIR[2] = {ASC, ASC};
 
 void initialize_tuple_defs()
 {
-	record_type_info = malloc(sizeof_tuple_data_type_info(4));
-	initialize_tuple_data_type_info(record_type_info, "record", 0, 900, 4);
+	record_type_info = malloc(sizeof_tuple_data_type_info(5));
+	initialize_tuple_data_type_info(record_type_info, "record", 0, 900, 5);
 
 	strcpy(record_type_info->containees[0].field_name, "num");
 	record_type_info->containees[0].type_info = UINT_NON_NULLABLE[8];
@@ -30,6 +31,10 @@ void initialize_tuple_defs()
 	digits_type_info = get_variable_element_count_array_type("digits", 16, UINT_NON_NULLABLE[1]);
 	strcpy(record_type_info->containees[3].field_name, "digits");
 	record_type_info->containees[3].type_info = &digits_type_info;
+
+	value_string_type_info = get_variable_length_string_type("value_in_string", 100);
+	strcpy(record_type_info->containees[4].field_name, "value_in_string");
+	record_type_info->containees[4].type_info = &value_string_type_info;
 
 	initialize_tuple_def(&record_def, record_type_info);
 
@@ -100,7 +105,7 @@ uint16_t find_order(uint64_t num, int order)
 	return 0;
 }
 
-void construct_record(void* buffer, uint64_t num, int order)
+void construct_record(void* buffer, uint64_t num, int order, char* value)
 {
 	init_tuple(&record_def, buffer);
 
@@ -124,6 +129,11 @@ void construct_record(void* buffer, uint64_t num, int order)
 		set_element_in_tuple(&record_def, STATIC_POSITION(3,(size-1)), buffer, &(user_value){.uint_value = d}, UINT32_MAX);
 		num = num / 10;
 	}
+
+	if(value == NULL)
+		set_element_in_tuple(&record_def, STATIC_POSITION(4), buffer, NULL_USER_VALUE, UINT32_MAX);
+	else
+		set_element_in_tuple(&record_def, STATIC_POSITION(4), buffer, &(user_value){.string_value = value, .string_size = strlen(value)}, UINT32_MAX);
 }
 
 int validate_record(const void* buffer)
