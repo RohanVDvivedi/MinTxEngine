@@ -332,6 +332,9 @@ int delete_uint_hash_table(mini_transaction* mt, uint64_t x, int allow_vaccum)
 					printf("aborted %d while deleting\n", get_abort_error_for_mini_tx(&mte, mt));
 					exit(-1);
 				}
+
+				// remove completed so we break
+				break;
 			}
 			else
 			{
