@@ -135,6 +135,13 @@ int validate_records_uint_bplus_tree(mini_transaction* mt, uint64_t* count)
 		}
 	}
 
+	delete_bplus_tree_iterator(&bpi, mt, &abort_error);
+	if(is_aborted_for_mini_tx(&mte, mt))
+	{
+		printf("aborted %d while deleting iterator after validating records\n", get_abort_error_for_mini_tx(&mte, mt));
+		exit(-1);
+	}
+
 	return res;
 }
 
