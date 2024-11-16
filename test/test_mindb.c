@@ -66,6 +66,30 @@ int insert_uint_bplus_tree(mini_transaction* mt, uint64_t x, char* value)
 	return res;
 }
 
+int update_inspect(const void* context, const tuple_def* record_def, const void* old_record, void** new_record, void (*cancel_update_callback)(void* cancel_update_callback_context, const void* transaction_id, int* abort_error), void* cancel_update_callback_context, const void* transaction_id, int* abort_error)
+{
+	if(old_record == NULL)
+		return 0;
+	return 1;
+}
+
+int update_uint_bplus_tree(mini_transaction* mt, uint64_t x, char* value)
+{
+	int abort_error = 0;
+
+	char record[BUFFER_SIZE];
+	construct_record(record, x, 0, value);
+	int res = inspected_update_in_bplus_tree(root_page_id, record, &((update_inspector){.context = NULL, .update_inspect = update_inspect}), &bpttd, &pam, &pmm, mt, &abort_error);
+
+	if(is_aborted_for_mini_tx(&mte, mt))
+	{
+		printf("aborted %d while inserting\n", get_abort_error_for_mini_tx(&mte, mt));
+		exit(-1);
+	}
+
+	return res;
+}
+
 int delete_uint_bplus_tree(mini_transaction* mt, uint64_t x)
 {
 	int abort_error = 0;
