@@ -121,6 +121,11 @@ static const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, 
 		exit(-1);
 	}
 
+	// since there can not be unflushed but scrolled logs in the non-last wal_accessor
+	// so if so set skip_flushed_checks to 0
+	if(wa_list_index != get_element_count_arraylist(&(mte->wa_list)) - 1)
+		skip_flushed_checks = 0;
+
 	int wal_error = 0;
 	const void* lr =  get_log_record_at(&(((wal_accessor*)get_from_front_of_arraylist(&(mte->wa_list), wa_list_index))->wale_handle), LSN, lr_size, skip_flushed_checks, &wal_error);
 
