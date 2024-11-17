@@ -1,5 +1,9 @@
 PICKED
 
+  * ABORT OPTIMIZATION
+    * flag to avoid flushing and instead just scroll wal logs on abortion
+    * during undo read from unflushed wal logs
+
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
     * like a separate faster allocation case which checks these free space mapper pages first, then fall backs to current code
