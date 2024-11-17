@@ -112,7 +112,7 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 
 #include<wal_list_utils.h>
 
-const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, uint32_t* lr_size)
+static const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, uint32_t* lr_size, int skip_flushed_checks)
 {
 	cy_uint wa_list_index = find_relevant_from_wal_list_UNSAFE(&(mte->wa_list), LSN);
 	if(wa_list_index == INVALID_INDEX) // LSN belongs to a very old WAL file
@@ -122,7 +122,7 @@ const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256
 	}
 
 	int wal_error = 0;
-	const void* lr =  get_log_record_at(&(((wal_accessor*)get_from_front_of_arraylist(&(mte->wa_list), wa_list_index))->wale_handle), LSN, lr_size, &wal_error);
+	const void* lr =  get_log_record_at(&(((wal_accessor*)get_from_front_of_arraylist(&(mte->wa_list), wa_list_index))->wale_handle), LSN, lr_size, skip_flushed_checks, &wal_error);
 
 	switch(wal_error)
 	{
@@ -142,10 +142,10 @@ const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256
 	return lr;
 }
 
-int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_record* lr)
+int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_record* lr, int skip_flushed_checks)
 {
 	uint32_t serialized_log_record_size = 0;
-	const void* serialized_log_record = get_unparsed_log_record_UNSAFE(mte, LSN, &serialized_log_record_size);
+	const void* serialized_log_record = get_unparsed_log_record_UNSAFE(mte, LSN, &serialized_log_record_size, skip_flushed_checks);
 
 	if(serialized_log_record == NULL)
 		return 0;
@@ -183,7 +183,7 @@ uint256 get_next_LSN_for_LSN_UNSAFE(mini_transaction_engine* mte, uint256 LSN)
 		return get_next_log_sequence_number(wale_p);
 
 	int wal_error = 0;
-	uint256 nextLSN = get_next_log_sequence_number_of(wale_p, LSN, &wal_error);
+	uint256 nextLSN = get_next_log_sequence_number_of(wale_p, LSN, 0, &wal_error); // we do not allow you going next on unflushed log records
 
 	switch(wal_error)
 	{

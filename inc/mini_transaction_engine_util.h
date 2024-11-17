@@ -34,13 +34,9 @@ void decrement_mini_transaction_reference_counter_UNSAFE(mini_transaction_engine
 // this function must be called with global_lock and manager_lock held
 int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, uint64_t *write_lock_wait_timeout_in_microseconds_LEFT);
 
-// below are the two functions that can be used to get unparsed and parsed log record
-// these are unsafe functions and must be called with global_lock held, additionally a manager_lock held in either shared or exclusive lock
-// below function returns NULL if no such log record was found
-const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, uint32_t* lr_size);
 // below function returns 0, if no such log record was found
 // NOTE for the first log record of a mini transaction the mini_transaction_id is going to be INVALID_LOG_SEQUENCE_NUMBER, so if this function finds a log_record with mini_transaction_id as INVALID then we set it to the provided LSN
-int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_record* lr);
+int get_parsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, log_record* lr, int skip_flushed_checks);
 
 // returns the next LSN that will come immediately after the LSN in the parameter
 // this function must be called with global_lock and manager_lock held
