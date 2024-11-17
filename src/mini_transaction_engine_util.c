@@ -223,6 +223,22 @@ void flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mini_transaction_engin
 	}
 }
 
+void scroll_wal_buffers_UNSAFE(mini_transaction_engine* mte)
+{
+	{
+		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
+
+		int wal_error = 0;
+		scroll_append_only_buffer_inside_wale(wale_p, &wal_error);
+
+		if(wal_error)
+		{
+			printf("ISSUE :: wal_error = %d encountered on scrolling the latest wal buffer\n", wal_error);
+			exit(-1);
+		}
+	}
+}
+
 void* acquire_page_with_reader_latch_N_flush_wal_if_necessary_UNSAFE(mini_transaction_engine* mte, uint64_t page_id, int evict_dirty_if_necessary)
 {
 	// first attempt to grab latch immediately and quit

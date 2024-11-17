@@ -71,7 +71,7 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 	return mt;
 }
 
-static uint256 append_abortion_log_record_and_flush_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt)
+static uint256 append_abortion_log_record_and_scroll_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt)
 {
 	if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
 	{
@@ -125,9 +125,9 @@ static uint256 append_abortion_log_record_and_flush_INTERNAL(mini_transaction_en
 		free((void*)serialized_lr);
 	}
 
-	// you can not read committed log records without a flush
+	// you can not read unflushed log records without a scroll
 	pthread_mutex_lock(&(mte->global_lock));
-	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
+	scroll_wal_buffers_UNSAFE(mte);
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	return log_record_LSN;
@@ -633,9 +633,9 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 	// if the mini transaction is in ABORTED state, then append abort log record and turn it into UNDOING_FOR_ABORT state
 	if(mt->state == MIN_TX_ABORTED)
 	{
-		// state change must happen only after logging it, the correct ordering it below
+		// state change must happen only after logging it, the correct ordering is below
 		pthread_mutex_unlock(&(mte->global_lock));
-		append_abortion_log_record_and_flush_INTERNAL(mte, mt);
+		append_abortion_log_record_and_scroll_INTERNAL(mte, mt);
 		pthread_mutex_lock(&(mte->global_lock));
 		mt->state = MIN_TX_UNDOING_FOR_ABORT;
 	}
@@ -659,7 +659,7 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 			uint256 temp = mt->lastLSN;
 			while(1)
 			{
-				if(!get_parsed_log_record_UNSAFE(mte, temp, &lr))
+				if(!get_parsed_log_record_UNSAFE(mte, temp, &lr, 1)) // you are allowed to read unflushed log records here, aborting only scrolls the log records, does not flush it
 				{
 					printf("ISSUE :: error reading log record\n");
 					exit(-1);
@@ -688,7 +688,7 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 				temp = lr.clr.undo_of_LSN;
 				destroy_and_free_parsed_log_record(&lr);
 
-				if(!get_parsed_log_record_UNSAFE(mte, temp, &lr))
+				if(!get_parsed_log_record_UNSAFE(mte, temp, &lr, 1)) // you are allowed to read unflushed log records here, aborting only scrolls the log records, does not flush it
 				{
 					printf("ISSUE :: error reading log record\n");
 					exit(-1);
@@ -714,7 +714,7 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 			shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 			log_record undo_lr;
-			if(!get_parsed_log_record_UNSAFE(mte, undo_LSN, &undo_lr))
+			if(!get_parsed_log_record_UNSAFE(mte, undo_LSN, &undo_lr, 1)) // you are allowed to read unflushed log records here, aborting only scrolls the log records, does not flush it
 			{
 				printf("ISSUE :: error reading log record\n");
 				exit(-1);

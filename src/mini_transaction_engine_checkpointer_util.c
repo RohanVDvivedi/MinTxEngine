@@ -48,7 +48,7 @@ uint256 read_checkpoint_from_wal_UNSAFE(mini_transaction_engine* mte, uint256 ch
 
 	{
 		log_record lr;
-		if(!get_parsed_log_record_UNSAFE(mte, read_at, &lr))
+		if(!get_parsed_log_record_UNSAFE(mte, read_at, &lr, 0)) // you are allowed to only read a flushed checkpoint
 		{
 			printf("ISSUE :: could not read checkpoint end log record\n");
 			exit(-1);
@@ -72,7 +72,7 @@ uint256 read_checkpoint_from_wal_UNSAFE(mini_transaction_engine* mte, uint256 ch
 	while(!are_equal_uint256(read_at, INVALID_LOG_SEQUENCE_NUMBER))
 	{
 		log_record lr;
-		if(!get_parsed_log_record_UNSAFE(mte, read_at, &lr))
+		if(!get_parsed_log_record_UNSAFE(mte, read_at, &lr, 0)) // you are allowed to only read a flushed checkpoint
 		{
 			printf("ISSUE :: could not read checkpoint end log record\n");
 			exit(-1);
