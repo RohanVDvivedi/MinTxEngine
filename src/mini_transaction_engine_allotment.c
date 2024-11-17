@@ -661,7 +661,7 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 			{
 				if(!get_parsed_log_record_UNSAFE(mte, temp, &lr, 1)) // you are allowed to read unflushed log records here, aborting only scrolls the log records, does not flush it
 				{
-					printf("ISSUE :: error reading log record\n");
+					printf("ISSUE :: error reading log record for undo\n");
 					exit(-1);
 				}
 
@@ -690,7 +690,7 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 
 				if(!get_parsed_log_record_UNSAFE(mte, temp, &lr, 1)) // you are allowed to read unflushed log records here, aborting only scrolls the log records, does not flush it
 				{
-					printf("ISSUE :: error reading log record\n");
+					printf("ISSUE :: error reading log record for undo\n");
 					exit(-1);
 				}
 
@@ -716,7 +716,7 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 			log_record undo_lr;
 			if(!get_parsed_log_record_UNSAFE(mte, undo_LSN, &undo_lr, 1)) // you are allowed to read unflushed log records here, aborting only scrolls the log records, does not flush it
 			{
-				printf("ISSUE :: error reading log record\n");
+				printf("ISSUE :: error reading log record for undo\n");
 				exit(-1);
 			}
 
