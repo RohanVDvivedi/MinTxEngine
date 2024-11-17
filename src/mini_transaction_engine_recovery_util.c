@@ -36,7 +36,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 	while(!are_equal_uint256(analyze_at, INVALID_LOG_SEQUENCE_NUMBER))
 	{
 		log_record lr;
-		if(!get_parsed_log_record_UNSAFE(mte, analyze_at, &lr))
+		if(!get_parsed_log_record_UNSAFE(mte, analyze_at, &lr, 0)) // during recovery you are allowed to only read flushed log records
 		{
 			printf("ISSUE :: unable to read log record during recovery\n");
 			exit(-1);
@@ -116,7 +116,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 			{
 				// grab undo of lr
 				log_record undo_lr;
-				if(!get_parsed_log_record_UNSAFE(mte, lr.clr.undo_of_LSN, &undo_lr))
+				if(!get_parsed_log_record_UNSAFE(mte, lr.clr.undo_of_LSN, &undo_lr, 0)) // during recovery you are allowed to only read flushed log records
 				{
 					printf("ISSUE :: unable to read undo log record during recovery\n");
 					exit(-1);
@@ -407,7 +407,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 	while(!are_equal_uint256(redo_at, INVALID_LOG_SEQUENCE_NUMBER))
 	{
 		log_record lr;
-		if(!get_parsed_log_record_UNSAFE(mte, redo_at, &lr))
+		if(!get_parsed_log_record_UNSAFE(mte, redo_at, &lr, 0)) // during recovery you are allowed to only read flushed log records
 		{
 			printf("ISSUE :: unable to read log record during recovery\n");
 			exit(-1);
@@ -663,7 +663,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 			{
 				// grab undo of lr
 				log_record undo_lr;
-				if(!get_parsed_log_record_UNSAFE(mte, lr.clr.undo_of_LSN, &undo_lr))
+				if(!get_parsed_log_record_UNSAFE(mte, lr.clr.undo_of_LSN, &undo_lr, 0))  // during recovery you are allowed to only read flushed log records
 				{
 					printf("ISSUE :: unable to read undo log record during recovery\n");
 					exit(-1);
