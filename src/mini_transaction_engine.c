@@ -241,7 +241,7 @@ int get_log_record_at_LSN_for_mini_transaction_engine(mini_transaction_engine* m
 	if(compare_uint256(LSN, first_available_LSN) < 0) // if LSN < first_available_LSN, return 0
 		result = 0;
 	else // above if case ensures that we fail instead of crashing at LSN < first_available_LSN
-		result = get_parsed_log_record_UNSAFE(mte, LSN, lr);
+		result = get_parsed_log_record_UNSAFE(mte, LSN, lr, 0); // we do not allow users to read unflushed log records
 
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
@@ -301,7 +301,7 @@ void debug_print_wal_logs_for_mini_transaction_engine(mini_transaction_engine* m
 	while(!are_equal_uint256(t, INVALID_LOG_SEQUENCE_NUMBER))
 	{
 		log_record lr;
-		if(!get_parsed_log_record_UNSAFE(mte, t, &lr))
+		if(!get_parsed_log_record_UNSAFE(mte, t, &lr, 0)) // debug print only flushed log records
 			break;
 
 		printf("LSN : "); print_uint256(t); printf("\n");
