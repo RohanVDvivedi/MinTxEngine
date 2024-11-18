@@ -96,6 +96,11 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		}
 
 		recovery_required = 1;
+		if(are_equal_uint256(mte->flushedLSN, INVALID_LOG_SEQUENCE_NUMBER)) // edge case check, if the flushedLSN is INVALID, then there are no logs to recover
+		{
+			printf("NOTE :: there are no logs to recover the database\n");
+			recovery_required = 0;
+		}
 	}
 	else if(create_and_open_block_file(&(mte->database_block_file), mte->database_file_name, O_DIRECT))
 	{
@@ -163,6 +168,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		pthread_mutex_unlock(&(mte->recovery_mode_lock));
 
 		// all recovery function here
+		printf("NOTE :: performing recovery\n");
 		recover(mte);
 
 		// recovery may lead to creation of new pages so we update the database_page_count
