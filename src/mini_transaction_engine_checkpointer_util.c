@@ -87,6 +87,13 @@ uint256 read_checkpoint_from_wal_UNSAFE(mini_transaction_engine* mte, uint256 ch
 				exit(-1);
 			}
 
+			// checkpoint must never contain a reader mini transaction entry
+			if(are_equal_uint256(lr.ckptmttelr.mt.mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
+			{
+				printf("ISSUE :: checkpoint being read contains a reader mini transaction entry\n");
+				exit(-1);
+			}
+
 			mini_transaction* mt = get_new_mini_transaction();
 
 			mt->mini_transaction_id = lr.ckptmttelr.mt.mini_transaction_id;
