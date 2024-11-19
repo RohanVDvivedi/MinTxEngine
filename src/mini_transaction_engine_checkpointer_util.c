@@ -155,6 +155,10 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 		if(mt->state == MIN_TX_COMPLETED)
 			continue;
 
+		// skip all reader mini transactions
+		if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
+			continue;
+
 		log_record lr = {
 			.type = CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY,
 			.ckptmttelr = {
