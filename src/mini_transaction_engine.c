@@ -168,7 +168,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		pthread_mutex_unlock(&(mte->recovery_mode_lock));
 
 		// all recovery function here
-		printf("NOTE :: performing recovery\n");
+		printf("NOTE :: performing recovery from checkpointLSN = "); print_uint256(mte->checkpointLSN); printf(" until flushedLSN = "); print_uint256(mte->flushedLSN); printf("\n");
 		recover(mte);
 
 		// recovery may lead to creation of new pages so we update the database_page_count
