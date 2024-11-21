@@ -1,6 +1,7 @@
 PICKED
 
   * mt->mini_transaction_id, state, lastLSN and abort_error to be read and written only in shared/exclusive manager lock
+  * you can not abort/update a mini transaction outside of the shared manager lock, as checkpointer could be reading it
 
 
   * PAGE_ALLOCATION OPTIMIZATION
