@@ -150,7 +150,7 @@ static uint256 append_completion_log_record_and_flush_INTERNAL(mini_transaction_
 			.cmtlr = {
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
-				.is_aborted = (mt->state != MIN_TX_IN_PROGRESS), // it is surecly not completed, so any state except MIN_TX_IN_PROGRESS implies an aborted transaction
+				.is_aborted = (mt->state != MIN_TX_IN_PROGRESS), // it is surely not completed, so any state except MIN_TX_IN_PROGRESS implies an aborted transaction
 				.info = complete_info,
 				.info_size = complete_info_size,
 			},
