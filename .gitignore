@@ -1,6 +1,8 @@
 *.o
 *.a
 *.out
+*.db
+*.db_logs
 *.DS_Store
 
 obj
