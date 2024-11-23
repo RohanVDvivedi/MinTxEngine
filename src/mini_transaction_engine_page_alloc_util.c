@@ -232,7 +232,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 	const uint64_t total_pages_per_extent = data_pages_per_extent + 1;
 
 	pthread_mutex_lock(&(mte->global_lock));
-	uint64_t current_database_page_count = mte->database_page_count;
+	uint64_t current_database_page_count = mte->database_page_count; // since we hold the shared lock on the manager_lock, this value can increment but not decrement
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	uint64_t free_space_mapper_page_id = 0;
