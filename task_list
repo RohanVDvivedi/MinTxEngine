@@ -10,7 +10,3 @@ PICKED
       * void update_free_space_mapper_page_in_availability_cache_UNSAFE(mini_transaction_engine* mte, const void* free_space_mapper_page, uint64_t free_space_mapper_page_id); // to be called when ever you release a latch on the free space mapper page
       * uint64_t get_any_free_space_mapper_page_from_availability_cache_UNSAFE(mini_transaction_engine* mte); // return of 0, implies nothing available
         * this will not give you enough information as you also need to check that the corresponding page we decide to allocate also needs to be not write locked
-
-Tasks necessary to develop MinTxEngine
- * add a disk pager module that is allocation module plus Bufferpool + No logging page modification methods + a truncate functionality
-   * to be used by transaction and lock table, i.e. non persistent storage of the database for higher level fuinctions
