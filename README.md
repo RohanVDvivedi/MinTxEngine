@@ -30,7 +30,9 @@ Limitations:
  * [BlockIO](https://github.com/RohanVDvivedi/BlockIO)
  * [SerializableInteger](https://github.com/RohanVDvivedi/SerializableInteger)
  * [ReaderWriterLock](https://github.com/RohanVDvivedi/ReaderWriterLock)
+ * [BoomPar](https://github.com/RohanVDvivedi/BoomPar)
  * [Cutlery](https://github.com/RohanVDvivedi/Cutlery)
+ * [zlib](https://github.com/madler/zlib)      ($ sudo apt install zlib1g-dev)
 
 **Download source code :**
  * `git clone https://github.com/RohanVDvivedi/MinTxEngine.git`
@@ -53,3 +55,6 @@ Limitations:
 **Uninstall :**
  * `cd c_template_application`
  * `sudo make uninstall`
+
+## Third party acknowledgements
+ * *compression of wal logs, internally supported by [zlib](https://github.com/madler/zlib) checkout their website [here](https://zlib.net/).*
