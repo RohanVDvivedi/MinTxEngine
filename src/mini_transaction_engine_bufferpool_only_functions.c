@@ -298,25 +298,31 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 			shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 			void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
-			uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
-			if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+			if(mt != NULL) // you can only possibly abort a non-null mini transaction
 			{
-				mt->state = MIN_TX_ABORTED;
-				mt->abort_error = ILLEGAL_PAGE_ID;
-				shared_unlock(&(mte->manager_lock));
-				pthread_mutex_unlock(&(mte->global_lock));
-				return 0;
+				uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+				if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+				{
+					mt->state = MIN_TX_ABORTED;
+					mt->abort_error = ILLEGAL_PAGE_ID;
+					shared_unlock(&(mte->manager_lock));
+					pthread_mutex_unlock(&(mte->global_lock));
+					return 0;
+				}
 			}
 
 			result = release_reader_lock_on_page(&(mte->bufferpool_handle), page);
 
-			if(!result)
+			if(mt != NULL) // you can only possibly abort a non-null mini transaction
 			{
-				mt->state = MIN_TX_ABORTED;
-				mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+				if(!result)
+				{
+					mt->state = MIN_TX_ABORTED;
+					mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+				}
+				else // latch release was a success so decrement the latch counter for this mini transaction
+					mt->page_latches_held_counter--;
 			}
-			else // latch release was a success so decrement the latch counter for this mini transaction
-				mt->page_latches_held_counter--;
 
 			shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
@@ -394,14 +400,17 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 			shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 			void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
-			uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
-			if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+			if(mt != NULL) // you can only possibly abort a non-null mini transaction
 			{
-				mt->state = MIN_TX_ABORTED;
-				mt->abort_error = ILLEGAL_PAGE_ID;
-				shared_unlock(&(mte->manager_lock));
-				pthread_mutex_unlock(&(mte->global_lock));
-				return 0;
+				uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+				if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+				{
+					mt->state = MIN_TX_ABORTED;
+					mt->abort_error = ILLEGAL_PAGE_ID;
+					shared_unlock(&(mte->manager_lock));
+					pthread_mutex_unlock(&(mte->global_lock));
+					return 0;
+				}
 			}
 
 			// recalculate page checksum, prior to releasing the latch, as the user might have modified the page
@@ -411,13 +420,16 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 
 			result = release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
 
-			if(!result)
+			if(mt != NULL) // you can only possibly abort a non-null mini transaction
 			{
-				mt->state = MIN_TX_ABORTED;
-				mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+				if(!result)
+				{
+					mt->state = MIN_TX_ABORTED;
+					mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+				}
+				else // latch release was a success so decrement the latch counter for this mini transaction
+					mt->page_latches_held_counter--;
 			}
-			else // latch release was a success so decrement the latch counter for this mini transaction
-				mt->page_latches_held_counter--;
 
 			shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
