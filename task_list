@@ -1,10 +1,7 @@
 PICKED
 
   * allowing latches to be preserved between mini transactions
-    * on completion return the page latches held counter using a pointer
-    * on starting a new mini transaction take this value from user to initialize in the new mini transaction
-    * allow releasing latches without a pointer to the mini transaction
-    * add appropriate comments to explain how to use this new feature and update test cases
+    * update test cases
 
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
