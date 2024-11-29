@@ -7,6 +7,9 @@
 	For both the below function page_latches_to_be_borrowed is the number of latches that are to be borrowed from completing mini transaction to another one that gets alloted
 	You can only borrow latches from a non-aborted completed mini transaction to the new one
 	For completing an aborted mini transaction you must release all latches prior to calling mte_complete_mini_tx()
+
+	This feature will allow you to hold latches with TupleIndexer's iterators on successfull mini transactions, even after completing them,
+	so that this iterator will not need to re-traverse the data structure again to figure out the insert/update/delete positions for the next mini transaction, as you will already be holding latches with write locks released after the completion
 */
 
 // allots a new mini transaction for you to use
