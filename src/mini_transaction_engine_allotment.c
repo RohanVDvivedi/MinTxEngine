@@ -594,12 +594,6 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 
 	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
-	if(mt->page_latches_held_counter != 0)
-	{
-		printf("ISSUE :: mte_complete_mini_tx() was called with %"PRIu64" page latches still held\n", mt->page_latches_held_counter);
-		exit(-1);
-	}
-
 	// if it is a reader mini transaction, no matter what state it is in, there is nothing to be done
 	if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
 	{
@@ -628,6 +622,15 @@ uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 		shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
 		return completion_log_record_LSN;
+	}
+
+	// if you reach here your mini transaction needs undoing
+	// for this to be allowed you need not hold any latches on any pages whatsoever, because even for performing undo this function needs to grab latches on modified pages
+	// hence the ISSUE check below to catch bugs
+	if(mt->page_latches_held_counter != 0)
+	{
+		printf("ISSUE :: mte_complete_mini_tx() on aborted transaction was called with %"PRIu64" page latches still held\n", mt->page_latches_held_counter);
+		exit(-1);
 	}
 
 	// if the mini transaction is in ABORTED state, then append abort log record and turn it into UNDOING_FOR_ABORT state
