@@ -1,7 +1,6 @@
 PICKED
 
   * allowing latches to be preserved between mini transactions
-    * there is an issue only if an aborting mini transaction is holding latches
     * on completion return the page latches held counter using a pointer
     * on starting a new mini transaction take this value from user to initialize in the new mini transaction
     * allow releasing latches without a pointer to the mini transaction
