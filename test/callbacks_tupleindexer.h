@@ -79,12 +79,17 @@ int release_reader_lock_on_page_mtx(void* context, const void* transaction_id, v
 		printf("%p release_reader_lock_on_page_mtx\n", transaction_id);
 	#endif
 	int result = release_reader_latch_on_page_for_mini_tx(context, (void*)transaction_id, pg_ptr, !!(opts & FREE_PAGE));
-	(*abort_error) = get_abort_error_for_mini_tx(context, (void*)transaction_id);
-	if(result == 0 && (*abort_error) == 0)
+	if(transaction_id != NULL)
 	{
-		printf("Bug in release_reader_lock_on_page_mtx, result failed but abort error not set\n");
-		exit(-1);
+		(*abort_error) = get_abort_error_for_mini_tx(context, (void*)transaction_id);
+		if(result == 0 && (*abort_error) == 0)
+		{
+			printf("Bug in release_reader_lock_on_page_mtx, result failed but abort error not set\n");
+			exit(-1);
+		}
 	}
+	else
+		(*abort_error) = 0;
 	return result;
 }
 int release_writer_lock_on_page_mtx(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
@@ -93,12 +98,17 @@ int release_writer_lock_on_page_mtx(void* context, const void* transaction_id, v
 		printf("%p release_writer_lock_on_page_mtx\n", transaction_id);
 	#endif
 	int result = release_writer_latch_on_page_for_mini_tx(context, (void*)transaction_id, pg_ptr, !!(opts & FREE_PAGE));
-	(*abort_error) = get_abort_error_for_mini_tx(context, (void*)transaction_id);
-	if(result == 0 && (*abort_error) == 0)
+	if(transaction_id != NULL)
 	{
-		printf("Bug in release_writer_lock_on_page_mtx, result failed but abort error not set\n");
-		exit(-1);
+		(*abort_error) = get_abort_error_for_mini_tx(context, (void*)transaction_id);
+		if(result == 0 && (*abort_error) == 0)
+		{
+			printf("Bug in release_writer_lock_on_page_mtx, result failed but abort error not set\n");
+			exit(-1);
+		}
 	}
+	else
+		(*abort_error) = 0;
 	return result;
 }
 int free_page_mtx(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
