@@ -88,8 +88,6 @@ int release_reader_lock_on_page_mtx(void* context, const void* transaction_id, v
 			exit(-1);
 		}
 	}
-	else
-		(*abort_error) = 0;
 	return result;
 }
 int release_writer_lock_on_page_mtx(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
@@ -107,8 +105,6 @@ int release_writer_lock_on_page_mtx(void* context, const void* transaction_id, v
 			exit(-1);
 		}
 	}
-	else
-		(*abort_error) = 0;
 	return result;
 }
 int free_page_mtx(void* context, const void* transaction_id, uint64_t page_id, int* abort_error)
