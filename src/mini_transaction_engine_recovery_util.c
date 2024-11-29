@@ -1034,7 +1034,16 @@ static void undo(mini_transaction_engine* mte)
 
 		// formally complete mt
 		// flush_on_completion = 0
-		mte_complete_mini_tx(mte, mt, 0, NULL, 0);
+		{
+			uint64_t page_latches_to_be_borrowed;
+			mte_complete_mini_tx(mte, mt, 0, NULL, 0, &page_latches_to_be_borrowed);
+			// this variable is bound to be zero, after the below function, if it isn't there is an issue
+			if(page_latches_to_be_borrowed != 0)
+			{
+				printf("ISSUE :: page_latches need borrowing, while performing recovery undo, this is not possible\n");
+				exit(-1);
+			}
+		}
 
 		pthread_mutex_lock(&(mte->global_lock));
 	}

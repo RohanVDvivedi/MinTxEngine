@@ -3,7 +3,7 @@
 #include<mini_transaction_engine_util.h>
 #include<system_page_header_util.h>
 
-mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_timeout_in_microseconds)
+mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_timeout_in_microseconds, uint64_t page_latches_to_be_borrowed)
 {
 	pthread_mutex_lock(&(mte->global_lock));
 
@@ -57,7 +57,7 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 		mt->mini_transaction_id = INVALID_LOG_SEQUENCE_NUMBER;
 		mt->lastLSN = INVALID_LOG_SEQUENCE_NUMBER;
 		mt->state = MIN_TX_IN_PROGRESS;
-		mt->page_latches_held_counter = 0;
+		mt->page_latches_held_counter = page_latches_to_be_borrowed;
 		mt->abort_error = 0;
 		mt->reference_counter = 1;
 
@@ -588,11 +588,14 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 	}
 }
 
-uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, int flush_on_completion, const void* complete_info, uint32_t complete_info_size)
+uint256 mte_complete_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, int flush_on_completion, const void* complete_info, uint32_t complete_info_size, uint64_t* page_latches_to_be_borrowed)
 {
 	pthread_mutex_lock(&(mte->global_lock));
 
 	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
+
+	// return value of the page latches held counter, that is to be borrowed by a mini transaction to be borrowed later
+	(*page_latches_to_be_borrowed) = mt->page_latches_held_counter;
 
 	// if it is a reader mini transaction, no matter what state it is in, there is nothing to be done
 	if(are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER))
