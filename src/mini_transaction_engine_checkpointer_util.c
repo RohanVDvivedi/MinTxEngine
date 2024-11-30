@@ -283,11 +283,16 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 	// get old status of the periodic flush job to be reverted to
 	// and then shut periodic flush job, and wait for it to finish
 	periodic_flush_job_status old_state = get_periodic_flush_job_status(&(mte->bufferpool_handle));
-	modify_periodic_flush_job_status(&(mte->bufferpool_handle), STOP_PERIODIC_FLUSH_JOB_STATUS);
+	int success_in_stopping_periodic_flush_job = modify_periodic_flush_job_status(&(mte->bufferpool_handle), STOP_PERIODIC_FLUSH_JOB_STATUS);
+	if(!success_in_stopping_periodic_flush_job)
+	{
+		printf("ISSUE :: failed to call stop on periodic flush job for checkpointing\n");
+		exit(-1);
+	}
 	int periodic_flush_job_stopped = wait_for_periodic_flush_job_to_stop(&(mte->bufferpool_handle));
 	if(!periodic_flush_job_stopped)
 	{
-		printf("ISSUE :: failed to stop periodic flush job for checkpointing\n");
+		printf("ISSUE :: failed to stop periodic flush job for checkpointing even after a wait\n");
 		exit(-1);
 	}
 
