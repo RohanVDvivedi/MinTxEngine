@@ -97,12 +97,6 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, free_space_mapper_page, free_space_mapper_page_id);
 
-		// recalculate page checksums, prior to releasing the latches
-		pthread_mutex_unlock(&(mte->global_lock));
-		recalculate_page_checksum(free_space_mapper_page, &(mte->stats));
-		recalculate_page_checksum(page, &(mte->stats));
-		pthread_mutex_lock(&(mte->global_lock));
-
 		// this has to succeed, we already marked it dirty, so was_modified can be set to 0
 		release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
 		release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // was_modified = 0, force_flush = 0
@@ -207,12 +201,6 @@ static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine*
 		// mark the page and free_space_mapper_page as dirty in the bufferpool and dirty page table
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, free_space_mapper_page, free_space_mapper_page_id);
-
-		// recalculate page checksums, prior to releasing the latches
-		// since we are not releasing the latch on the page with page_id, we may not just yet recalculate its checksum
-		pthread_mutex_unlock(&(mte->global_lock));
-		recalculate_page_checksum(free_space_mapper_page, &(mte->stats));
-		pthread_mutex_lock(&(mte->global_lock));
 
 		// this has to succeed, we already marked it dirty, so was_modified can be set to 0
 		release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
@@ -411,8 +399,6 @@ static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_
 		// set pageLSN of the page to the log_record_LSN
 		set_pageLSN_for_page(new_page, log_record_LSN, &(mte->stats));
 
-		// this page is more likely to be allocated again by the calling mini transaction, so it will get write locked with manager_lock being held, so no worries
-
 		// mark the page as dirty in the bufferpool and dirty page table
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, new_page, new_page_id);
 	}
@@ -488,8 +474,6 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
 		if(page == NULL) // abort error is already set, so nothing to be done
 		{
-			// recalculate_checksum of free space mapper page
-			recalculate_page_checksum(free_space_mapper_page, &(mte->stats));
 			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;

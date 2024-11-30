@@ -354,8 +354,6 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 		// append clr log record
 		append_compensation_log_record_INTERNAL(mte,mt, undo_LSN, free_space_mapper_page, free_space_mapper_page_id);
 
-		recalculate_page_checksum(free_space_mapper_page, &(mte->stats));
-
 		pthread_mutex_lock(&(mte->global_lock));
 		release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
 		pthread_mutex_unlock(&(mte->global_lock));
@@ -579,8 +577,6 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 
 		// append clr log record
 		append_compensation_log_record_INTERNAL(mte,mt, undo_LSN, page, page_id);
-
-		recalculate_page_checksum(page, &(mte->stats));
 
 		pthread_mutex_lock(&(mte->global_lock));
 		release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
