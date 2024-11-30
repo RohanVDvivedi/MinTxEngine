@@ -15,6 +15,15 @@
               - if a mini transaction with a writerLSN on the page exists and is in IN_PROGRESS or ABORTING state then we must release latch on that page and then wait for the writerLSN transaction to complete before accessing the page
 */
 
+/*
+	checksums are used only while read and writing data from-to disk, (update checksum on page while writng to disk and validate it while reading from disk)
+	the checksums functions here must only be called while reading/writing data to-from disk
+	we only protect you against disk corruption and never against main-memory corruption
+	if you experience main-memory corruption you are on your own
+
+	and as expected due to subsequent writes the in-memory copy of the page provided by the bufferpool may not have the most updated checksum, so there is no point in validating it when you receive the page from bufferpool
+*/
+
 // recalculates 32 bit page checksum and puts it on the page at designated location
 uint32_t recalculate_page_checksum(void* page, const mini_transaction_engine_stats* stats);
 
