@@ -394,6 +394,11 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 					printf("ISSUE :: failed read call on reading free space mapper page for database file truncation\n");
 					exit(-1);
 				}
+				if(!validate_page_checksum(free_space_mapper_page, &(mte->stats)))
+				{
+					printf("ISSUE :: page checksum validation failed after reading for database file truncation\n");
+					exit(-1);
+				}
 			}
 
 			// if the corresponding allocation bit is set, then break out
@@ -410,6 +415,11 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 			if(!read_blocks_from_block_file(&(mte->database_block_file), page, page_id_to_first_block_id(page_id), block_count_per_page))
 			{
 				printf("ISSUE :: failed read call on reading some data page for database file truncation\n");
+				exit(-1);
+			}
+			if(!validate_page_checksum(page, &(mte->stats)))
+			{
+				printf("ISSUE :: page checksum validation failed after reading for database file truncation\n");
 				exit(-1);
 			}
 
