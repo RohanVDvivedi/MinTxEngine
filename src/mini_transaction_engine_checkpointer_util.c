@@ -284,7 +284,12 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 	// and then shut periodic flush job, and wait for it to finish
 	periodic_flush_job_status old_state = get_periodic_flush_job_status(&(mte->bufferpool_handle));
 	modify_periodic_flush_job_status(&(mte->bufferpool_handle), STOP_PERIODIC_FLUSH_JOB_STATUS);
-	wait_for_periodic_flush_job_to_stop(&(mte->bufferpool_handle));
+	int periodic_flush_job_stopped = wait_for_periodic_flush_job_to_stop(&(mte->bufferpool_handle));
+	if(!periodic_flush_job_stopped)
+	{
+		printf("ISSUE :: failed to stop periodic flush job for checkpointing\n");
+		exit(-1);
+	}
 
 	// flush bufferpool, reducing the number of dirty pages
 	flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
