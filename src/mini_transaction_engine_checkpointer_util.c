@@ -172,7 +172,7 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 		const void* serialized_log_record = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &lr, &serialized_log_record_size);
 		if(serialized_log_record == NULL)
 		{
-			printf("ISSUE :: unable to serialize log record\n");
+			printf("ISSUE :: unable to serialize log record for CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY\n");
 			exit(-1);
 		}
 
@@ -180,7 +180,7 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 		uint256 log_record_LSN = append_log_record(wale_p, serialized_log_record, serialized_log_record_size, 0, &wal_error);
 		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
 		{
-			printf("ISSUE :: unable to append log record\n");
+			printf("ISSUE :: unable to append log record for CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY\n");
 			exit(-1);
 		}
 
@@ -206,7 +206,7 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 		const void* serialized_log_record = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &lr, &serialized_log_record_size);
 		if(serialized_log_record == NULL)
 		{
-			printf("ISSUE :: unable to serialize log record\n");
+			printf("ISSUE :: unable to serialize log record for CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY\n");
 			exit(-1);
 		}
 
@@ -214,7 +214,7 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 		uint256 log_record_LSN = append_log_record(wale_p, serialized_log_record, serialized_log_record_size, 0, &wal_error);
 		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
 		{
-			printf("ISSUE :: unable to append log record\n");
+			printf("ISSUE :: unable to append log record for CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY\n");
 			exit(-1);
 		}
 
@@ -240,7 +240,7 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 		const void* serialized_log_record = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &lr, &serialized_log_record_size);
 		if(serialized_log_record == NULL)
 		{
-			printf("ISSUE :: unable to serialize log record\n");
+			printf("ISSUE :: unable to serialize log record for CHECKPOINT_END\n");
 			exit(-1);
 		}
 
@@ -248,7 +248,7 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 		checkpointLSN = append_log_record(wale_p, serialized_log_record, serialized_log_record_size, 1, &wal_error); // only this log record is marked as checkpoint log record
 		if(are_equal_uint256(checkpointLSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
 		{
-			printf("ISSUE :: unable to append log record\n");
+			printf("ISSUE :: unable to append log record for CHECKPOINT_END\n");
 			exit(-1);
 		}
 
