@@ -7,7 +7,7 @@ DOWNLOAD_DIR:=/usr/local
 # we may download all the public headers
 
 # list of public api headers (only these headers will be installed)
-PUBLIC_HEADERS:=mini_transaction_engine.h abort_errors_list.h mini_transaction.h mini_transaction_engine_stats.h log_record.h system_page_header_util.h mini_transaction_engine_wale_only_functions.h mini_transaction_engine_bufferpool_only_functions.h mini_transaction_engine_page_alloc.h mini_transaction_engine_allotment.h dirty_page_table_entry.h
+PUBLIC_HEADERS:=mini_transaction_engine.h mini_transaction.h abort_errors_list.h mini_transaction_engine_stats.h log_record.h mini_transaction_engine_wale_only_functions.h mini_transaction_engine_bufferpool_only_functions.h mini_transaction_engine_page_alloc.h mini_transaction_engine_allotment.h dirty_page_table_entry.h
 # the library, which we will create
 LIBRARY:=lib${PROJECT_NAME}.a
 # the binary, which will use the created library
