@@ -4,7 +4,7 @@ static uint32_t calculate_checksum(const void* data, uint32_t data_size)
 {
 	uint32_t result = 0;
 	for(uint32_t i = 0; i < data_size; i++)
-		result += ((const char*)data)[i];
+		result += ((const unsigned char*)data)[i];
 	return result;
 }
 
