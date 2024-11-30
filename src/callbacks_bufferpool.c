@@ -49,6 +49,7 @@ int write_page_for_bufferpool(const void* page_io_ops_handle, const void* frame_
 	mini_transaction_engine* mte = (mini_transaction_engine*) page_io_ops_handle;
 
 	// while writing the page to disk always update its checksum
+	// on-disk copy of the page must always have valid checksum
 	recalculate_page_checksum((void*)frame_src, &(mte->stats));
 
 	size_t block_size = get_block_size_for_block_file(&(mte->database_block_file));
