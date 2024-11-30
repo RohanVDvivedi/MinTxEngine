@@ -162,7 +162,6 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 				break;
 
 			// release latch on the latched page, this must succeed
-			// this page was never movidied, so no need to recalculate_checksum here
 			release_writer_lock_on_page(&(mte->bufferpool_handle), latched_page, 0, 0); // was_modified = 0, force_flush = 0 -> so that global lock is not released while we are working
 			latched_page = NULL;
 
@@ -367,7 +366,7 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 
 			pthread_mutex_lock(&(mte->global_lock));
 
-			// on failure do downgrade the lock back, no need to recalculate the checksum as the pages are as if never modified
+			// on failure do downgrade the lock back
 			if(!result)
 				// this must succeed if the prior upgrade call succeeded
 				downgrade_writer_lock_to_reader_lock(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
@@ -452,7 +451,6 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 				return 0;
 			}
 
-			// recalculate page checksum, prior to releasing the latch, as the user might have modified the page
 			pthread_mutex_unlock(&(mte->global_lock));
 
 			result = free_write_latched_page_INTERNAL(mte, mt, page, page_id);

@@ -265,7 +265,6 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 					void* page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, (*page_id), 1, 0); // evict_dirty_if_necessary -> not to be overwritten
 					if(page == NULL) // could not lock page at page_id, so abort
 					{
-						// no modifications were done, so no need to recalculate_checksum
 						release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
 						mt->state = MIN_TX_ABORTED;
 						mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
@@ -283,7 +282,6 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 					}
 
 					// unlatch page at page_id
-					// no modifications were done, so no need to recalculate_checksum
 					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // was_modified = 0, force_flush = 0
 					pthread_mutex_unlock(&(mte->global_lock));
 				}
@@ -293,7 +291,6 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 
 			// unlatch free space mapper page
 			pthread_mutex_lock(&(mte->global_lock));
-			// no modifications were done, so no need to recalculate_checksum
 			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
 			pthread_mutex_unlock(&(mte->global_lock));
 		}
@@ -445,7 +442,6 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
 		if(page == NULL) // abort error is already set, so nothing to be done
 		{
-			// no modifications to free_space_mapper_page were made yet, so no need to recalculate_checksum
 			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;
