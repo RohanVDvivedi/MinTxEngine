@@ -57,6 +57,11 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 	// reset the free_space_mapper_bit_pos on the free_space_mapper_page
 	{
 		void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
+		if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos) == 0) // this may happen only if the user code is buggy, we are just ensuring that the page being freed is not already free
+		{
+			printf("ISSUE :: bug in user code, attempting to free a free page\n");
+			exit(-1);
+		}
 		reset_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
 	}
 
@@ -162,6 +167,11 @@ static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine*
 	{
 		uint64_t free_space_mapper_bit_pos = get_is_valid_bit_position_for_page(page_id, &(mte->stats));
 		void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
+		if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos) != 0) // this may never happen, we are just ensuring that the page being allocated is free
+		{
+			printf("ISSUE :: bug in page allocation or new page initialization, page attempting to be allocated is not marked free\n");
+			exit(-1);
+		}
 		set_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
 	}
 
