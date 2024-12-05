@@ -192,7 +192,12 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	// start checkpointer thread
 	initialize_job(&(mte->checkpointer_job), checkpointer, mte, NULL, NULL);
 	pthread_t thread_id;
-	execute_job_async(&(mte->checkpointer_job), &thread_id);
+	int checkpointer_job_start_error = execute_job_async(&(mte->checkpointer_job), &thread_id);
+	if(checkpointer_job_start_error)
+	{
+		printf("ISSUE :: could not start checkpointer job\n");
+		exit(-1);
+	}
 
 	return 1;
 }
