@@ -1,5 +1,7 @@
 PICKED
 
+  * separate functions read/write pages from disk, a separate module
+
   * USE ZLIB BASED CRC32 for page checksum
 
   * PAGE COMPRESSION
