@@ -1,11 +1,12 @@
 #include<system_page_header_util.h>
 
+#include<zlib.h>
+
 static uint32_t calculate_checksum(const void* data, uint32_t data_size)
 {
-	uint32_t result = 0;
-	for(uint32_t i = 0; i < data_size; i++)
-		result += ((const unsigned char*)data)[i];
-	return result;
+	uint32_t crc32_result = crc32(0UL, NULL, 0U);
+	crc32_result = crc32(crc32_result, data, data_size);
+	return crc32_result;
 }
 
 uint32_t recalculate_page_checksum(void* page, const mini_transaction_engine_stats* stats)
