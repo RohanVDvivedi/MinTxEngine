@@ -1,5 +1,10 @@
 PICKED
 
+  * USE ZLIB BASED CRC32 for page checksum
+
+  * PAGE COMPRESSION
+  * hole punching based compression, after performing zlib compression (think if you want to do this or rely on OS to do it for you)
+
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
     * like a separate faster allocation case which checks these free space mapper pages first, then fall backs to current code
