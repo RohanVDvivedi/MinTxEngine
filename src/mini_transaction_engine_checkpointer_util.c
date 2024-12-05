@@ -263,6 +263,7 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 }
 
 #include<wal_list_utils.h>
+#include<page_io_module.h>
 #include<system_page_header_util.h>
 #include<bitmap.h>
 
@@ -371,8 +372,6 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 
 		uint64_t block_count_per_page = mte->stats.page_size / get_block_size_for_block_file(&(mte->database_block_file));
 
-		#define page_id_to_first_block_id(page_id) (((page_id) * block_count_per_page) + 1)
-
 		void* free_space_mapper_page = aligned_alloc(mte->stats.page_size, mte->stats.page_size);
 		void* page = aligned_alloc(mte->stats.page_size, mte->stats.page_size);
 		// set page ids to the ones that we will never see
@@ -399,14 +398,9 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 			if(free_space_mapper_page_id != get_is_valid_bit_page_id_for_page(page_id, &(mte->stats)))
 			{
 				free_space_mapper_page_id = get_is_valid_bit_page_id_for_page(page_id, &(mte->stats));
-				if(!read_blocks_from_block_file(&(mte->database_block_file), free_space_mapper_page, page_id_to_first_block_id(free_space_mapper_page_id), block_count_per_page))
+				if(!read_page_from_database_file(mte, free_space_mapper_page, free_space_mapper_page_id))
 				{
 					printf("ISSUE :: failed read call on reading free space mapper page for database file truncation\n");
-					exit(-1);
-				}
-				if(!validate_page_checksum(free_space_mapper_page, &(mte->stats)))
-				{
-					printf("ISSUE :: page checksum validation failed after reading for database file truncation\n");
 					exit(-1);
 				}
 			}
@@ -422,14 +416,9 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 			// now the bit is not set, so it is surely not latched, but it could be locked
 
 			// we need to ensure that the page is currently not locked by any one, so first read it
-			if(!read_blocks_from_block_file(&(mte->database_block_file), page, page_id_to_first_block_id(page_id), block_count_per_page))
+			if(!read_page_from_database_file(mte, page, page_id))
 			{
 				printf("ISSUE :: failed read call on reading some data page for database file truncation\n");
-				exit(-1);
-			}
-			if(!validate_page_checksum(page, &(mte->stats)))
-			{
-				printf("ISSUE :: page checksum validation failed after reading for database file truncation\n");
 				exit(-1);
 			}
 
