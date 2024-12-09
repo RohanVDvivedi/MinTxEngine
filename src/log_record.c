@@ -783,7 +783,7 @@ static void* uncompress_serialized_log_record_idempotently(void* input, uint32_t
 static inline const user_value getter_for_attribute_of_uncompressed_log_record_contents(const tuple_def* def, const positional_accessor pa, const void* log_record_contents)
 {
 	user_value uval;
-	if(!get_value_from_element_from_tuple(&uval, def, STATIC_POSITION(0), log_record_contents))
+	if(!get_value_from_element_from_tuple(&uval, def, pa, log_record_contents))
 	{
 		printf("ISSUE :: failed to get attribute from log record contents for parsing after uncompressing\n");
 		exit(-1);
