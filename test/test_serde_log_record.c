@@ -12,11 +12,11 @@ int main()
 	data_type_info* tuple_type_info = alloca(sizeof_tuple_data_type_info(3));
 	initialize_tuple_data_type_info(tuple_type_info, "tuple_type1", 1, 1024, 3);
 	strcpy(tuple_type_info->containees[0].field_name, "0");
-	tuple_type_info->containees[0].type_info = UINT_NON_NULLABLE[3];
+	tuple_type_info->containees[0].al.type_info = UINT_NON_NULLABLE[3];
 	strcpy(tuple_type_info->containees[1].field_name, "1");
-	tuple_type_info->containees[1].type_info = BIT_FIELD_NON_NULLABLE[5];
+	tuple_type_info->containees[1].al.type_info = BIT_FIELD_NON_NULLABLE[5];
 	strcpy(tuple_type_info->containees[2].field_name, "2");
-	tuple_type_info->containees[2].type_info = &s3;
+	tuple_type_info->containees[2].al.type_info = &s3;
 	tuple_def tpl_def;
 	if(!initialize_tuple_def(&tpl_def, tuple_type_info))
 	{
@@ -74,6 +74,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -101,6 +106,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -131,6 +141,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -161,6 +176,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -190,6 +210,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -220,6 +245,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -251,6 +281,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -281,6 +316,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -310,6 +350,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -339,6 +384,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -369,6 +419,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -399,6 +454,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -427,6 +487,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -456,6 +521,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -483,6 +553,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -510,6 +585,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -539,6 +619,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -571,6 +656,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -600,6 +690,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -627,6 +722,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -653,6 +753,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 
@@ -679,6 +784,11 @@ int main()
 
 		uint32_t serialized_size;
 		const void* serialized = serialize_and_compress_log_record(&lrtd, &stats, &a, &serialized_size);
+		if(serialized == NULL)
+		{
+			printf("serialization failed\n");
+			exit(-1);
+		}
 
 		log_record b = uncompress_and_parse_log_record(&lrtd, serialized, serialized_size);
 

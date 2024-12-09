@@ -1098,9 +1098,9 @@ void main0()
 	data_type_info* tup = malloc(sizeof_tuple_data_type_info(2));
 	initialize_tuple_data_type_info((tup), "tuple", 1, SYSTEM_PAGE_SIZE, 2);
 	strcpy(tup->containees[0].field_name, "a");
-	tup->containees[0].type_info = &str;
+	tup->containees[0].al.type_info = &str;
 	strcpy(tup->containees[1].field_name, "b");
-	tup->containees[1].type_info = UINT_NULLABLE[5];
+	tup->containees[1].al.type_info = UINT_NULLABLE[5];
 
 	initialize_tuple_def(&record_def, tup);
 
@@ -1176,9 +1176,9 @@ void main_1()
 	data_type_info* tup = malloc(sizeof_tuple_data_type_info(2));
 	initialize_tuple_data_type_info((tup), "tuple", 1, SYSTEM_PAGE_SIZE, 2);
 	strcpy(tup->containees[0].field_name, "a");
-	tup->containees[0].type_info = &str;
+	tup->containees[0].al.type_info = &str;
 	strcpy(tup->containees[1].field_name, "b");
-	tup->containees[1].type_info = UINT_NULLABLE[5];
+	tup->containees[1].al.type_info = UINT_NULLABLE[5];
 
 	initialize_tuple_def(&record_def, tup);
 

@@ -19,22 +19,22 @@ void initialize_tuple_defs()
 	initialize_tuple_data_type_info(record_type_info, "record", 0, 900, 5);
 
 	strcpy(record_type_info->containees[0].field_name, "num");
-	record_type_info->containees[0].type_info = UINT_NON_NULLABLE[8];
+	record_type_info->containees[0].al.type_info = UINT_NON_NULLABLE[8];
 
 	strcpy(record_type_info->containees[1].field_name, "order");
-	record_type_info->containees[1].type_info = INT_NON_NULLABLE[1];
+	record_type_info->containees[1].al.type_info = INT_NON_NULLABLE[1];
 
 	num_in_words_type_info = get_variable_length_string_type("num_in_words", 70);
 	strcpy(record_type_info->containees[2].field_name, "num_in_words");
-	record_type_info->containees[2].type_info = &num_in_words_type_info;
+	record_type_info->containees[2].al.type_info = &num_in_words_type_info;
 
 	digits_type_info = get_variable_element_count_array_type("digits", 16, UINT_NON_NULLABLE[1]);
 	strcpy(record_type_info->containees[3].field_name, "digits");
-	record_type_info->containees[3].type_info = &digits_type_info;
+	record_type_info->containees[3].al.type_info = &digits_type_info;
 
 	value_string_type_info = get_variable_length_string_type("value_in_string", 100);
 	strcpy(record_type_info->containees[4].field_name, "value_in_string");
-	record_type_info->containees[4].type_info = &value_string_type_info;
+	record_type_info->containees[4].al.type_info = &value_string_type_info;
 
 	initialize_tuple_def(&record_def, record_type_info);
 
@@ -42,10 +42,10 @@ void initialize_tuple_defs()
 	initialize_tuple_data_type_info(key_type_info, "key", 0, 900, 2);
 
 	strcpy(key_type_info->containees[0].field_name, "num");
-	key_type_info->containees[0].type_info = record_type_info->containees[0].type_info;
+	key_type_info->containees[0].al.type_info = record_type_info->containees[0].al.type_info;
 
 	strcpy(key_type_info->containees[1].field_name, "num_in_words");
-	key_type_info->containees[1].type_info = record_type_info->containees[2].type_info;
+	key_type_info->containees[1].al.type_info = record_type_info->containees[2].al.type_info;
 
 	initialize_tuple_def(&key_def, key_type_info);
 
@@ -147,16 +147,21 @@ int validate_record(const void* buffer)
 {
 	int reason = 0;
 
-	uint64_t num = get_value_from_element_from_tuple(&record_def, STATIC_POSITION(0), buffer).uint_value;
+	user_value uval;
 
-	int order = get_value_from_element_from_tuple(&record_def, STATIC_POSITION(1), buffer).int_value;
+	get_value_from_element_from_tuple(&uval, &record_def, STATIC_POSITION(0), buffer);
+	uint64_t num = uval.uint_value;
+
+	get_value_from_element_from_tuple(&uval, &record_def, STATIC_POSITION(1), buffer);
+	int order = uval.int_value;
 
 	uint16_t o = find_order(num, order);
 	{
 		char t1[1000];
 		num_in_words(t1, o);
-		const char* t2 = get_value_from_element_from_tuple(&record_def, STATIC_POSITION(2), buffer).string_value;
-		if(strlen(t1) != get_value_from_element_from_tuple(&record_def, STATIC_POSITION(2), buffer).string_size) {
+		get_value_from_element_from_tuple(&uval, &record_def, STATIC_POSITION(2), buffer);
+		const char* t2 = uval.string_value;
+		if(strlen(t1) != uval.string_size) {
 			reason = -1;
 			goto INVALID;
 		}
@@ -175,7 +180,8 @@ int validate_record(const void* buffer)
 			reason = -3;
 			goto INVALID;
 		}
-		if(d != get_value_from_element_from_tuple(&record_def, STATIC_POSITION(3,index), buffer).uint_value) {
+		get_value_from_element_from_tuple(&uval, &record_def, STATIC_POSITION(3,index), buffer);
+		if(d != uval.uint_value) {
 			reason = -4;
 			goto INVALID;
 		}
