@@ -138,7 +138,7 @@ void init_pam_for_mini_tx_engine(mini_transaction_engine* mte)
 		.pas = (page_access_specs){},
 		.context = mte,
 	};
-	if(!initialize_page_access_specs(&(pam.pas), mte->user_stats.page_id_width, mte->user_stats.page_size, mte->user_stats.NULL_PAGE_ID, 0))
+	if(!initialize_page_access_specs(&(pam.pas), mte->user_stats.page_id_width, mte->user_stats.page_size, mte->user_stats.NULL_PAGE_ID))
 		exit(-1);
 }
 
