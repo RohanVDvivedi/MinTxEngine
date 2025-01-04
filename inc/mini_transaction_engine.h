@@ -55,14 +55,14 @@ struct mini_transaction_engine
 	bufferpool bufferpool_handle;
 
 	// internal caching parameter for bufferpool
-	uint32_t bufferpool_frame_count;
+	uint64_t bufferpool_frame_count;
 
 	// list of wal_accessor
 	// the file name of each wale_block_file is database_file_name + "_logs/" + wale_LSNs_from
 	arraylist wa_list;
 
 	// internal caching parameter for wale
-	uint32_t wale_append_only_buffer_block_count;
+	uint64_t wale_append_only_buffer_block_count;
 
 	// these variable is to be updated as per the rules defined here
 	// flushedLSN = max(flushedLSN, flush_all_log_records(wa_list.last().wale_handle));
@@ -149,7 +149,7 @@ struct mini_transaction_engine
 
 // page_size, page_id_width and log_sequence_number_width parameter is only used if passed as non-zero
 // else they are either used for a new database OR are ensured to be correct for an existing database if non-zero
-int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint32_t bufferpool_frame_count, uint32_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds, uint64_t checkpointing_LSN_diff_in_bytes, uint64_t max_wal_file_size_in_bytes);
+int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint64_t bufferpool_frame_count, uint64_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds, uint64_t checkpointing_LSN_diff_in_bytes, uint64_t max_wal_file_size_in_bytes);
 
 #include<mini_transaction_engine_wale_only_functions.h>
 
