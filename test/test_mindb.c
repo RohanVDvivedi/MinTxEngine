@@ -232,13 +232,9 @@ int main1()
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = NULL;
 
 		print_uint_bplus_tree(mt);
-
-		uint64_t latches_to_borrow = 0;
-		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"), &latches_to_borrow);
-		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
 	// updations
@@ -269,13 +265,9 @@ int main1()
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = NULL;
 
 		print_uint_bplus_tree(mt);
-
-		uint64_t latches_to_borrow = 0;
-		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"), &latches_to_borrow);
-		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
 	// updations
@@ -306,27 +298,19 @@ int main1()
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = NULL;
 
 		print_uint_bplus_tree(mt);
-
-		uint64_t latches_to_borrow = 0;
-		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"), &latches_to_borrow);
-		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
 	// validation
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = NULL;
 
 		uint64_t count = 0;
 		int validated = validate_records_uint_bplus_tree(mt, &count);
 
 		printf("VALIDATION_RESULTS :: count = %"PRIu64", valid = %d\n", count, validated);
-
-		uint64_t latches_to_borrow = 0;
-		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "validation_done", strlen("validation_done"), &latches_to_borrow);
-		printf("completed validation at "); print_uint256(cLSN); printf("\n");
 	}
 
 	// deletions
@@ -357,13 +341,9 @@ int main1()
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = NULL;
 
 		print_uint_bplus_tree(mt);
-
-		uint64_t latches_to_borrow = 0;
-		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"), &latches_to_borrow);
-		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
@@ -729,13 +709,9 @@ int main2(uint64_t bucket_count)
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = NULL;
 
 		print_uint_hash_table(mt);
-
-		uint64_t latches_to_borrow = 0;
-		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"), &latches_to_borrow);
-		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
 	// updations
@@ -766,13 +742,9 @@ int main2(uint64_t bucket_count)
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = NULL;
 
 		print_uint_hash_table(mt);
-
-		uint64_t latches_to_borrow = 0;
-		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"), &latches_to_borrow);
-		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
 	// updations
@@ -803,13 +775,9 @@ int main2(uint64_t bucket_count)
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = NULL;
 
 		print_uint_hash_table(mt);
-
-		uint64_t latches_to_borrow = 0;
-		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"), &latches_to_borrow);
-		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
 	// deletions
@@ -840,13 +808,9 @@ int main2(uint64_t bucket_count)
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = NULL;
 
 		print_uint_hash_table(mt);
-
-		uint64_t latches_to_borrow = 0;
-		uint256 cLSN = mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, "printing_done", strlen("printing_done"), &latches_to_borrow);
-		printf("completed printing at "); print_uint256(cLSN); printf("\n");
 	}
 
 	{
