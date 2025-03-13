@@ -292,17 +292,17 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 			shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 			void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
-			if(mt != NULL) // you can only possibly abort a non-null mini transaction
+			uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+			if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
 			{
-				uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
-				if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+				if(mt != NULL) // you can only possibly abort a non-null mini transaction
 				{
 					mt->state = MIN_TX_ABORTED;
 					mt->abort_error = ILLEGAL_PAGE_ID;
-					shared_unlock(&(mte->manager_lock));
-					pthread_mutex_unlock(&(mte->global_lock));
-					return 0;
 				}
+				shared_unlock(&(mte->manager_lock));
+				pthread_mutex_unlock(&(mte->global_lock));
+				return 0;
 			}
 
 			result = release_reader_lock_on_page(&(mte->bufferpool_handle), page);
@@ -394,17 +394,17 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 			shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 			void* page = page_contents - get_system_header_size_for_data_pages(&(mte->stats));
-			if(mt != NULL) // you can only possibly abort a non-null mini transaction
+			uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
+			if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
 			{
-				uint64_t page_id = get_page_id_for_locked_page(&(mte->bufferpool_handle), page);
-				if(page_id >= mte->database_page_count || is_free_space_mapper_page(page_id, &(mte->stats)))
+				if(mt != NULL) // you can only possibly abort a non-null mini transaction
 				{
 					mt->state = MIN_TX_ABORTED;
 					mt->abort_error = ILLEGAL_PAGE_ID;
-					shared_unlock(&(mte->manager_lock));
-					pthread_mutex_unlock(&(mte->global_lock));
-					return 0;
 				}
+				shared_unlock(&(mte->manager_lock));
+				pthread_mutex_unlock(&(mte->global_lock));
+				return 0;
 			}
 
 			result = release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
