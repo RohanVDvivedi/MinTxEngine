@@ -8,42 +8,28 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mini_transaction
 	pthread_mutex_lock(&(mte->global_lock));
 		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
-		// mini transaction is not in progress, then quit
-		if(mt->state != MIN_TX_IN_PROGRESS)
-		{
-			shared_unlock(&(mte->manager_lock));
-			pthread_mutex_unlock(&(mte->global_lock));
-			return NULL;
-		}
-
 		// if you are attempting to lock a free space mapper page, then abort and quit
 		if(is_free_space_mapper_page(page_id, &(mte->stats)))
 		{
-			mt->state = MIN_TX_ABORTED;
-			mt->abort_error = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
-			return NULL;
+			return NULL; // failed because ILLEGAL_PAGE_ID
 		}
 
 		// you must not cross max page count, else abort and quit
 		if(page_id >= mte->user_stats.max_page_count)
 		{
-			mt->state = MIN_TX_ABORTED;
-			mt->abort_error = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
-			return NULL;
+			return NULL; // failed because ILLEGAL_PAGE_ID
 		}
 
 		// check to ensure that you are not attempting to latch a page that is out of bounds for the current page count
 		if(page_id >= mte->database_page_count) // this check must be done with manager_lock held
 		{
-			mt->state = MIN_TX_ABORTED;
-			mt->abort_error = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
-			return NULL;
+			return NULL; // failed because ILLEGAL_PAGE_ID
 		}
 
 		void* latched_page = NULL;
@@ -54,14 +40,12 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mini_transaction
 			latched_page = acquire_page_with_reader_latch_N_flush_wal_if_necessary_UNSAFE(mte, page_id, 1); // evict_dirty_if_necessary
 			if(latched_page == NULL)
 			{
-				mt->state = MIN_TX_ABORTED;
-				mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
-				break;
+				break; // failed because OUT_OF_BUFFERPOOL_MEMORY
 			}
 
 			// check who has persistent write lock on it
 			mini_transaction* mt_locked_by = get_mini_transaction_that_last_persistent_write_locked_this_page_UNSAFE(mte, latched_page);
-			if(mt_locked_by == NULL || mt_locked_by == mt) // if locked by self or NULL, we are done
+			if(mt_locked_by == NULL) // if locked by no-one, we are done
 				break;
 
 			// release latch on the latched page, this must succeed
@@ -70,27 +54,19 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mini_transaction
 
 			if(write_lock_wait_timeout_in_microseconds_LEFT == 0) // no wait attempts left
 			{
-				mt->state = MIN_TX_ABORTED;
-				mt->abort_error = PLAUSIBLE_DEADLOCK;
-				break;
+				break; // failed because PLAUSIBLE_DEADLOCK
 			}
 
 			// wait for completion of a mt_locked_by mini transaction
 			if(!wait_for_mini_transaction_completion_UNSAFE(mte, mt_locked_by, &write_lock_wait_timeout_in_microseconds_LEFT))
 			{
 				// comes here when we time out, this could be because of a PLAUSIBLE_DEADLOCK
-				mt->state = MIN_TX_ABORTED;
-				mt->abort_error = PLAUSIBLE_DEADLOCK;
-				break;
+				break; // failed because PLAUSIBLE_DEADLOCK
 			}
 
 			// we waited until completion of a mini transaction, we must try again and test if the latch could be acquired without any contention, so continue
 			continue;
 		}
-
-		// a new page latch is granted, so increment the latch counter for this mini transaction
-		if(latched_page != NULL)
-			mt->page_latches_held_counter++;
 
 		shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
