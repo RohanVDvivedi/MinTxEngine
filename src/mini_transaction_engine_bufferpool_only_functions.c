@@ -228,7 +228,7 @@ int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_
 		if(!result)
 		{
 			mt->state = MIN_TX_ABORTED;
-			mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+			mt->abort_error = UNABLE_TO_TRANSITION_LATCH;
 		}
 
 		shared_unlock(&(mte->manager_lock));
@@ -268,7 +268,7 @@ int upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(mini_transaction_en
 		if(!result)
 		{
 			mt->state = MIN_TX_ABORTED;
-			mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+			mt->abort_error = UNABLE_TO_TRANSITION_LATCH;
 		}
 
 		shared_unlock(&(mte->manager_lock));
@@ -312,7 +312,7 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 				if(!result)
 				{
 					mt->state = MIN_TX_ABORTED;
-					mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+					mt->abort_error = UNABLE_TO_TRANSITION_LATCH;
 				}
 				else // latch release was a success so decrement the latch counter for this mini transaction
 					mt->page_latches_held_counter--;
@@ -353,7 +353,7 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 			if(!upgrade_reader_lock_to_writer_lock(&(mte->bufferpool_handle), page))
 			{
 				mt->state = MIN_TX_ABORTED;
-				mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+				mt->abort_error = UNABLE_TO_TRANSITION_LATCH;
 				shared_unlock(&(mte->manager_lock));
 				pthread_mutex_unlock(&(mte->global_lock));
 				return 0;
@@ -414,7 +414,7 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 				if(!result)
 				{
 					mt->state = MIN_TX_ABORTED;
-					mt->abort_error = UNABLE_TO_TRANSITION_LOCK;
+					mt->abort_error = UNABLE_TO_TRANSITION_LATCH;
 				}
 				else // latch release was a success so decrement the latch counter for this mini transaction
 					mt->page_latches_held_counter--;
