@@ -112,7 +112,7 @@ int validate_records_uint_bplus_tree(mini_transaction* mt, uint64_t* count)
 	int abort_error = 0;
 
 	bplus_tree_iterator* bpi = find_in_bplus_tree(root_page_id, NULL, KEY_ELEMENT_COUNT, MIN, 0, READ_LOCK, &bpttd, &pam, NULL, mt, &abort_error);
-	if(is_aborted_for_mini_tx(&mte, mt))
+	if(mt != NULL && is_aborted_for_mini_tx(&mte, mt))
 	{
 		printf("aborted %d while validating records\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
@@ -128,7 +128,7 @@ int validate_records_uint_bplus_tree(mini_transaction* mt, uint64_t* count)
 		res = res && validate_record(curr_tuple);
 
 		int next_res = next_bplus_tree_iterator(bpi, mt, &abort_error);
-		if(is_aborted_for_mini_tx(&mte, mt))
+		if(mt != NULL && is_aborted_for_mini_tx(&mte, mt))
 		{
 			printf("aborted %d while going next for validating records\n", get_abort_error_for_mini_tx(&mte, mt));
 			exit(-1);
@@ -140,7 +140,7 @@ int validate_records_uint_bplus_tree(mini_transaction* mt, uint64_t* count)
 	}
 
 	delete_bplus_tree_iterator(bpi, mt, &abort_error);
-	if(is_aborted_for_mini_tx(&mte, mt))
+	if(mt != NULL && is_aborted_for_mini_tx(&mte, mt))
 	{
 		printf("aborted %d while deleting iterator after validating records\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
@@ -975,13 +975,11 @@ int main3()
 	pthread_mutex_unlock(&mtx);
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = NULL; // a read only access does not need a mini-transaction
 		print_uint_bplus_tree(mt);
 		uint64_t count = 0;
 		int validated = validate_records_uint_bplus_tree(mt, &count);
 		printf("VALIDATION_RESULTS :: count = %"PRIu64", valid = %d\n", count, validated);
-		uint64_t latches_to_borrow = 0;
-		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0, &latches_to_borrow);
 	}
 
 	/*printf("PRINTING LOGS\n");

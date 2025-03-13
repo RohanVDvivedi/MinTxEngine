@@ -23,11 +23,19 @@ void* acquire_page_with_reader_lock_mtx(void* context, const void* transaction_i
 		printf("%p acquire_page_with_reader_lock_mtx\n", transaction_id);
 	#endif
 	void* result = acquire_page_with_reader_latch_for_mini_tx(context, (void*)transaction_id, page_id);
-	(*abort_error) = get_abort_error_for_mini_tx(context, (void*)transaction_id);
-	if(result == NULL && (*abort_error) == 0)
+	if(transaction_id != NULL)
 	{
-		printf("Bug in acquire_page_with_reader_lock_mtx, result failed but abort error not set\n");
-		exit(-1);
+		(*abort_error) = get_abort_error_for_mini_tx(context, (void*)transaction_id);
+		if(result == NULL && (*abort_error) == 0)
+		{
+			printf("Bug in acquire_page_with_reader_lock_mtx, result failed but abort error not set\n");
+			exit(-1);
+		}
+	}
+	else // transaction_id can be NULL for this function, if so set abort_error if the function call failed
+	{
+		if(result == NULL)
+			(*abort_error) = -100;
 	}
 	return result;
 }
@@ -88,6 +96,11 @@ int release_reader_lock_on_page_mtx(void* context, const void* transaction_id, v
 			exit(-1);
 		}
 	}
+	else // transaction_id can be NULL for this function, if so set abort_error if the function call failed
+	{
+		if(result == 0)
+			(*abort_error) = -100;
+	}
 	return result;
 }
 int release_writer_lock_on_page_mtx(void* context, const void* transaction_id, void* pg_ptr, int opts, int* abort_error)
@@ -104,6 +117,11 @@ int release_writer_lock_on_page_mtx(void* context, const void* transaction_id, v
 			printf("Bug in release_writer_lock_on_page_mtx, result failed but abort error not set\n");
 			exit(-1);
 		}
+	}
+	else // transaction_id can be NULL for this function, if so set abort_error if the function call failed
+	{
+		if(result == 0)
+			(*abort_error) = -100;
 	}
 	return result;
 }
