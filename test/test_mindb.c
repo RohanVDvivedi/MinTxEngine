@@ -154,7 +154,7 @@ void print_uint_bplus_tree(mini_transaction* mt)
 	int abort_error = 0;
 	print_bplus_tree(root_page_id, 1, &bpttd, &pam, mt, &abort_error);
 
-	if(is_aborted_for_mini_tx(&mte, mt))
+	if(mt != NULL && is_aborted_for_mini_tx(&mte, mt))
 	{
 		printf("aborted %d while printing\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
@@ -651,7 +651,7 @@ void print_uint_hash_table(mini_transaction* mt)
 	int abort_error = 0;
 	print_hash_table(root_page_id, &httd, &pam, mt, &abort_error);
 
-	if(is_aborted_for_mini_tx(&mte, mt))
+	if(mt != NULL && is_aborted_for_mini_tx(&mte, mt))
 	{
 		printf("aborted %d while printing\n", get_abort_error_for_mini_tx(&mte, mt));
 		exit(-1);
