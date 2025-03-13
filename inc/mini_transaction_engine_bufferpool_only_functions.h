@@ -24,7 +24,10 @@
 	SO I ADVISE YOU TO ONLY ACCESS/LATCH PAGES THAT YOU KNOW ARE ALLOCATED, AND FREE/RELEASE LATCHES TO PAGES YOU GET POINTERS TO FOR ENGINE, PERIOD.
 */
 
+// for the below function you can pass mt = NULL, if you are sure that you will never modify the page, such a page can also be released by release_reader_latch_on_page_for_mini_tx(), again with mt = NULL
+// Note: this function even with mt = NULL, may still block for a writer latch or a writer lock held by some another mini_transaction
 void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id);
+
 void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id);
 
 int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents);
