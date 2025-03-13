@@ -16,6 +16,8 @@ If you plan to use it to build a transactional database storage engine, you will
 
 Also, There can be multiple mini transactions in flight performing their operations on several different threads, but a mini transaction itself is never thread safe, i.e. do not attempt to run a single mini transaction on more than 1 thread at a time. Additionally, mini transactions prevent write locks on pages from deadlocking using timeouts (this is crude, I know, but it is not a transaction engine, it is a mini transaction engine), but there is no provision of preventing latches from deadlocking (i.e. 2 write iterators on the leaf levels, with leaf-only traversals, traversing in opposite direction, may deadlock, so avoid doing this).
 
+Finally, it is necessary to allot yourself a new mini-transaction from the engine only if you are writing, as read-only mini-transactions can directly access the data and call relevant functions to get/release a read latch on a page without a mini-transaction object (a NULL has to be passed instead).
+
 Contact me, you are intrigued by my work and want to collaborate on the next biggest database storage engine, built using this mini transaction engine.
 
 Limitations:
