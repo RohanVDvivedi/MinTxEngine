@@ -35,4 +35,8 @@ int mark_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt,
 int is_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt);
 #define get_abort_error_for_mini_tx is_aborted_for_mini_tx
 
+// returns true if the mini transaction in context has ever done anything to make changes to the database
+// you must not call this function on any mini_transaction* mt, that has already, mte_complete_mini_tx called for
+int is_writer_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt);
+
 #endif

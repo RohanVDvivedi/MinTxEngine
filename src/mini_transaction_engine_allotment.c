@@ -792,3 +792,16 @@ int is_aborted_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt)
 	pthread_mutex_unlock(&(mte->global_lock));
 	return abort_error;
 }
+
+int is_writer_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt)
+{
+	pthread_mutex_lock(&(mte->global_lock));
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
+
+	// a writer mini_transaction has an id that is valid
+	int is_writer = !are_equal_uint256(mt->mini_transaction_id, INVALID_LOG_SEQUENCE_NUMBER);
+
+	shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+	return is_writer;
+}
