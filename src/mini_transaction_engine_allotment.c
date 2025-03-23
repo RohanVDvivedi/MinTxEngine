@@ -3,6 +3,8 @@
 #include<mini_transaction_engine_util.h>
 #include<system_page_header_util.h>
 
+#include<pthread_cond_utils.h>
+
 mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_timeout_in_microseconds, uint64_t page_latches_to_be_borrowed)
 {
 	pthread_mutex_lock(&(mte->global_lock));
@@ -14,36 +16,12 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 	int wait_error = 0;
 	while(is_empty_linkedlist(&(mte->free_mini_transactions_list)) && !mte->shutdown_called && !wait_error) // and not a shutdown
 	{
-		// get current time
-		struct timespec now;
-		clock_gettime(CLOCK_REALTIME, &now);
-
 		{
-			// compute the time to stop at
-			struct timespec diff = {.tv_sec = (wait_timeout_in_microseconds / 1000000LL), .tv_nsec = (wait_timeout_in_microseconds % 1000000LL) * 1000LL};
-			struct timespec stop_at = {.tv_sec = now.tv_sec + diff.tv_sec, .tv_nsec = now.tv_nsec + diff.tv_nsec};
-			stop_at.tv_sec += stop_at.tv_nsec / 1000000000LL;
-			stop_at.tv_nsec = stop_at.tv_nsec % 1000000000LL;
-
-			// wait until atmost stop_at
 			shared_unlock(&(mte->manager_lock));
-			pthread_cond_timedwait(&(mte->conditional_to_wait_for_execution_slot), &(mte->global_lock), &stop_at);
+			wait_error = pthread_cond_timedwait_for_microseconds(&(mte->conditional_to_wait_for_execution_slot), &(mte->global_lock), &wait_timeout_in_microseconds);
 			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 			// above lock is WRITE_PREFERRING because we want the new mini_transaction allotment to wait if a checkpointer is waiting for an exclusive lock on the manager_lock
 			// this allows the checkpointer to not wait indefinitely
-		}
-
-		{
-			// compute the current time after wait is over
-			struct timespec then;
-			clock_gettime(CLOCK_REALTIME, &then);
-
-			uint64_t microsecond_elapsed = ((int64_t)then.tv_sec - (int64_t)now.tv_sec) * 1000000LL + (((int64_t)then.tv_nsec - (int64_t)now.tv_nsec) / 1000LL);
-
-			if(microsecond_elapsed > wait_timeout_in_microseconds)
-				wait_timeout_in_microseconds = 0;
-			else
-				wait_timeout_in_microseconds -= microsecond_elapsed;
 		}
 	}
 

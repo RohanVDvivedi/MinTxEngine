@@ -11,6 +11,7 @@ cy_uint hash_mini_transaction(const void* mt)
 }
 
 #include<stdlib.h>
+#include<pthread_cond_utils.h>
 
 mini_transaction* get_new_mini_transaction()
 {
@@ -20,7 +21,7 @@ mini_transaction* get_new_mini_transaction()
 		printf("ISSUE :: unable to allocate memory for mini transaction\n");
 		exit(-1);
 	}
-	pthread_cond_init(&(mt->write_lock_wait), NULL);
+	pthread_cond_init_with_monotonic_clock(&(mt->write_lock_wait));
 	mt->reference_counter = 0;
 	mt->page_latches_held_counter = 0;
 	initialize_llnode(&(mt->enode));

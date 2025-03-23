@@ -34,6 +34,7 @@ Limitations:
  * [ReaderWriterLock](https://github.com/RohanVDvivedi/ReaderWriterLock)
  * [BoomPar](https://github.com/RohanVDvivedi/BoomPar)
  * [Cutlery](https://github.com/RohanVDvivedi/Cutlery)
+ * [PosixUtils](https://github.com/RohanVDvivedi/PosixUtils)
  * [zlib](https://github.com/madler/zlib)      ($ sudo apt install zlib1g-dev)
 
 **Download source code :**

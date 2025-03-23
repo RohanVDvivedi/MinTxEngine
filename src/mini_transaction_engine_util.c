@@ -4,6 +4,8 @@
 
 #include<system_page_header_util.h>
 
+#include<pthread_cond_utils.h>
+
 void mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mini_transaction_engine* mte, void* page, uint64_t page_id)
 {
 	notify_modification_for_write_locked_page(&(mte->bufferpool_handle), page);
@@ -70,36 +72,8 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 	int wait_error = 0;
 	while(mt->state != MIN_TX_COMPLETED && !wait_error)
 	{
-		struct timespec current_time;
-		clock_gettime(CLOCK_REALTIME, &current_time);
-
-		// make an attempt for atleast write_lock_wait_timeout_in_microseconds_LEFT
-		{
-			struct timespec diff = {.tv_sec = ((*write_lock_wait_timeout_in_microseconds_LEFT) / 1000000LL), .tv_nsec = ((*write_lock_wait_timeout_in_microseconds_LEFT) % 1000000LL) * 1000LL};
-			struct timespec stop_at = {.tv_sec = current_time.tv_sec + diff.tv_sec, .tv_nsec = current_time.tv_nsec + diff.tv_nsec};
-			stop_at.tv_sec += stop_at.tv_nsec / 1000000000LL;
-			stop_at.tv_nsec = stop_at.tv_nsec % 1000000000LL;
-
-			// do timedwait
-			wait_error = pthread_cond_timedwait(&(mt->write_lock_wait), &(mte->global_lock), &stop_at);
-		}
-
-		// substract elapsed time from write_lock_wait_timeout_in_microseconds_LEFT
-		{
-			// calculate current time after wait
-			struct timespec current_time_after_wait;
-			clock_gettime(CLOCK_REALTIME, &current_time_after_wait);
-
-			// now calculate the time elapsed
-			uint64_t microseconds_elapsed = (((int64_t)current_time_after_wait.tv_sec - (int64_t)current_time.tv_sec) * INT64_C(1000000))
-			+ (((int64_t)current_time_after_wait.tv_nsec - (int64_t)current_time.tv_nsec) / INT64_C(1000));
-
-			// discard the time elapsed
-			if(microseconds_elapsed > (*write_lock_wait_timeout_in_microseconds_LEFT))
-				(*write_lock_wait_timeout_in_microseconds_LEFT) = 0;
-			else
-				(*write_lock_wait_timeout_in_microseconds_LEFT) -= microseconds_elapsed;
-		}
+		// do timedwait
+		wait_error = pthread_cond_timedwait_for_microseconds(&(mt->write_lock_wait), &(mte->global_lock), write_lock_wait_timeout_in_microseconds_LEFT);
 	}
 
 	// collect the result as, decrement_mini_transaction_reference_counter_UNSAFE() may destroy it

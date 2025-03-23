@@ -10,6 +10,8 @@
 #include<mini_transaction_engine_checkpointer_util.h>
 #include<mini_transaction_engine_recovery_util.h>
 
+#include<pthread_cond_utils.h>
+
 #define MINIMUM_CHECKPOINTER_PERIOD UINT64_C(5000000) // checkpoint period no lesser than 5 seconds
 
 #define MINIMUM_WAL_FILE_SIZE UINT64_C(  1000000) // minimum wale file size is 1 MB
@@ -26,14 +28,14 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	mte->flushedLSN = INVALID_LOG_SEQUENCE_NUMBER;
 	mte->checkpointLSN = INVALID_LOG_SEQUENCE_NUMBER;
 	initialize_rwlock(&(mte->manager_lock), &(mte->global_lock));
-	pthread_cond_init(&(mte->conditional_to_wait_for_execution_slot), NULL);
+	pthread_cond_init_with_monotonic_clock(&(mte->conditional_to_wait_for_execution_slot));
 	mte->latch_wait_timeout_in_microseconds = latch_wait_timeout_in_microseconds;
 	mte->write_lock_wait_timeout_in_microseconds = write_lock_wait_timeout_in_microseconds;
 	mte->checkpointing_period_in_microseconds = checkpointing_period_in_microseconds;
 	mte->checkpointing_LSN_diff_in_bytes = checkpointing_LSN_diff_in_bytes;
 	mte->max_wal_file_size_in_bytes = max_wal_file_size_in_bytes;
-	pthread_cond_init(&(mte->wait_for_checkpointer_period), NULL);
-	pthread_cond_init(&(mte->wait_for_checkpointer_to_stop), NULL);
+	pthread_cond_init_with_monotonic_clock(&(mte->wait_for_checkpointer_period));
+	pthread_cond_init_with_monotonic_clock(&(mte->wait_for_checkpointer_to_stop));
 	mte->is_checkpointer_running = 0;
 	mte->shutdown_called = 0;
 	pthread_mutex_init(&(mte->database_expansion_lock), NULL);
