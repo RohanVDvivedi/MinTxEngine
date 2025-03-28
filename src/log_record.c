@@ -2193,7 +2193,8 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 	return compress_serialized_log_record_idempotently(result, (*result_size), result_size);
 
 	ERROR :;
-	free(result);
+	if(result)
+		free(result);
 	result = NULL;
 	(*result_size) = 0;
 	return NULL;
