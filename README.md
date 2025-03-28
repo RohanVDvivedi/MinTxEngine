@@ -23,6 +23,7 @@ Contact me, you are intrigued by my work and want to collaborate on the next big
 Limitations:
  User level log records can not be more than 6 times the page size of the database.
  data_type_info's of the Tuples being used with this engine may not serialize to more than 4 times the page size of the database.
+ **To modify this limits, understand and modify the lines L50-L66 of file "src/log_record.c" to suit your needs.**
 
 Declined Possible Enhancements:
  * Compression and Encryption for data pages
