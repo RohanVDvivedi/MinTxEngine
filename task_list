@@ -1,10 +1,5 @@
 PICKED
 
-  * PAGE COMPRESSION
-   * hole punching based compression (already supported by functions in blockio), after performing zlib compression (think if you want to do this or rely on OS to do it for you)
-   * we can also identify a compressed block by checking that it has a hole in it or not, but file systems punch holes in filesystem page sized and not block sizes, so this may not be the solution
-   * or we allocate abit in the page's prefix that says whether it is compressed or not
-
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
     * like a separate faster allocation case which checks these free space mapper pages first, then fall backs to current code
