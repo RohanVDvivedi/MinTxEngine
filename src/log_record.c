@@ -49,7 +49,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 {
 	if(will_unsigned_mul_overflow(uint32_t, stats->page_size, 20))
 	{
-		printf("ISSUE :: page_size to big for log_record_tuple_defs, (page_size * 20) must f0r 32 bit unsigned integer\n");
+		printf("ISSUE :: page_size to big for log_record_tuple_defs, (page_size * 20) must for 32 bit unsigned integer\n");
 		exit(-1);
 	}
 	lrtd->max_log_record_size = stats->page_size * 20;
