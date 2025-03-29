@@ -1348,6 +1348,13 @@ static void* compress_serialized_log_record_idempotently(void* input, uint32_t i
 
 		deflateEnd(&zstrm);
 
+		if((*output_size) >= input_size) // if for some reason data expanded instead then return input as is, freeing the allocated output buffer
+		{
+			free(output);
+			(*output_size) = input_size;
+			return input;
+		}
+
 		free(input);
 		return output;
 	}
