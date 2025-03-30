@@ -1,10 +1,10 @@
-#include<mini_transaction_engine_util.h>
+#include<mintxengine/mini_transaction_engine_util.h>
 
-#include<dirty_page_table_entry.h>
+#include<mintxengine/dirty_page_table_entry.h>
 
-#include<system_page_header_util.h>
+#include<mintxengine/system_page_header_util.h>
 
-#include<pthread_cond_utils.h>
+#include<posixutils/pthread_cond_utils.h>
 
 void mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mini_transaction_engine* mte, void* page, uint64_t page_id)
 {
@@ -84,7 +84,7 @@ int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mi
 	return success;
 }
 
-#include<wal_list_utils.h>
+#include<mintxengine/wal_list_utils.h>
 
 static const void* get_unparsed_log_record_UNSAFE(mini_transaction_engine* mte, uint256 LSN, uint32_t* lr_size, int skip_flushed_checks)
 {

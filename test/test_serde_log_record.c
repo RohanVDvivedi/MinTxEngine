@@ -1,6 +1,6 @@
-#include<log_record.h>
+#include<mintxengine/log_record.h>
 
-#include<tuple.h>
+#include<tuplestore/tuple.h>
 
 #include<stdlib.h>
 #include<string.h>

@@ -1,9 +1,9 @@
-#include<mini_transaction_engine_allotment.h>
+#include<mintxengine/mini_transaction_engine_allotment.h>
 
-#include<mini_transaction_engine_util.h>
-#include<system_page_header_util.h>
+#include<mintxengine/mini_transaction_engine_util.h>
+#include<mintxengine/system_page_header_util.h>
 
-#include<pthread_cond_utils.h>
+#include<posixutils/pthread_cond_utils.h>
 
 mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_timeout_in_microseconds, uint64_t page_latches_to_be_borrowed)
 {
@@ -231,10 +231,10 @@ static void append_compensation_log_record_INTERNAL(mini_transaction_engine* mte
 	free((void*)serialized_lr);
 }
 
-#include<bitmap.h>
+#include<cutlery/bitmap.h>
 
-#include<tuple.h>
-#include<page_layout.h>
+#include<tuplestore/tuple.h>
+#include<tuplestore/page_layout.h>
 
 // below function must be called with manager lock held but global lock not held
 static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint256 undo_LSN, const log_record* undo_lr)

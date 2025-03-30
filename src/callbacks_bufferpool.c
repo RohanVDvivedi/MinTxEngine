@@ -1,11 +1,11 @@
-#include<block_io.h>
-#include<callbacks_bufferpool.h>
+#include<blockio/block_io.h>
+#include<mintxengine/callbacks_bufferpool.h>
 
-#include<mini_transaction_engine.h>
-#include<dirty_page_table_entry.h>
-#include<system_page_header_util.h>
+#include<mintxengine/mini_transaction_engine.h>
+#include<mintxengine/dirty_page_table_entry.h>
+#include<mintxengine/system_page_header_util.h>
 
-#include<page_io_module.h>
+#include<mintxengine/page_io_module.h>
 
 #include<stdlib.h>
 #include<stdio.h>
@@ -39,8 +39,8 @@ int flush_all_pages_for_bufferpool(const void* page_io_ops_handle)
 	return res;
 }
 
-#include<system_page_header_util.h>
-#include<mini_transaction_engine.h>
+#include<mintxengine/system_page_header_util.h>
+#include<mintxengine/mini_transaction_engine.h>
 
 int can_be_flushed_to_disk_for_bufferpool(void* flush_callback_handle, uint64_t page_id, const void* frame)
 {

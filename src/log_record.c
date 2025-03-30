@@ -1,6 +1,6 @@
-#include<log_record.h>
+#include<mintxengine/log_record.h>
 
-#include<system_page_header_util.h>
+#include<mintxengine/system_page_header_util.h>
 
 #include<zlib.h>
 
@@ -2440,7 +2440,7 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 	}
 }
 
-#include<wale.h>
+#include<wale/wale.h>
 
 uint256 get_mini_transaction_id_for_log_record(const log_record* lr)
 {

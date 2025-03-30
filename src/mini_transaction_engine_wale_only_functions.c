@@ -1,9 +1,9 @@
-#include<mini_transaction_engine_wale_only_functions.h>
+#include<mintxengine/mini_transaction_engine_wale_only_functions.h>
 
-#include<mini_transaction_engine_util.h>
-#include<system_page_header_util.h>
+#include<mintxengine/mini_transaction_engine_util.h>
+#include<mintxengine/system_page_header_util.h>
 
-#include<page_layout.h>
+#include<tuplestore/page_layout.h>
 
 // the below function does the following for only a data page modification log record
 /*

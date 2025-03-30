@@ -1,4 +1,4 @@
-#include<mini_transaction.h>
+#include<mintxengine/mini_transaction.h>
 
 int compare_mini_transactions(const void* mt1, const void* mt2)
 {
@@ -11,7 +11,7 @@ cy_uint hash_mini_transaction(const void* mt)
 }
 
 #include<stdlib.h>
-#include<pthread_cond_utils.h>
+#include<posixutils/pthread_cond_utils.h>
 
 mini_transaction* get_new_mini_transaction()
 {
@@ -34,7 +34,7 @@ void delete_mini_transaction(mini_transaction* mt)
 	free(mt);
 }
 
-#include<wale.h>
+#include<wale/wale.h>
 
 uint256 get_minimum_mini_transaction_id_for_mini_transaction_table(const hashmap* mini_transaction_table)
 {

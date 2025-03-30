@@ -1,4 +1,4 @@
-#include<wal_list_utils.h>
+#include<mintxengine/wal_list_utils.h>
 
 #include<stdlib.h>
 #include<string.h>
@@ -6,7 +6,7 @@
 #include<sys/stat.h>
 #include<sys/types.h>
 
-#include<callbacks_wale.h>
+#include<mintxengine/callbacks_wale.h>
 
 int create_new_wal_list(mini_transaction_engine* mte)
 {

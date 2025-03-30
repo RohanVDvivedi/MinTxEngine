@@ -1,8 +1,8 @@
-#include<mini_transaction_engine_recovery_util.h>
+#include<mintxengine/mini_transaction_engine_recovery_util.h>
 
-#include<mini_transaction_engine_checkpointer_util.h>
-#include<mini_transaction_engine_util.h>
-#include<system_page_header_util.h>
+#include<mintxengine/mini_transaction_engine_checkpointer_util.h>
+#include<mintxengine/mini_transaction_engine_util.h>
+#include<mintxengine/system_page_header_util.h>
 
 static checkpoint analyze(mini_transaction_engine* mte)
 {
@@ -390,8 +390,8 @@ static void* acquire_writer_latch_only_if_redo_required_UNSAFE(mini_transaction_
 	return page;
 }
 
-#include<bitmap.h>
-#include<page_layout.h>
+#include<cutlery/bitmap.h>
+#include<tuplestore/page_layout.h>
 
 static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 {

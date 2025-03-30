@@ -1,10 +1,10 @@
-#include<mini_transaction_engine_checkpointer_util.h>
+#include<mintxengine/mini_transaction_engine_checkpointer_util.h>
 
-#include<mini_transaction_engine_util.h>
+#include<mintxengine/mini_transaction_engine_util.h>
 
-#include<log_record.h>
+#include<mintxengine/log_record.h>
 
-#include<pthread_cond_utils.h>
+#include<posixutils/pthread_cond_utils.h>
 
 void print_checkpoint(const checkpoint* ckpt)
 {
@@ -264,10 +264,10 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 	return checkpointLSN;
 }
 
-#include<wal_list_utils.h>
-#include<page_io_module.h>
-#include<system_page_header_util.h>
-#include<bitmap.h>
+#include<mintxengine/wal_list_utils.h>
+#include<mintxengine/page_io_module.h>
+#include<mintxengine/system_page_header_util.h>
+#include<cutlery/bitmap.h>
 
 static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 {

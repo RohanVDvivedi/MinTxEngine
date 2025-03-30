@@ -1,6 +1,6 @@
-#include<mini_transaction_engine_stats.h>
+#include<mintxengine/mini_transaction_engine_stats.h>
 
-#include<serial_int.h>
+#include<serint/serial_int.h>
 
 #include<stdlib.h>
 #include<string.h>
@@ -80,8 +80,8 @@ int read_from_first_block(block_file* bf, mini_transaction_engine_stats* stats)
 	return 0;
 }
 
-#include<system_page_header_util.h>
-#include<callbacks_bufferpool.h>
+#include<mintxengine/system_page_header_util.h>
+#include<mintxengine/callbacks_bufferpool.h>
 
 mini_transaction_engine_user_stats get_mini_transaction_engine_user_stats(const mini_transaction_engine_stats* stats, uint32_t database_file_block_size)
 {

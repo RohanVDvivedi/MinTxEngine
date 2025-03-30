@@ -1,5 +1,5 @@
-#include<page_access_methods.h>
-#include<page_modification_methods.h>
+#include<tupleindexer/interface/page_access_methods.h>
+#include<tupleindexer/interface/page_modification_methods.h>
 
 //#define GENERATE_TRACE
 

@@ -1,7 +1,7 @@
-#include<mini_transaction_engine_bufferpool_only_functions.h>
+#include<mintxengine/mini_transaction_engine_bufferpool_only_functions.h>
 
-#include<mini_transaction_engine_util.h>
-#include<system_page_header_util.h>
+#include<mintxengine/mini_transaction_engine_util.h>
+#include<mintxengine/system_page_header_util.h>
 
 static void* acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mini_transaction_engine* mte, uint64_t page_id)
 {
@@ -358,7 +358,7 @@ int upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(mini_transaction_en
 	return result;
 }
 
-#include<mini_transaction_engine_page_alloc_util.h>
+#include<mintxengine/mini_transaction_engine_page_alloc_util.h>
 
 int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, int free_page)
 {

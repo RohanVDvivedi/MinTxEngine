@@ -2,12 +2,12 @@
 #include<string.h>
 #include<stdlib.h>
 
-#include<mini_transaction_engine.h>
+#include<mintxengine/mini_transaction_engine.h>
 #include<callbacks_tupleindexer.h>
 #include<test_tuple_infos.h>
 
-#include<bplus_tree.h>
-#include<hash_table.h>
+#include<tupleindexer/bplus_tree/bplus_tree.h>
+#include<tupleindexer/hash_table/hash_table.h>
 
 mini_transaction_engine mte;
 
@@ -855,7 +855,7 @@ int main2(uint64_t bucket_count)
 	return 0;
 }
 
-#include<executor.h>
+#include<boompar/executor.h>
 
 #define WORKER_COUNT 30
 
@@ -1043,7 +1043,7 @@ int main4(uint64_t bucket_count)
 }
 
 #include<string.h>
-#include<page_layout.h>
+#include<tuplestore/page_layout.h>
 
 void construct_tuple(char* tuple, const tuple_def* tpl_def, const char* a, uint64_t b)
 {

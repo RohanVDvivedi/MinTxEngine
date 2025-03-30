@@ -1,4 +1,4 @@
-#include<dirty_page_table_entry.h>
+#include<mintxengine/dirty_page_table_entry.h>
 
 int compare_dirty_page_table_entries(const void* dpte1, const void* dpte2)
 {
@@ -29,7 +29,7 @@ void delete_dirty_page_table_entry(dirty_page_table_entry* dpte)
 	free(dpte);
 }
 
-#include<wale.h>
+#include<wale/wale.h>
 
 uint256 get_minimum_recLSN_for_dirty_page_table(const hashmap* dirty_page_table)
 {

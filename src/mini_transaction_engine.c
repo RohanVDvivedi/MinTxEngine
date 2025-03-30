@@ -1,16 +1,16 @@
-#include<mini_transaction_engine.h>
+#include<mintxengine/mini_transaction_engine.h>
 
-#include<mini_transaction_engine_util.h>
+#include<mintxengine/mini_transaction_engine_util.h>
 
-#include<dirty_page_table_entry.h>
+#include<mintxengine/dirty_page_table_entry.h>
 
-#include<callbacks_bufferpool.h>
-#include<callbacks_wale.h>
-#include<wal_list_utils.h>
-#include<mini_transaction_engine_checkpointer_util.h>
-#include<mini_transaction_engine_recovery_util.h>
+#include<mintxengine/callbacks_bufferpool.h>
+#include<mintxengine/callbacks_wale.h>
+#include<mintxengine/wal_list_utils.h>
+#include<mintxengine/mini_transaction_engine_checkpointer_util.h>
+#include<mintxengine/mini_transaction_engine_recovery_util.h>
 
-#include<pthread_cond_utils.h>
+#include<posixutils/pthread_cond_utils.h>
 
 #define MINIMUM_CHECKPOINTER_PERIOD UINT64_C(5000000) // checkpoint period no lesser than 5 seconds
 

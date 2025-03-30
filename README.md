@@ -63,7 +63,7 @@ Declined Possible Enhancements:
 ## Using The library
  * add `-lmintxengine -ltuplestore -lwale -lz -lbufferpool -lblockio -lboompar -lrwlock -lcutlery -lpthread` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
-   * `#include<mini_transaction_engine.h>`
+   * `#include<mintxengine/mini_transaction_engine.h>`
 
 ## Instructions for uninstalling library
 
