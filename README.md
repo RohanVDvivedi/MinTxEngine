@@ -3,7 +3,7 @@ A Mini Transaction Engine supported by WALe and Bufferpool libraries.
 It works on the tuples with layout as specified by the TupleStore library, fully compatible with the data structures like BplusTree, HashTable, LinkedPageList, ArrayTable, PageTable, Sorter and Worm of TupleIndexer.
 
 The usage is simple, for any operaton that you want to be ACID compliant on the database but involves a set of page writes to be atomic to become consistent, then you wrap them into a mini transaction.
-This mini transaction will be atomic keeping the databse consistent, and will be durable (if there was a flush anytime after it's completion, explicityly or implicitly), and upon an abort or a crash it will be rolled back, if not committed as per the WALe logs.
+This mini transaction will be atomic keeping the database consistent, and will be durable (if there was a flush anytime after it's completion, explicitly or implicitly), and upon an abort or a crash it will be rolled back, if not committed as per the WALe logs.
 These mini transactions are also crash recoverable with a modified version of ARIES algorithm, that runs at start up.
 
 Usage : For instance, an insert into a bplus tree can be wrapped in a mini transaction to either make it go all the way through or fail and undo completely, This will need a mini transaction because a bplus tree insert may cause multiple splits and you would want all of these changes to persist or none of them to persist. This is what MinTxEngine solves. Another good example would be to perform a MVCC version switch atomically, which could involve inserting a new row in the table and pointing the old version's next pointer to this new row.
