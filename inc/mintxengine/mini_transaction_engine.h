@@ -7,7 +7,7 @@
 #include<cutlery/linkedlist.h>
 #include<cutlery/arraylist.h>
 
-#include<rwlock/rwlock.h>
+#include<lockking/rwlock.h>
 
 #include<wale/wale.h>
 #include<bufferpool/bufferpool.h>

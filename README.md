@@ -43,7 +43,7 @@ Declined Possible Enhancements:
  * [Bufferpool](https://github.com/RohanVDvivedi/Bufferpool)
  * [BlockIO](https://github.com/RohanVDvivedi/BlockIO)
  * [SerializableInteger](https://github.com/RohanVDvivedi/SerializableInteger)
- * [ReaderWriterLock](https://github.com/RohanVDvivedi/ReaderWriterLock)
+ * [LockKing](https://github.com/RohanVDvivedi/LockKing)
  * [BoomPar](https://github.com/RohanVDvivedi/BoomPar)
  * [Cutlery](https://github.com/RohanVDvivedi/Cutlery)
  * [PosixUtils](https://github.com/RohanVDvivedi/PosixUtils)
@@ -61,7 +61,7 @@ Declined Possible Enhancements:
  * ***Once you have installed from source, you may discard the build by*** `make clean`
 
 ## Using The library
- * add `-lmintxengine -ltuplestore -lwale -lz -lbufferpool -lblockio -lboompar -lrwlock -lcutlery -lpthread` linker flag, while compiling your application
+ * add `-lmintxengine -ltuplestore -lwale -lz -lbufferpool -lblockio -lboompar -llockking -lcutlery -lpthread` linker flag, while compiling your application
  * do not forget to include appropriate public api headers as and when needed. this includes
    * `#include<mintxengine/mini_transaction_engine.h>`
 
