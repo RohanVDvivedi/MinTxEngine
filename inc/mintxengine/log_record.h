@@ -10,6 +10,8 @@
 typedef enum log_record_type log_record_type;
 enum log_record_type
 {
+	// this enum fields start from 0 and increment so on
+
 	UNIDENTIFIED = 0, // this log record can not be parsed or serialized with functions in this header and source file
 
 // below are log records that can exist in any mini transaction
@@ -69,7 +71,7 @@ enum log_record_type
 	  -> while redoing them they get writerLSN as in the log record, if their page_id suggests that they have one (if theyr are not a free space mapper page)
 */
 
-extern const char log_record_type_strings[23][64];
+extern char const * const log_record_type_strings[];
 
 /*
 	NOTE :: for the first log record for any mini transaction
