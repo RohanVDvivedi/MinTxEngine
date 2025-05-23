@@ -149,6 +149,7 @@ struct mini_transaction_engine
 
 // page_size, page_id_width and log_sequence_number_width parameter is only used if passed as non-zero
 // else they are either used for a new database OR are ensured to be correct for an existing database if non-zero
+// latch_wait_timeout_in_microseconds and lock_wait_timeout_in_microseconds can not be BLOCKING or NON_BLOCKING
 int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint64_t bufferpool_frame_count, uint64_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds, uint64_t checkpointing_LSN_diff_in_bytes, uint64_t max_wal_file_size_in_bytes);
 
 #include<mintxengine/mini_transaction_engine_wale_only_functions.h>
