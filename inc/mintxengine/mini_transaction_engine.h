@@ -107,10 +107,7 @@ struct mini_transaction_engine
 	rwlock manager_lock;
 
 	// job for checkpointer
-	job checkpointer_job;
-
-	// as the name suggests check pointing is done every this many microseconds
-	uint64_t checkpointing_period_in_microseconds;
+	periodic_job* periodic_checkpointer_job;
 
 	// checkpoint will occur only if there are these many bytes after the last checkpoint, this must be in some MBs
 	uint64_t checkpointing_LSN_diff_in_bytes;
@@ -119,14 +116,6 @@ struct mini_transaction_engine
 	// i.e. after checkpointing_period_in_microseconds and that there are atleast checkpointing_LSN_diff_in_bytes after the last checkpoint
 	// so in reality the minimum wal filse size is governed by checkpointing_LSN_diff_in_bytes
 	uint64_t max_wal_file_size_in_bytes;
-
-	// the checkpointer thread waits here for checkpointing_period_in_microseconds
-	// you can signal here, if shutdown is called OR if checkpointing_period_in_microseconds change
-	pthread_cond_t wait_for_checkpointer_period;
-
-	// after calling shutdown, you can wait here for the checkpointer to stop
-	int is_checkpointer_running;
-	pthread_cond_t wait_for_checkpointer_to_stop;
 
 	// stats for internal use
 	mini_transaction_engine_stats stats;

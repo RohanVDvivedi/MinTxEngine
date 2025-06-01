@@ -31,11 +31,8 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	pthread_cond_init_with_monotonic_clock(&(mte->conditional_to_wait_for_execution_slot));
 	mte->latch_wait_timeout_in_microseconds = latch_wait_timeout_in_microseconds;
 	mte->write_lock_wait_timeout_in_microseconds = write_lock_wait_timeout_in_microseconds;
-	mte->checkpointing_period_in_microseconds = checkpointing_period_in_microseconds;
 	mte->checkpointing_LSN_diff_in_bytes = checkpointing_LSN_diff_in_bytes;
 	mte->max_wal_file_size_in_bytes = max_wal_file_size_in_bytes;
-	pthread_cond_init_with_monotonic_clock(&(mte->wait_for_checkpointer_period));
-	pthread_cond_init_with_monotonic_clock(&(mte->wait_for_checkpointer_to_stop));
 	mte->is_checkpointer_running = 0;
 	mte->shutdown_called = 0;
 	pthread_mutex_init(&(mte->database_expansion_lock), NULL);
@@ -192,14 +189,14 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	// dirty page table entries may not be created upfront
 
 	// start checkpointer thread
-	initialize_job(&(mte->checkpointer_job), checkpointer, mte, NULL, NULL);
-	pthread_t thread_id;
-	int checkpointer_job_start_error = execute_job_async(&(mte->checkpointer_job), &thread_id);
-	if(checkpointer_job_start_error)
+	mte->periodic_checkpointer_job = new_periodic_job(checkpointer, mte, checkpointing_period_in_microseconds);
+	if(mte->periodic_checkpointer_job == NULL)
 	{
 		printf("ISSUE :: could not start checkpointer job\n");
 		exit(-1);
 	}
+
+	resume_periodic_job(mte->periodic_checkpointer_job);
 
 	return 1;
 }
@@ -331,9 +328,12 @@ void debug_print_wal_logs_for_mini_transaction_engine(mini_transaction_engine* m
 
 void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 {
+	// stop periodic_checkpointer
+	// this will also shut it down
+	delete_periodic_job(mte->periodic_checkpointer_job);
+
 	pthread_mutex_lock(&(mte->global_lock));
 
-	// below lock is WRITE_PREFERRING because we want the deinitialization to wait if a checkpointer is waiting for an exclusive lock on the manager_lock
 	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
 	mte->shutdown_called = 1;
@@ -342,16 +342,11 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 	while(!(is_empty_hashmap(&(mte->writer_mini_transactions)) && is_empty_linkedlist(&(mte->reader_mini_transactions))))
 		pthread_cond_wait(&(mte->conditional_to_wait_for_execution_slot), &(mte->global_lock));
 
-	// wake up checkpointer and wait for it to stop
-	pthread_cond_signal(&(mte->wait_for_checkpointer_period));
-	while(mte->is_checkpointer_running)
-		pthread_cond_wait(&(mte->wait_for_checkpointer_to_stop), &(mte->global_lock));
-
 	// flush wale
 	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
 
 	// flush bufferpool
-	flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
+	blockingly_flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
 
 	close_all_in_wal_list(&(mte->wa_list));
 
