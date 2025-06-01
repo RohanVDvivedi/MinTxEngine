@@ -283,24 +283,12 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 			return;
 	}
 
-	// get old status of the periodic flush job to be reverted to
-	// and then shut periodic flush job, and wait for it to finish
-	periodic_flush_job_status old_state = get_periodic_flush_job_status(&(mte->bufferpool_handle));
-	int success_in_stopping_periodic_flush_job = modify_periodic_flush_job_status(&(mte->bufferpool_handle), STOP_PERIODIC_FLUSH_JOB_STATUS);
-	if(!success_in_stopping_periodic_flush_job)
-	{
-		printf("ISSUE :: failed to call stop on periodic flush job for checkpointing\n");
-		exit(-1);
-	}
-	int periodic_flush_job_stopped = wait_for_periodic_flush_job_to_stop(&(mte->bufferpool_handle));
-	if(!periodic_flush_job_stopped)
-	{
-		printf("ISSUE :: failed to stop periodic flush job for checkpointing even after a wait\n");
-		exit(-1);
-	}
+	// pause periodic flush job, so that it does not interfere with the mini_transaction_table required for checkpointing
+	pause_periodic_flush_job_status(&(mte->bufferpool_handle));
+	wait_for_periodic_flush_job_to_stop(&(mte->bufferpool_handle));
 
 	// flush bufferpool, reducing the number of dirty pages
-	flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
+	blockingly_flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
 
 	// -------------- MANAGEMENT TASK : create a new wal file if the last one exceed the max allowable size
 	{
@@ -455,8 +443,8 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 
 	// bufferpool may still have these trailing pages that we just discarded using the truncate call, but since they were already flushed to disk WE DO NOT CARE
 
-	// start the periodic flush job at the prior state
-	modify_periodic_flush_job_status(&(mte->bufferpool_handle), old_state);
+	// once done with checkpointing, we can resume the bufferpool's periodic flush job
+	resume_periodic_flush_job(&(mte->bufferpool_handle));
 }
 
 #include<errno.h>
