@@ -1044,7 +1044,7 @@ static void undo(mini_transaction_engine* mte)
 
 	// flush wal and bufferpool
 	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
-	flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
+	blockingly_flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
 
 	// now at this point we can clean up the free lists
 	// this is required as we allocated plenty of then and now they are redundant

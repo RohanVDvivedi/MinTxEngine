@@ -33,7 +33,6 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	mte->write_lock_wait_timeout_in_microseconds = write_lock_wait_timeout_in_microseconds;
 	mte->checkpointing_LSN_diff_in_bytes = checkpointing_LSN_diff_in_bytes;
 	mte->max_wal_file_size_in_bytes = max_wal_file_size_in_bytes;
-	mte->is_checkpointer_running = 0;
 	mte->shutdown_called = 0;
 	pthread_mutex_init(&(mte->database_expansion_lock), NULL);
 	mte->is_in_recovery_mode = 0;
@@ -45,7 +44,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		return 0;
 
 	// latch and lock wait timeouts can not be 0, checkpointing period must be more than a second
-	if(mte->latch_wait_timeout_in_microseconds == 0 || mte->write_lock_wait_timeout_in_microseconds == 0 || mte->checkpointing_period_in_microseconds < MINIMUM_CHECKPOINTER_PERIOD)
+	if(mte->latch_wait_timeout_in_microseconds == 0 || mte->write_lock_wait_timeout_in_microseconds == 0 || checkpointing_period_in_microseconds < MINIMUM_CHECKPOINTER_PERIOD)
 		return 0;
 
 	// adding checks to ensure the limits of the mini transaction engine
@@ -295,7 +294,7 @@ void intermediate_bufferpool_flush_for_mini_transaction_engine(mini_transaction_
 	pthread_mutex_lock(&(mte->global_lock));
 	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
-	flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
+	trigger_flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
 
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));

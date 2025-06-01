@@ -284,8 +284,8 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 	}
 
 	// pause periodic flush job, so that it does not interfere with the mini_transaction_table required for checkpointing
-	pause_periodic_flush_job_status(&(mte->bufferpool_handle));
-	wait_for_periodic_flush_job_to_stop(&(mte->bufferpool_handle));
+	pause_periodic_flush_job(&(mte->bufferpool_handle));
+	wait_for_periodic_flush_job_to_pause(&(mte->bufferpool_handle));
 
 	// flush bufferpool, reducing the number of dirty pages
 	blockingly_flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
