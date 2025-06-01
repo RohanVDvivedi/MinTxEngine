@@ -189,7 +189,7 @@ void flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mini_transaction_engin
 
 		int wal_error = 0;
 		uint256 flushedLSN = flush_all_log_records(wale_p, &wal_error);
-		if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER))
+		if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER) && wal_error) // ensure that there has been an error -> even a empty WAL may result in failed flush
 		{
 			printf("ISSUE :: unable to flush log records\n");
 			exit(-1);
