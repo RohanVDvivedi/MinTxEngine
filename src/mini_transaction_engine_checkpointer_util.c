@@ -461,44 +461,17 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 
 #include<errno.h>
 
-void* checkpointer(void* mte_vp)
+void checkpointer(void* mte_vp)
 {
 	mini_transaction_engine* mte = mte_vp;
 
 	pthread_mutex_lock(&(mte->global_lock));
-	mte->is_checkpointer_running = 1;
-	pthread_mutex_unlock(&(mte->global_lock));
 
-	while(1)
-	{
-		pthread_mutex_lock(&(mte->global_lock));
-
-		while(!mte->shutdown_called)
-		{
-			uint64_t period_in_microseconds = mte->checkpointing_period_in_microseconds;
-			if(pthread_cond_timedwait_for_microseconds(&(mte->wait_for_checkpointer_period), &(mte->global_lock), &period_in_microseconds))
-				break;
-		}
-
-		if(mte->shutdown_called)
-		{
-			pthread_mutex_unlock(&(mte->global_lock));
-			break;
-		}
-
-		// perform checkpoint
 		exclusive_lock(&(mte->manager_lock), BLOCKING);
 
-		perform_checkpoint_UNSAFE(mte);
+			perform_checkpoint_UNSAFE(mte);
 
 		exclusive_unlock(&(mte->manager_lock));
 
-		pthread_mutex_unlock(&(mte->global_lock));
-	}
-
-	pthread_mutex_lock(&(mte->global_lock));
-	mte->is_checkpointer_running = 0;
-	pthread_cond_broadcast(&(mte->wait_for_checkpointer_to_stop));
 	pthread_mutex_unlock(&(mte->global_lock));
-	return NULL;
 }

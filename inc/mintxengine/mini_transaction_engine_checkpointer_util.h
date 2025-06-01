@@ -28,6 +28,6 @@ uint256 read_checkpoint_from_wal_UNSAFE(mini_transaction_engine* mte, uint256 ch
 //uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, const checkpoint* ckpt, uint256* begin_LSN);
 
 // run this function for checkpointing
-void* checkpointer(void* mte_vp);
+void checkpointer(void* mte_vp);
 
 #endif
