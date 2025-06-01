@@ -447,8 +447,6 @@ static void perform_checkpoint_UNSAFE(mini_transaction_engine* mte)
 	resume_periodic_flush_job(&(mte->bufferpool_handle));
 }
 
-#include<errno.h>
-
 void checkpointer(void* mte_vp)
 {
 	mini_transaction_engine* mte = mte_vp;
