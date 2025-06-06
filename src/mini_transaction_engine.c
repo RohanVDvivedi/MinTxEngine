@@ -300,6 +300,24 @@ void intermediate_bufferpool_flush_for_mini_transaction_engine(mini_transaction_
 	pthread_mutex_unlock(&(mte->global_lock));
 }
 
+int update_checkpointer_period_for_mini_transaction_engine(mini_transaction_engine* mte, uint64_t checkpointing_period_in_microseconds)
+{
+	if(checkpointing_period_in_microseconds < MINIMUM_CHECKPOINTER_PERIOD)
+		return 0;
+
+	pthread_mutex_lock(&(mte->global_lock));
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
+
+	// if you want checkpointer period less intervening, then you probably also want the periodic flush to less intervening
+	modify_periodic_flush_job_period(&(mte->bufferpool_handle), checkpointing_period_in_microseconds * 0.3);
+	update_period_for_periodic_job(mte->periodic_checkpointer_job, checkpointing_period_in_microseconds);
+
+	shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	return 1;
+}
+
 void debug_print_wal_logs_for_mini_transaction_engine(mini_transaction_engine* mte)
 {
 	pthread_mutex_lock(&(mte->global_lock));
