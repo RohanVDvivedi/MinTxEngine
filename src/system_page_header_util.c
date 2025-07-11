@@ -35,7 +35,7 @@ int set_pageLSN_for_page(void* page, uint256 pageLSN, const mini_transaction_eng
 
 uint64_t is_valid_bits_count_on_free_space_mapper_page(const mini_transaction_engine_stats* stats)
 {
-	return ((uint64_t)(stats->page_size - sizeof(uint32_t) - stats->log_sequence_number_width)) * UINT64_C(8);
+	return ((uint64_t)(stats->page_size - sizeof(uint32_t) - stats->log_sequence_number_width)) * CHAR_BIT; // there are CHAR_BIT bits in each byte on the page
 }
 
 #define PAGE_POS_MULTIPLIER(stats) (is_valid_bits_count_on_free_space_mapper_page(stats) + UINT64_C(1))
