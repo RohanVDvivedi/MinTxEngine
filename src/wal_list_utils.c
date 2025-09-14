@@ -23,8 +23,8 @@ int create_new_wal_list(mini_transaction_engine* mte)
 	strcat(dirname, "_logs/");
 	int dirname_length = strlen(dirname);
 
-	struct stat s;
-	int err = stat(dirname, &s);
+	struct stat64 s;
+	int err = stat64(dirname, &s);
 	if(err != -1 || errno != ENOENT)
 		goto FAILURE;
 
@@ -109,8 +109,8 @@ int initialize_wal_list(mini_transaction_engine* mte)
 	if(dr == NULL)
 		goto FAILURE;
 
-	struct dirent *en;
-	while ((en = readdir(dr)) != NULL)
+	struct dirent64 *en;
+	while ((en = readdir64(dr)) != NULL)
 	{
 		// skip parent and self directories
 		if(0 == strcmp(en->d_name, "..") || 0 == strcmp(en->d_name, "."))
