@@ -1,4 +1,7 @@
 PICKED
+  * only preallocate mini_transation structs in the free list, and allow users to create their instances immediately wihtout waiting for some to be pushed in the free list
+  * decrement_reference_counter takes care of pushing to free list or freeing it completely to maintain the number of free mini transactions
+  * let users control how many concurrent mini transaction they need, as readers can exist even without acquiring a mini transaction struct, so controlling its count does not prevent users from accessing the buffers of the buffer pool
 
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
