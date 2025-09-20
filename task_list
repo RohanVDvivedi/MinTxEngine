@@ -1,10 +1,8 @@
 PICKED
-  * mutable bufferpool & wale buffer frames, and variable number of active mini tranactions
-    * only preallocate mini_transation structs in the free list, and allow users to create their instances immediately wihtout waiting for some to be pushed in the free list
-    * decrement_reference_counter takes care of pushing to free list or freeing it completely to maintain the number of free mini transactions
-    * let users control how many concurrent mini transaction they need, as readers can exist even without acquiring a mini transaction struct, so controlling its count does not prevent users from accessing the buffers of the buffer pool
-    * allow users to modify the number of bufferpool and wale frames as a part of this task
-    * externally use resource_usage_limiter for limiting the number of active mini transactions
+  * allow mutating bufferpool & wale buffer frames, and variable number of active mini tranactions
+  * limit free mini transactions to only the number of bufferpool frames curently in the bufferpool
+  * no timeouts on allotting mini transactions
+  * externally use resource_usage_limiter for limiting the number of active mini transactions
 
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
