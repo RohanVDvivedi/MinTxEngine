@@ -3,6 +3,7 @@ PICKED
   * limit free mini transactions to only the number of bufferpool frames curently in the bufferpool
   * no timeouts on allotting mini transactions
   * externally use resource_usage_limiter for limiting the number of active mini transactions
+  * run all local tests again and also the RohnDB tests that use the mini trsansaction engine as a module
 
   * PAGE_ALLOCATION OPTIMIZATION
   * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
