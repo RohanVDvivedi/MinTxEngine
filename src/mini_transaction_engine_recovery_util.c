@@ -1002,8 +1002,8 @@ static void undo(mini_transaction_engine* mte)
 		// mini transaction attributes like mini_transaction_id, lastLSN, state and abort_error are already initialized
 
 		// now we need to initialize the below attributes
-		mt->page_latches_held_counter = 0;
-		mt->reference_counter = 1;
+		mt->page_latches_held_counter = 0; // it does not at present hold any latches
+		mt->reference_counter = 1; // no one is waiting on it, except the mini_transaction_engine itself referencing it
 
 		// and if it is in progress, then abort it, with reason as aborted after crash
 		if(mt->state == MIN_TX_IN_PROGRESS)
