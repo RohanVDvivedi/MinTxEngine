@@ -193,7 +193,7 @@ int main1()
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		create_uint_bplus_tree(mt);
 
@@ -211,7 +211,7 @@ int main1()
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		for(uint32_t i = 0; i < JOBS_COUNT; i++)
 		{
@@ -244,7 +244,7 @@ int main1()
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		for(uint32_t i = 0; i < JOBS_COUNT; i++)
 		{
@@ -277,7 +277,7 @@ int main1()
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		for(uint32_t i = 0; i < JOBS_COUNT; i++)
 		{
@@ -320,7 +320,7 @@ int main1()
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		for(uint64_t i = 0; i < JOBS_COUNT; i++)
 		{
@@ -347,7 +347,7 @@ int main1()
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		destroy_uint_bplus_tree(mt);
 
@@ -360,7 +360,7 @@ int main1()
 	}
 
 	/*{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		print_uint_bplus_tree(mt);
 
@@ -370,7 +370,7 @@ int main1()
 	}*/
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		create_uint_bplus_tree(mt);
 
@@ -670,7 +670,7 @@ int main2(uint64_t bucket_count)
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		create_uint_hash_table(mt, bucket_count);
 
@@ -688,7 +688,7 @@ int main2(uint64_t bucket_count)
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		for(uint32_t i = 0; i < JOBS_COUNT; i++)
 		{
@@ -721,7 +721,7 @@ int main2(uint64_t bucket_count)
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		for(uint32_t i = 0; i < JOBS_COUNT; i++)
 		{
@@ -754,7 +754,7 @@ int main2(uint64_t bucket_count)
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		for(uint32_t i = 0; i < JOBS_COUNT; i++)
 		{
@@ -787,7 +787,7 @@ int main2(uint64_t bucket_count)
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		for(uint32_t i = 0; i < JOBS_COUNT; i++)
 		{
@@ -814,7 +814,7 @@ int main2(uint64_t bucket_count)
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		destroy_uint_hash_table(mt);
 
@@ -827,7 +827,7 @@ int main2(uint64_t bucket_count)
 	}
 
 	/*{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		print_uint_hash_table(mt);
 
@@ -837,7 +837,7 @@ int main2(uint64_t bucket_count)
 	}*/
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		create_uint_hash_table(mt, bucket_count);
 
@@ -867,7 +867,7 @@ void* perform_insert_bplus_tree(void* param)
 {
 	uint64_t p = *(uint64_t*)(param);
 
-	mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+	mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 	int res = insert_uint_bplus_tree(mt, p, "concurrent-inserts");
 
@@ -909,7 +909,7 @@ int main3()
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 		create_uint_bplus_tree(mt);
 		uint64_t latches_to_borrow = 0;
 		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0, &latches_to_borrow);
@@ -957,7 +957,7 @@ void* perform_insert_hash_table(void* param)
 {
 	uint64_t p = *(uint64_t*)(param);
 
-	mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+	mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 	int res = insert_uint_hash_table(mt, p, "concurrent-inserts", 0); // do not allow cleanup
 
@@ -999,7 +999,7 @@ int main4(uint64_t bucket_count)
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 		create_uint_hash_table(mt, bucket_count);
 		uint64_t latches_to_borrow = 0;
 		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0, &latches_to_borrow);
@@ -1029,7 +1029,7 @@ int main4(uint64_t bucket_count)
 	pthread_mutex_unlock(&mtx);
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 		print_uint_hash_table(mt);
 		uint64_t latches_to_borrow = 0;
 		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0, &latches_to_borrow);
@@ -1071,7 +1071,7 @@ void main0()
 	char tuple[SYSTEM_PAGE_SIZE];
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		page = get_new_page_with_write_latch_for_mini_tx(&mte, mt, &page_id);
 
@@ -1093,7 +1093,7 @@ void main0()
 	printf("-x-x-x-x- tx1 complete\n");
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 		page = acquire_page_with_writer_latch_for_mini_tx(&mte, mt, page_id);
 
 		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 0, STATIC_POSITION(0), &(user_value){.string_value = "Rohan Dvivedi", .string_size = strlen("Rohan Dvivedi")});
@@ -1114,7 +1114,7 @@ void main0()
 	printf("-x-x-x-x- tx2 complete\n");
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 		page = acquire_page_with_reader_latch_for_mini_tx(&mte, mt, page_id);
 
 		print_page(page, mte.user_stats.page_size, &record_def);
@@ -1147,7 +1147,7 @@ void main_1()
 	uint64_t page_id[ACTIVE_MINI_TRANSACTIONS_TO_TEST] = {};
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 		void* page[ACTIVE_MINI_TRANSACTIONS_TO_TEST] = {};
 
 		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
@@ -1175,7 +1175,7 @@ void main_1()
 		void* page[ACTIVE_MINI_TRANSACTIONS_TO_TEST] = {};
 
 		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
-			mt[i] = mte_allot_mini_tx(&mte, 1000000, 0);
+			mt[i] = mte_allot_mini_tx(&mte, 0);
 
 		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
 			page[i] = acquire_page_with_writer_latch_for_mini_tx(&mte, mt[i], page_id[i]);
@@ -1215,7 +1215,7 @@ void main_1()
 	printf("-x-x-x-x- writes completed\n");
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
 		{
@@ -1283,7 +1283,7 @@ void main5(uint64_t _root_page_id)
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		print_uint_bplus_tree(mt);
 
@@ -1310,7 +1310,7 @@ void main6(uint64_t _root_page_id)
 	}
 
 	{
-		mini_transaction* mt = mte_allot_mini_tx(&mte, 1000000, 0);
+		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		print_uint_hash_table(mt);
 
