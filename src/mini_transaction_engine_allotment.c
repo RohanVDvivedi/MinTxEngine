@@ -5,33 +5,22 @@
 
 #include<posixutils/pthread_cond_utils.h>
 
-mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_timeout_in_microseconds, uint64_t page_latches_to_be_borrowed)
+mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t page_latches_to_be_borrowed)
 {
+	// allocate a new mini_transaction
+	mini_transaction* mt = get_new_mini_transaction();
+
+	// whether one was allotted or not
+	int allotted = 0;
+
 	pthread_mutex_lock(&(mte->global_lock));
 
 	// below lock is WRITE_PREFERRING because we want the new mini_transaction allotment to wait if a checkpointer is waiting for an exclusive lock on the manager_lock
 	// this allows the checkpointer to not wait indefinitely
 	shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
 
-	int wait_error = 0;
-	while(is_empty_linkedlist(&(mte->free_mini_transactions_list)) && !mte->shutdown_called && !wait_error) // and not a shutdown
+	if(!mte->shutdown_called)
 	{
-		{
-			shared_unlock(&(mte->manager_lock));
-			wait_error = pthread_cond_timedwait_for_microseconds(&(mte->conditional_to_wait_for_execution_slot), &(mte->global_lock), &wait_timeout_in_microseconds);
-			shared_lock(&(mte->manager_lock), WRITE_PREFERRING, BLOCKING);
-			// above lock is WRITE_PREFERRING because we want the new mini_transaction allotment to wait if a checkpointer is waiting for an exclusive lock on the manager_lock
-			// this allows the checkpointer to not wait indefinitely
-		}
-	}
-
-	mini_transaction* mt = NULL;
-	if(!is_empty_linkedlist(&(mte->free_mini_transactions_list)) && !mte->shutdown_called) // and not a shutdown
-	{
-		// if there is a free mini_transaction then grab it
-		mt = (mini_transaction*) get_head_of_linkedlist(&(mte->free_mini_transactions_list));
-		remove_head_from_linkedlist(&(mte->free_mini_transactions_list));
-
 		mt->mini_transaction_id = INVALID_LOG_SEQUENCE_NUMBER;
 		mt->lastLSN = INVALID_LOG_SEQUENCE_NUMBER;
 		mt->state = MIN_TX_IN_PROGRESS;
@@ -41,12 +30,21 @@ mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_
 
 		// in the begining every mini transaction is a reader_mini_transaction
 		insert_head_in_linkedlist(&(mte->reader_mini_transactions), mt);
+
+		// allotment of the mini_transaction was successfull
+		allotted = 1;
 	}
 
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));
 
-	return mt;
+	if(!allotted) // if not allotted, delete it and return NULL instead
+	{
+		delete_mini_transaction(mt);
+		return NULL;
+	}
+	else
+		return mt;
 }
 
 static uint256 append_abortion_log_record_and_scroll_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt)

@@ -14,7 +14,7 @@
 
 // allots a new mini transaction for you to use
 // wait_timeout_in_microseconds can not be BLOCKING or NON_BLOCKING
-mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t wait_timeout_in_microseconds, uint64_t page_latches_to_be_borrowed);
+mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t page_latches_to_be_borrowed);
 
 // completes a mini transaction for you
 // if it is a reader it is directly put into MINI_TX_COMPLETED state
