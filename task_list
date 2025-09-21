@@ -1,5 +1,4 @@
 PICKED
-  * allow mutating bufferpool & wale buffer frames, and variable number of active mini tranactions
   * limit free mini transactions to only the number of bufferpool frames curently in the bufferpool
   * no timeouts on allotting mini transactions
   * externally use resource_usage_limiter for limiting the number of active mini transactions
