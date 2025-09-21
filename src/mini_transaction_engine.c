@@ -300,6 +300,32 @@ void intermediate_bufferpool_flush_for_mini_transaction_engine(mini_transaction_
 	pthread_mutex_unlock(&(mte->global_lock));
 }
 
+int set_wal_buffer_count(mini_transaction_engine* mte, uint64_t buffer_block_count, int* error)
+{
+	pthread_mutex_lock(&(mte->global_lock));
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
+
+	int res = modify_append_only_buffer_block_count(&(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle), buffer_block_count, error);
+
+	shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	return res;
+}
+
+int set_bufferpool_buffer_count(mini_transaction_engine* mte, uint64_t max_frame_desc_count)
+{
+	pthread_mutex_lock(&(mte->global_lock));
+	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
+
+	int res = modify_max_frame_desc_count(&(mte->bufferpool_handle), max_frame_desc_count);
+
+	shared_unlock(&(mte->manager_lock));
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	return res;
+}
+
 int update_checkpointer_period_for_mini_transaction_engine(mini_transaction_engine* mte, uint64_t checkpointing_period_in_microseconds)
 {
 	if(checkpointing_period_in_microseconds < MINIMUM_CHECKPOINTER_PERIOD)

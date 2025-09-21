@@ -168,6 +168,12 @@ void intermediate_wal_flush_for_mini_transaction_engine(mini_transaction_engine*
 // if your mini transaction is huge perform this intermediately to allow all possibly flushable bufferpool changes to be flushed to disk
 void intermediate_bufferpool_flush_for_mini_transaction_engine(mini_transaction_engine* mte);
 
+// increase or decrease the WAL buffer count
+int set_wal_buffer_count(mini_transaction_engine* mte, uint64_t buffer_block_count, int* error);
+
+// increase or decrease the bufferpool buffer count
+int set_bufferpool_buffer_count(mini_transaction_engine* mte, uint64_t max_frame_desc_count);
+
 // this also updates the bufferpool's periodic flush job to 0.3 times the checkpointing_period_in_microseconds
 int update_checkpointer_period_for_mini_transaction_engine(mini_transaction_engine* mte, uint64_t checkpointing_period_in_microseconds);
 
