@@ -58,7 +58,7 @@ void decrement_mini_transaction_reference_counter_UNSAFE(mini_transaction_engine
 		remove_from_hashmap(&(mte->writer_mini_transactions), mt);
 
 	// free the mini_transaction that noone holds reference to
-	free(mt);
+	delete_mini_transaction(mt);
 
 	// wake up anyone waiting for execution slot
 	pthread_cond_signal(&(mte->conditional_to_wait_for_execution_completion));
