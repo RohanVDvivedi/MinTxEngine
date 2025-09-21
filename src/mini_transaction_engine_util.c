@@ -57,11 +57,11 @@ void decrement_mini_transaction_reference_counter_UNSAFE(mini_transaction_engine
 	else // it is a writer
 		remove_from_hashmap(&(mte->writer_mini_transactions), mt);
 
-	// add it to free_list
-	insert_head_in_linkedlist(&(mte->free_mini_transactions_list), mt);
+	// free the mini_transaction that noone holds reference to
+	free(mt);
 
 	// wake up anyone waiting for execution slot
-	pthread_cond_signal(&(mte->conditional_to_wait_for_execution_slot));
+	pthread_cond_signal(&(mte->conditional_to_wait_for_execution_completion));
 }
 
 int wait_for_mini_transaction_completion_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* write_lock_wait_timeout_in_microseconds_LEFT)
