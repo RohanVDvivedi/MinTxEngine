@@ -22,7 +22,7 @@ mini_transaction* get_new_mini_transaction()
 		exit(-1);
 	}
 	pthread_cond_init_with_monotonic_clock(&(mt->write_lock_wait));
-	mt->reference_counter = 0;
+	mt->reference_counter = 1; // a mini_transaction always starts with a reference_counter = 1, as the receiver of this function's return value is known to mostlikely hold the resource
 	mt->page_latches_held_counter = 0;
 	initialize_llnode(&(mt->enode));
 	return mt;
