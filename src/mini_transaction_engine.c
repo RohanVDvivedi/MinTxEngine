@@ -28,7 +28,7 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	mte->flushedLSN = INVALID_LOG_SEQUENCE_NUMBER;
 	mte->checkpointLSN = INVALID_LOG_SEQUENCE_NUMBER;
 	initialize_rwlock(&(mte->manager_lock), &(mte->global_lock));
-	pthread_cond_init_with_monotonic_clock(&(mte->conditional_to_wait_for_execution_slot));
+	pthread_cond_init_with_monotonic_clock(&(mte->conditional_to_wait_for_execution_completion));
 	mte->latch_wait_timeout_in_microseconds = latch_wait_timeout_in_microseconds;
 	mte->write_lock_wait_timeout_in_microseconds = write_lock_wait_timeout_in_microseconds;
 	mte->checkpointing_LSN_diff_in_bytes = checkpointing_LSN_diff_in_bytes;
@@ -147,7 +147,6 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		exit(-1);
 	}
 	initialize_linkedlist(&(mte->reader_mini_transactions), offsetof(mini_transaction, enode));
-	initialize_linkedlist(&(mte->free_mini_transactions_list), offsetof(mini_transaction, enode));
 
 	if(!initialize_dirty_page_table(&(mte->dirty_page_table), mte->bufferpool_frame_count))
 	{
@@ -176,13 +175,6 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		pthread_mutex_lock(&(mte->recovery_mode_lock));
 		mte->is_in_recovery_mode = 0;
 		pthread_mutex_unlock(&(mte->recovery_mode_lock));
-	}
-
-	// allocate enough mini transaction structures to survive safely
-	for(uint32_t i = 0; i < mte->bufferpool_frame_count; i++)
-	{
-		mini_transaction* mt = get_new_mini_transaction();
-		insert_head_in_linkedlist(&(mte->free_mini_transactions_list), mt);
 	}
 
 	// dirty page table entries may not be created upfront
@@ -383,7 +375,7 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 
 	// come out when both are empty
 	while(!(is_empty_hashmap(&(mte->writer_mini_transactions)) && is_empty_linkedlist(&(mte->reader_mini_transactions))))
-		pthread_cond_wait(&(mte->conditional_to_wait_for_execution_slot), &(mte->global_lock));
+		pthread_cond_wait(&(mte->conditional_to_wait_for_execution_completion), &(mte->global_lock));
 
 	// flush wale
 	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
@@ -399,11 +391,10 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 	deinitialize_bufferpool(&(mte->bufferpool_handle));
 	close_block_file(&(mte->database_block_file));
 
-	pthread_cond_destroy(&(mte->conditional_to_wait_for_execution_slot));
+	pthread_cond_destroy(&(mte->conditional_to_wait_for_execution_completion));
 	deinitialize_rwlock(&(mte->manager_lock));
 	pthread_mutex_destroy(&(mte->global_lock));
 
-	remove_all_from_linkedlist(&(mte->free_mini_transactions_list), AND_DELETE_MINI_TRANSACTIONS_NOTIFIER);
 	remove_all_from_linkedlist(&(mte->reader_mini_transactions), AND_DELETE_MINI_TRANSACTIONS_NOTIFIER);
 
 	remove_all_from_linkedlist(&(mte->free_dirty_page_entries_list), AND_DELETE_DIRTY_PAGE_TABLE_ENTRIES_NOTIFIER);
