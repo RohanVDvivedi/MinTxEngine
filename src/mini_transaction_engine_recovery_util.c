@@ -1047,8 +1047,7 @@ static void undo(mini_transaction_engine* mte)
 	blockingly_flush_all_possible_dirty_pages(&(mte->bufferpool_handle));
 
 	// now at this point we can clean up the free lists
-	// this is required as we allocated plenty of then and now they are redundant
-	remove_all_from_linkedlist(&(mte->free_mini_transactions_list), AND_DELETE_MINI_TRANSACTIONS_NOTIFIER);
+	// this is required as we allocated plenty of them and now they are redundant
 	remove_all_from_linkedlist(&(mte->free_dirty_page_entries_list), AND_DELETE_DIRTY_PAGE_TABLE_ENTRIES_NOTIFIER);
 
 	pthread_mutex_unlock(&(mte->global_lock));
