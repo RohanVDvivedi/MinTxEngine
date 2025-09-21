@@ -80,11 +80,9 @@ struct mini_transaction_engine
 	// tuple definitions for the log records handled by this engine
 	log_record_tuple_defs lrtd;
 
-	// below three are the parts of mini_transaction table
+	// below two are the parts of mini_transaction table
 	hashmap writer_mini_transactions; // mini_transaction_id != 0, state = IN_PROGRESS or UNDOING_FOR_ABORT else if state = ABORTED or COMMITTED then waiters_count > 0
 	linkedlist reader_mini_transactions; // mini_transaction_id == 0, state = IN_PROGRESS
-
-	linkedlist free_mini_transactions_list; // list of free mini transactions, new mini transactions are assigned from this list, here waiters_count must be 0
 
 	// below two are the parts of dirty page table
 	hashmap dirty_page_table;
@@ -98,9 +96,9 @@ struct mini_transaction_engine
 	// if you hit the timeout, you must abort the waiting transaction as there could be a deadlock
 	uint64_t write_lock_wait_timeout_in_microseconds;
 
-	// new threads attempting to start a new mini transaction execution wait here until a slot is available
-	// a signal will be called everytime an insert is performed on free_mini_transactions_list
-	pthread_cond_t conditional_to_wait_for_execution_slot;
+	// a signal will be called everytime a mini_transaction object held by the writer_mini_transactions and reader_mini_transactions is freed
+	// this condition_variable is used to figure when all mini transactions have completed and so a mini_transaction_engine can free all it's resources
+	pthread_cond_t conditional_to_wait_for_execution_completion;
 
 	// manger_lock is to be held in shared mode for all the accesses by the user
 	// it must be held in exclusive mode for truncating WALe and Bufferpool files, check pointing etc
