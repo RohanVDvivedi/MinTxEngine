@@ -1250,7 +1250,7 @@ void destroy_and_free_parsed_log_record(log_record* lr)
 			break;
 		case TUPLE_UPDATE_ELEMENT_IN_PLACE :
 		{
-			destroy_non_static_type_info_recursively(lr->tueiplr.tpl_def.type_info);
+			destroy_type_info_recursively(lr->tueiplr.tpl_def.type_info, NULL);
 			free(lr->tueiplr.element_index.positions);
 			break;
 		}
