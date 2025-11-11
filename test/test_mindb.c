@@ -918,7 +918,7 @@ int main3()
 		root_page_id = 1;
 	}*/
 
-	executor* exe = new_executor(FIXED_THREAD_COUNT_EXECUTOR, WORKER_COUNT, JOBS_COUNT + 32, 1000000, NULL, NULL, NULL);
+	executor* exe = new_executor(FIXED_THREAD_COUNT_EXECUTOR, WORKER_COUNT, JOBS_COUNT + 32, 1000000, NULL, NULL, NULL, 0);
 
 	int failed_job_submissions = 0;
 	for(uint32_t i = 0; i < JOBS_COUNT; i++)
@@ -1008,7 +1008,7 @@ int main4(uint64_t bucket_count)
 		root_page_id = 1;
 	}*/
 
-	executor* exe = new_executor(FIXED_THREAD_COUNT_EXECUTOR, WORKER_COUNT, JOBS_COUNT + 32, 1000000, NULL, NULL, NULL);
+	executor* exe = new_executor(FIXED_THREAD_COUNT_EXECUTOR, WORKER_COUNT, JOBS_COUNT + 32, 1000000, NULL, NULL, NULL, 0);
 
 	int failed_job_submissions = 0;
 	for(uint32_t i = 0; i < JOBS_COUNT; i++)
