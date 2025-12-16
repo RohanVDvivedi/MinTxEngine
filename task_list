@@ -1,16 +1,52 @@
 PICKED
   * PAGE_ALLOCATION OPTIMIZATION
-  * implement a cache for free space mapper page ids with most free pages in increasing order of their page ids, and use them for faster allocation
-    * like a separate faster allocation case which checks these free space mapper pages first, then fall backs to current code
-    * also update this cache when a new page is allocated or freed
-    * this cache should be randomized to randomly select pages for allocation
-    * do this caching while releasing latch on the free space mapper page
-    * simple API like
-      * void update_free_space_mapper_page_in_availability_cache_UNSAFE(mini_transaction_engine* mte, const void* free_space_mapper_page, uint64_t free_space_mapper_page_id); // to be called when ever you release a latch on the free space mapper page
-      * uint64_t get_any_free_space_mapper_page_from_availability_cache_UNSAFE(mini_transaction_engine* mte); // return of 0, implies nothing available
-        * this will not give you enough information as you also need to check that the corresponding page we decide to allocate also needs to be not write locked
-    * POSSIBLE SOLUTION
-      * use cachemap with pheap for priorities, priorities being the number of free pages for the corresponding free space mapper page
-      * keys will be free space mapper page id -> number of free pages pointed by it
-      * always insert a new one if the min of these caches free space page mapper id's free pages count is lesser than the new element
-      * use a fixed length array managed with a free singlylist for allocation, no further allocations to be made
+    * use hierarchial free space bitmaps (higher level bits only as hints)
+    * only the first level bitmaps are source of truths (call this level -1)
+    * higher level bitmaps 0 and onwards form a hierarchy, suggest only if any of the level (-1) free space bitmaps that they are a parent of have any free pages waiting to be allocated
+    * the higher level bitmaps are not WAL-logged and only serve as hints and may become consistent only eventually
+    * but still they will be allocated in the same file (but never wal logged and also never cached in the original bufferpool)
+    * these higher level free space hint pages will not have a checksum and will not have a pageLSN, as they will neverbe logged
+
+    * lets say the page size is P bytes
+    * so there are P*8 bits on a page
+    * the size of memory managed by the original, level = (-1), free space mapper page will be called an extent
+    * the size of this extent in the number of pages = E, where E is slightly <= P*8 (because of checksum and pageLSN on free space mapper page)
+
+    * the level 0 free space hint (we will call these higher level pages a hint pages, and the original free space mapper pages) occurs every (P*8) extents
+      * because each of these have P*8 bits on them, (and since they are not ACID and are not WAL-logged or restricted from any way in going to disk, we can use up all their bits)
+    * i.e. every (P*8)-th extent starting with 0, has this level of a page
+    * level 0 is possibly contained in some extent X % ((P*8)^1) = 0
+    * level 1 is possibly contained in some extent X % ((P*8)^2) = 0
+    * level 2 is possibly contained in some extent X % ((P*8)^3) = 0
+    * level 3 is possibly contained in some extent X % ((P*8)^4) = 0 and so on
+    * in the end there is only one page required for the highest level, lets call this level L
+    * the hint pages span from 0, 1, 2, upto level L, i.e. (L+1 levels)
+
+    * now the number of pages spanned by the highest level extent is (P*8)^(L+1)
+    * and since there are 2^64 pages, and each extent has E pages
+    * so (P*8)^(L+1) * E >= 2^64
+
+    * if P = 4096, and E = 4096*8 - 32 - 256 = 32480
+    * L = 2.2, i.e. we will not need any more than pages L0, L1, L2 and L3 for this feat
+
+    * if P = 512, and E = 512*8 - 32 - 256 = 3808
+    * L = 3.3, i.e. we will not need any more than pages L0, L1, L2, L3 and L4 for this feat, still
+
+    * for ease of use we will prepare the logic to not go below 512 bytes in page size, and precalculate the P*8 powers from 0 to 10 as a uint64_t integer
+
+    * the problem arises to identify these hint pages in O(1) and allocate them for extents quickly
+    * for this we will use a pattern
+
+    * a page pd_id is contained in extent number = pg_id / E
+
+    * in extent 0: the first 4 pages will only be L3, L2 and L1 and L0, and then comes the pages free space mapper page, and the data pages
+    * in extent (P*8)-1 extents we will not need any of the hint pages
+    * in extent (P*8)-th extent we will have only L0 page in the prefix
+    * and so on, there will be only 1 L3 page and it will be at the page_id = 0
+
+    * a free space mapper page will always be present in every extent right before the data pages
+    * some pages before the free space mapper pages may be assigned to hing pages
+    * level 0 hint page will always be 0th page in the extent and 1st on will be at index 1 and 2 at 2 in the extent
+    * the number of hint pages in the extent will be equal to the highest power of (P*8) that divides it, if the P*8 ^ 2, perfectly divides X (an extent), and 2 is greatest of the bunch, then there will be level 0 and 1, 2 hint pges in the prefix of that extent
+
+    * now figure out logic to find the extent no, that has parent and child of an extent and to iterate over he free space tree one page at a time
