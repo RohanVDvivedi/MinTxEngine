@@ -49,7 +49,18 @@ PICKED
     * level 0 hint page will always be 0th page in the extent and 1st on will be at index 1 and 2 at 2 in the extent
     * the number of hint pages in the extent will be equal to the highest power of (P*8) that divides it, if the P*8 ^ 2, perfectly divides X (an extent), and 2 is greatest of the bunch, then there will be level 0 and 1, 2 hint pges in the prefix of that extent
 
-    TODO* now figure out logic to find the extent no, that has parent and child of an extent and to iterate over he free space tree one page at a time
+    * now figure out logic to find the extent no, that has parent and child of an extent and to iterate over he free space tree one page at a time
+
+    * for page_id = pg_id
+    * it's extent_id will be pg_id / E
+    * let us define align_for(X, Y) = (X / Y) * Y)
+    * it's free space mapper page will be in the same extent as it's first page, i.e. at page_id = align_for(pg_id, E)
+    * it's level 0 hint page will be at page_id = align_for(pg_id, E * (P*8)^1) + 1
+    * it's level 1 hint page will be at page_id = align_for(pg_id, E * (P*8)^2) + 2
+    * it's level L hint page will be at page_id = align_for(pg_id, E * (P*8)^L) + L
+
+    * for a hint page at level i and page_id = pg_id, it's levels i-1 pages can be calculated as follows
+    * (pg_id - (i+1)) + (k * E * ((P*8)^i)) + i, where k will vary from (0 to (P*8) - 1)
 
     * we need to identify free space hint pages and not WAL-log them or not put them in dity page table also, they are managed by a separate greedily replacing bufferpool, where any page can be immediately persisted to disk
     * this bufferpool will only service requests from free space hint pages
