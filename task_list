@@ -49,4 +49,11 @@ PICKED
     * level 0 hint page will always be 0th page in the extent and 1st on will be at index 1 and 2 at 2 in the extent
     * the number of hint pages in the extent will be equal to the highest power of (P*8) that divides it, if the P*8 ^ 2, perfectly divides X (an extent), and 2 is greatest of the bunch, then there will be level 0 and 1, 2 hint pges in the prefix of that extent
 
-    * now figure out logic to find the extent no, that has parent and child of an extent and to iterate over he free space tree one page at a time
+    TODO* now figure out logic to find the extent no, that has parent and child of an extent and to iterate over he free space tree one page at a time
+
+    * we need to identify free space hint pages and not WAL-log them or not put them in dity page table also, they are managed by a separate greedily replacing bufferpool, where any page can be immediately persisted to disk
+    * this bufferpool will only service requests from free space hint pages
+    * a separate module is needed to manage everything here
+    * we will have the following API
+      * set_allocation_hints(void* free_space_mapper_page, uint64_t free_space_mapper_page_id); // to be called after any free or allocate calls
+      * get_next_possible_allocations(uint64_t* free_space_mapper_page_ids, uint64_t* result_count); // result_count is an in-out parameter
