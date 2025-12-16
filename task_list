@@ -62,9 +62,12 @@ PICKED
     * for a hint page at level i and page_id = pg_id, it's levels i-1 pages can be calculated as follows
     * (pg_id - (i+1)) + (k * E * ((P*8)^i)) + i, where k will vary from (0 to (P*8) - 1)
 
+    * finally the hint bits will be 0, for free and 1 for an allocated page, just like the free space mapper page
+
     * we need to identify free space hint pages and not WAL-log them or not put them in dity page table also, they are managed by a separate greedily replacing bufferpool, where any page can be immediately persisted to disk
     * this bufferpool will only service requests from free space hint pages
     * a separate module is needed to manage everything here
     * we will have the following API
       * set_allocation_hints(void* free_space_mapper_page, uint64_t free_space_mapper_page_id); // to be called after any free or allocate calls
       * get_next_possible_allocations(uint64_t* free_space_mapper_page_ids, uint64_t* result_count); // result_count is an in-out parameter
+        * finds result_count number of free space mapper page from the page_id 0, that may have free pages
