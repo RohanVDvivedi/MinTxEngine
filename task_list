@@ -71,3 +71,5 @@ PICKED
       * set_allocation_hints(void* free_space_mapper_page, uint64_t free_space_mapper_page_id); // to be called after any free or allocate calls
       * get_next_possible_allocations(uint64_t* free_space_mapper_page_ids, uint64_t* result_count); // result_count is an in-out parameter
         * finds result_count number of free space mapper page from the page_id 0, that may have free pages
+
+    * Although you did all the calculations, think about keeping all the hint bit pages in a separate file, managed by a different module, possibly implemented outside the core of the min tx engine
