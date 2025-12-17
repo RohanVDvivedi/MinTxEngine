@@ -45,6 +45,21 @@ int is_free_space_mapper_page(uint64_t page_id, const mini_transaction_engine_st
 	return (page_id % PAGE_POS_MULTIPLIER(stats)) == 0;
 }
 
+int get_next_free_space_mapper_page_id(uint64_t curr_free_space_mapper_page_id, uint64_t* next_free_space_mapper_page_id, const mini_transaction_engine_stats* stats)
+{
+	// curr_free_space_mapper_page_id must be a free space mapper page, else we fail
+	if(!is_free_space_mapper_page(curr_free_space_mapper_page_id, stats))
+		return 0;
+
+	// if the next_free_space_mapper_page_id, could overflow, fail
+	if(will_unsigned_sum_overflow(uint64_t, curr_free_space_mapper_page_id, PAGE_POS_MULTIPLIER(stats)))
+		return 0;
+
+	// just add the PAGE_POS_MULTIPLIER(stats), and we are done
+	(*next_free_space_mapper_page_id) = curr_free_space_mapper_page_id + PAGE_POS_MULTIPLIER(stats);
+	return 1;
+}
+
 uint64_t get_is_valid_bit_page_id_for_page(uint64_t page_id, const mini_transaction_engine_stats* stats)
 {
 	return (page_id / PAGE_POS_MULTIPLIER(stats)) * PAGE_POS_MULTIPLIER(stats);

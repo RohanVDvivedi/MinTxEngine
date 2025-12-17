@@ -34,7 +34,13 @@ int validate_page_checksum(const void* page, const mini_transaction_engine_stats
 uint256 get_pageLSN_for_page(const void* page, const mini_transaction_engine_stats* stats);
 int set_pageLSN_for_page(void* page, uint256 pageLSN, const mini_transaction_engine_stats* stats);
 
+// page_id = 0, is always a free_space_mapper_page
 int is_free_space_mapper_page(uint64_t page_id, const mini_transaction_engine_stats* stats);
+
+// this function can be used to iterate over free_space_mapper_pages sequentially
+// fails with 0, if curr_free_space_mapper_page_id is not a free_space_mapper_page OR if the next_free_space_mapper_page_id is beyond the addressable range (i.e. overflows)
+// page_id = 0, is always a free_space_mapper_page, then next_free_space_mapper_page_id is also the size of the extent in pages managed by any of the free_space_mapper_pages
+int get_next_free_space_mapper_page_id(uint64_t curr_free_space_mapper_page_id, uint64_t* next_free_space_mapper_page_id, const mini_transaction_engine_stats* stats);
 
 uint64_t is_valid_bits_count_on_free_space_mapper_page(const mini_transaction_engine_stats* stats);
 
