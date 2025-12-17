@@ -5,6 +5,7 @@ PICKED
     * if there are no free_space_mapper_page_ids after it, i.e. overflow
     * if the curr_free_space_mapper_page_id, is not a free_space_mapper_page_id
     * page_id = 0 is always a free_space_mapper page, and if curr_free_space_mapper_page is 0, then the next_free_space_mapper_page_id is also equal to the extent size for the database
+    * use this function where ever required like for allocation through iteration
 
   * PAGE_ALLOCATION OPTIMIZATION
     * use hierarchial free space bitmaps (higher level bits only as hints)
