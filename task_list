@@ -1,75 +1,65 @@
 PICKED
   * PAGE_ALLOCATION OPTIMIZATION
-    * use hierarchial free space bitmaps (higher level bits only as hints)
-    * only the first level bitmaps are source of truths (call this level -1)
-    * higher level bitmaps 0 and onwards form a hierarchy, suggest only if any of the level (-1) free space bitmaps that they are a parent of have any free pages waiting to be allocated
-    * the higher level bitmaps are not WAL-logged and only serve as hints and may become consistent only eventually
-    * but still they will be allocated in the same file (but never wal logged and also never cached in the original bufferpool)
-    * these higher level free space hint pages will not have a checksum and will not have a pageLSN, as they will neverbe logged
+    * use hierarchial free space hint bitmaps, built and managed as a separate module, that would only manage these hierarchial free space hint bits in a separate file, in an eventially consistent mode, these bits will not be ACID, will not be WAL-logged and may not even be correct at times
+    * each level 0 bit in this heirarchial bit map points is set to 0 if there is atleast 1 free page in the corresponding extent
+    * each page here is 4096 bytes, and so can hold upto 4096*8 bits
 
-    * lets say the page size is P bytes
-    * so there are P*8 bits on a page
-    * the size of memory managed by the original, level = (-1), free space mapper page will be called an extent
-    * the size of this extent in the number of pages = E, where E is slightly <= P*8 (because of checksum and pageLSN on free space mapper page)
+    * level 0 page is the lowest level where each of its bits point to each of the extents, 0 suggesting that extent has atleast a free page, and 1 if it is completely full
+    * any level 1 page has hint bits for each its children level 0 pages, 4096*8 of them
+    * and so on
 
-    * the level 0 free space hint (we will call these higher level pages a hint pages, and the original free space mapper pages) occurs every (P*8) extents
-      * because each of these have P*8 bits on them, (and since they are not ACID and are not WAL-logged or restricted from any way in going to disk, we can use up all their bits)
-    * i.e. every (P*8)-th extent starting with 0, has this level of a page
-    * level 0 is possibly contained in some extent X % ((P*8)^1) = 0
-    * level 1 is possibly contained in some extent X % ((P*8)^2) = 0
-    * level 2 is possibly contained in some extent X % ((P*8)^3) = 0
-    * level 3 is possibly contained in some extent X % ((P*8)^4) = 0 and so on
-    * in the end there is only one page required for the highest level, lets call this level L
-    * the hint pages span from 0, 1, 2, upto level L, i.e. (L+1 levels)
+    * the system is not designed to have an upper limit on the number of pages that can be used, but the number of addressable extents is expected to fit in uint64_t, which is already too large
 
-    * now the number of pages spanned by the highest level extent is (P*8)^(L+1)
-    * and since there are 2^64 pages, and each extent has E pages
-    * so (P*8)^(L+1) * E >= 2^64
+    * lets say P = 4096 * 8 = number of bits on these hint pages
+    * level 0 can potentially have P children extents
+    * level 1 can have P^2 children extents in total
+    * similarly the last level L can have P^(L+1) children extents in total
+    * so if the L is the last level, then P^(L+1) >= 2^64
+    * this gives us L = 3.2 => 4
+    * we need only 5 levels i.e. from 0, 1, 2, 3 and 4
 
-    * if P = 4096, and E = 4096*8 - 32 - 256 = 32480
-    * L = 2.2, i.e. we will not need any more than pages L0, L1, L2 and L3 for this feat
+    * now the pages and group of pages are the nodes of the tree
+    * a level 3 node groups consists of a level 3 node itself and P number of node group levels of level 2
 
-    * if P = 512, and E = 512*8 - 32 - 256 = 3808
-    * L = 3.3, i.e. we will not need any more than pages L0, L1, L2, L3 and L4 for this feat, still
+    * a level 0 node is all by itself, so it need only 1 page, i.e. P^0 pages
+    * a level 1 node consists of 1 level 1 node and P level 0 node, i.e. P^0 + P^1
+    * a level 2 node consists of 1 level 2 node and P level 1 node, i.e. 1 + P(P^0 + P^1) = 1 + P + P^2 = P^0 + P^1 + P^2
+    * finally a level L node consists of P^0 + P^1 + P^2 + ... + P^L
 
-    * for ease of use we will prepare the logic to not go below 512 bytes in page size, and precalculate the P*8 powers from 0 to 10 as a uint64_t integer
+    * to skip a node level we need to add all the pages that it consists of to it, so we can skip it
 
-    * the problem arises to identify these hint pages in O(1) and allocate them for extents quickly
-    * for this we will use a pattern
+    * the root pages of the nodes are arranged like this:
+    * page 0 => level 5
+           1 => level 4
+           2 => level 3
+           3 => level 2
+           4 => level 1
+           5 => level 0
+           6 => level 0
+           .
+           . P of them
+           .
+           X => level 0
+           Y => level 1 - level 1 of some other group, but child to the immediate previously occurring level 2 group
 
-    * a page pd_id is contained in extent number = pg_id / E
+    * lets define a function called K(L) = P^0 + P^1 + P^2 + ... + P^L 
 
-    * in extent 0: the first 4 pages will only be L3, L2 and L1 and L0, and then comes the pages free space mapper page, and the data pages
-    * in extent (P*8)-1 extents we will not need any of the hint pages
-    * in extent (P*8)-th extent we will have only L0 page in the prefix
-    * and so on, there will be only 1 L3 page and it will be at the page_id = 0
+    * for any computation we only need the page_id = X and it's level Y and it's index in it's parent's subtree Z
+    * the page_id of the next sibling = X + K(Y) -> where 0 <= Z < P-1
+    * the page_id of the previous sibling = X - K(Y) -> where 0 < Z < P
+    * the page_id of its ith child = X + 1 + K(Y-1) -> Y != 0 and 0 < i < P
+    * the page_id of its parent = X - Z * K(Y) - 1
 
-    * a free space mapper page will always be present in every extent right before the data pages
-    * some pages before the free space mapper pages may be assigned to hing pages
-    * level 0 hint page will always be 0th page in the extent and 1st on will be at index 1 and 2 at 2 in the extent
-    * the number of hint pages in the extent will be equal to the highest power of (P*8) that divides it, if the P*8 ^ 2, perfectly divides X (an extent), and 2 is greatest of the bunch, then there will be level 0 and 1, 2 hint pges in the prefix of that extent
+    * to find the indices of the extent no E, just write the integer E in base P
+    * level 0 = E % P
+    * level 1 = (E / P) % P
+    * level 2 = (E / (P^2)) % P
+    * level 3 = (E / (P^3)) % P
+    * and so on until 5, which would obviously be (E / (P^5)) % P
 
-    * now figure out logic to find the extent no, that has parent and child of an extent and to iterate over he free space tree one page at a time
+    * we will start descending from root page 0, at level 5, and (being at index0 of its parent which does not exists)
+    * using the indices we found in the previous step
 
-    * for page_id = pg_id
-    * it's extent_id will be pg_id / E
-    * let us define align_for(X, Y) = (X / Y) * Y)
-    * it's free space mapper page will be in the same extent as it's first page, i.e. at page_id = align_for(pg_id, E)
-    * it's level 0 hint page will be at page_id = align_for(pg_id, E * (P*8)^1) + 1
-    * it's level 1 hint page will be at page_id = align_for(pg_id, E * (P*8)^2) + 2
-    * it's level L hint page will be at page_id = align_for(pg_id, E * (P*8)^L) + L
-
-    * for a hint page at level i and page_id = pg_id, it's levels i-1 pages can be calculated as follows
-    * (pg_id - (i+1)) + (k * E * ((P*8)^i)) + i, where k will vary from (0 to (P*8) - 1)
-
-    * finally the hint bits will be 0, for free and 1 for an allocated page, just like the free space mapper page
-
-    * we need to identify free space hint pages and not WAL-log them or not put them in dity page table also, they are managed by a separate greedily replacing bufferpool, where any page can be immediately persisted to disk
-    * this bufferpool will only service requests from free space hint pages
-    * a separate module is needed to manage everything here
-    * we will have the following API
-      * set_allocation_hints(void* free_space_mapper_page, uint64_t free_space_mapper_page_id); // to be called after any free or allocate calls
-      * get_next_possible_allocations(uint64_t* free_space_mapper_page_ids, uint64_t* result_count); // result_count is an in-out parameter
-        * finds result_count number of free space mapper page from the page_id 0, that may have free pages
-
-    * Although you did all the calculations, think about keeping all the hint bit pages in a separate file, managed by a different module, possibly implemented outside the core of the min tx engine
+    * API
+      * void notify_modification_for_free_space_mapper_page_to_hints(const void* free_space_mapper_page, uint64_t free_space_mapper_page_id);
+      * uint64_t find_some_extents_with_free_space(uint64_t* result, uint64_t result_size); -> we will need conversions from hints to free space mapper pages
