@@ -49,7 +49,7 @@ static const uint64_t subtree_sizes[5] = {
 	[4] = powers[0] + powers[1] + powers[2] + powers[3] + powers[4],
 };
 
-static inline hint_node_id get_next_sibling_for_hint_node_id(hint_node_id x, int* error)
+static inline hint_node_id get_next_sibling_for_hint_node_id(const hint_node_id x, int* error)
 {
 	// last child can not have a next sibling
 	if(x.child_index == (PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE-1))
@@ -66,7 +66,7 @@ static inline hint_node_id get_next_sibling_for_hint_node_id(hint_node_id x, int
 	};
 }
 
-static inline hint_node_id get_prev_sibling_for_hint_node_id(hint_node_id x, int* error)
+static inline hint_node_id get_prev_sibling_for_hint_node_id(const hint_node_id x, int* error)
 {
 	// 0th child can not have a prev sibling
 	if(x.child_index == 0)
@@ -83,7 +83,7 @@ static inline hint_node_id get_prev_sibling_for_hint_node_id(hint_node_id x, int
 	};
 }
 
-static inline hint_node_id get_ith_child_for_hint_node_id(hint_node_id x, uint64_t i, int* error)
+static inline hint_node_id get_ith_child_for_hint_node_id(const hint_node_id x, uint64_t i, int* error)
 {
 	// level 0 can not have a child
 	if(x.level == 0)
@@ -100,7 +100,7 @@ static inline hint_node_id get_ith_child_for_hint_node_id(hint_node_id x, uint64
 	};
 }
 
-static inline hint_node_id get_parent_for_hint_node_id(hint_node_id x, int* error)
+static inline hint_node_id get_parent_for_hint_node_id(const hint_node_id x, int* error)
 {
 	// node at MAX_LEVEL can not have a parent
 	if(x.level == MAX_LEVEL)
