@@ -123,13 +123,18 @@ static inline hint_node_id get_prev_sibling_for_hint_node_id(hint_node_id x, int
 static inline hint_node_id get_ith_child_for_hint_node_id(hint_node_id x, uint64_t i, int* error)
 {
 	// level 0 can not have a child
-	if(x.level == 5)
+	if(x.level == 0)
 	{
 		(*error) = 1;
 		return (hint_node_id){};
 	}
 
-	// TODO
+	return (hint_node_id) {
+		.level = x.level - 1,
+		.page_id = x.page_id + 1 + get_sum_of_powers_for_bits_count_on_the_node_page(x.level - 1, error),
+		.child_index = i,
+		.smallest_managed_extent_id = x.smallest_managed_extent_id + i * get_power_for_bits_count_on_the_node_page(x.level, error),
+	};
 }
 
 static inline hint_node_id get_parent_for_hint_node_id(hint_node_id x, int* error)
