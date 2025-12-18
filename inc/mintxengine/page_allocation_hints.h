@@ -94,12 +94,14 @@ struct page_allocation_hints
 	block_file extent_allocation_hints_file;
 
 	// bufferpool for the above file, no need of any steal/force policy here, the pages are not WAL-logged and not undo-able
+	// this bufferpool is small about mo more than 25 pages, each as expected 4KB in size
 	bufferpool* bf;
 
-	// a order statistic bst, that stores new extent ids that newly come in with free pages
-	// this lets us query number of pages in the range that recently got new free pages
-	// our first attempt is to allocate from them, without even consulting even the hint bits on the disk (earliest first)
-	bst free_extents_cache;
+	// recently allocated or free extents are captured here (extent_ids in increasing order) before sent to the hint pages on the disk
+	bst free_cache; // try ask callee to allocate from here first
+	bst full_cache;
+	// the cache extents captured here are sent to disk at regular intervals,
+	// byt a job and full_cache is emptied (all changes persisted) and free_cache is topped up (updates persisted to disk and smallest not-full extent_ids populated)
 
 	const void* callback_context;
 
