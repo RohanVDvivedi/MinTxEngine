@@ -85,6 +85,8 @@
 #include<blockio/block_io.h>
 #include<bufferpool/bufferpool.h>
 
+#include<cutlery/bst.h>
+
 typedef struct page_allocation_hints page_allocation_hints;
 struct page_allocation_hints
 {
@@ -93,6 +95,11 @@ struct page_allocation_hints
 
 	// bufferpool for the above file, no need of any steal/force policy here, the pages are not WAL-logged and not undo-able
 	bufferpool* bf;
+
+	// a order statistic bst, that stores new extent ids that newly come in with free pages
+	// this lets us query number of pages in the range that recently got new free pages
+	// our first attempt is to allocate from them, without even consulting even the hint bits on the disk (earliest first)
+	bst free_extents_cache;
 
 	const void* callback_context;
 
