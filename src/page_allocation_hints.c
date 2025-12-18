@@ -17,7 +17,7 @@ struct hint_node_id
 	// this is the smallest extent_id that this hint_node manages
 	uint64_t smallest_managed_extent_id;
 
-	// the largest extent_id managed by this hint_node = (smallest_managed_extent_id + PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE ^ level)
+	// the largest extent_id managed by this hint_node = (smallest_managed_extent_id + (PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE ^ (level + 1)) - 1)
 };
 
 static inline hint_node_id get_root_page_hint_node_id()
@@ -95,7 +95,12 @@ static inline hint_node_id get_next_sibling_for_hint_node_id(hint_node_id x, int
 		return (hint_node_id){};
 	}
 
-	// TODO
+	return (hint_node_id) {
+		.level = x.level,
+		.page_id = x.page_id + get_sum_of_powers_for_bits_count_on_the_node_page(x.level, error),
+		.child_index = x.child_index + 1,
+		.smallest_managed_extent_id = x.smallest_managed_extent_id + get_power_for_bits_count_on_the_node_page(x.level + 1, error),
+	};
 }
 
 static inline hint_node_id get_prev_sibling_for_hint_node_id(hint_node_id x, int* error)
@@ -107,7 +112,12 @@ static inline hint_node_id get_prev_sibling_for_hint_node_id(hint_node_id x, int
 		return (hint_node_id){};
 	}
 
-	// TODO
+	return (hint_node_id) {
+		.level = x.level,
+		.page_id = x.page_id - get_sum_of_powers_for_bits_count_on_the_node_page(x.level, error),
+		.child_index = x.child_index - 1,
+		.smallest_managed_extent_id = x.smallest_managed_extent_id - get_power_for_bits_count_on_the_node_page(x.level + 1, error),
+	};
 }
 
 static inline hint_node_id get_ith_child_for_hint_node_id(hint_node_id x, uint64_t i, int* error)
