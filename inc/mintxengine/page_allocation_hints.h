@@ -89,6 +89,20 @@ struct page_allocation_hints
 
 	// bufferpool for the above file, no need of any steal/force policy here, the pages are not WAL-logged and not undo-able
 	bufferpool* bf;
+
+	const void* callback_context;
+
+	// we only need to know if the extent has free pages, if yes, it's corresponding hint bits will be set to 0, else it will be set to 1 (suggesting fully allocated)
+	int (*has_free_pages_from_free_space_mapper_page)(const void* callback_context, void* free_space_mapper_page);
+
+	// get the extent id from the page_id of the page, this is essentially the, page_id / extent_size
+	uint64_t (*get_extent_id_from_page_id)(const void* callback_context, uint64_t page_id);
 };
+
+void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, void* free_space_mapper_page, uint64_t free_space_mapper_page_id);
+
+// result_extent_ids is the output parameter, and results_size is the in-out parameter suggesting the size of the array OR the size of the returned result
+// (*results_size) = 0, is essentially a NOP
+void suggest_extents_from_page_allocation_hints(page_allocation_hints* pah_p, uint64_t* result_extent_ids, uint32_t* results_size);
 
 #endif
