@@ -31,60 +31,23 @@ static inline hint_node_id get_root_page_hint_node_id()
 }
 
 // returns PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE ^ p
-// caches values statically, on first call
-static inline uint64_t get_power_for_bits_count_on_the_node_page(uint8_t p, int* overflowed)
-{
-	(*overflowed) = 0;
-
-	// only 0 to 4 values do not overflow
-	switch(p)
-	{
-		case 0 :
-			return UINT64_C(1);
-		case 1 :
-			return PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE;
-		case 2 :
-			return PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE * PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE;
-		case 3 :
-			return PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE * PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE * PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE;
-		case 4 :
-			return PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE * PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE * PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE * PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE;
-	}
-
-	// 5 and onwards it overflows
-	(*overflowed) = 1;
-	return 0;
-}
+static const uint64_t powers[5] = {
+	[0] = UINT64_C(1),
+	[1] = PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE,
+	[2] = PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE * PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE,
+	[3] = PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE * PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE * PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE,
+	[4] = PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE * PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE * PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE * PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE,
+};
 
 // returns summation (from 0 to p, both inclusive) for PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE ^ i
 // caches values statically, on first call
-static inline uint64_t get_sum_of_powers_for_bits_count_on_the_node_page(uint8_t p, int* overflowed)
-{
-	(*overflowed) = 0;
-
-	#define pow_bits get_power_for_bits_count_on_the_node_page
-
-	// only 0 to 4 values do not overflow
-	switch(p)
-	{
-		case 0 :
-			return pow_bits(0, overflowed);
-		case 1 :
-			return pow_bits(0, overflowed) + pow_bits(1, overflowed);
-		case 2 :
-			return pow_bits(0, overflowed) + pow_bits(1, overflowed) + pow_bits(2, overflowed);
-		case 3 :
-			return pow_bits(0, overflowed) + pow_bits(1, overflowed) + pow_bits(2, overflowed) + pow_bits(3, overflowed);
-		case 4 :
-			return pow_bits(0, overflowed) + pow_bits(1, overflowed) + pow_bits(2, overflowed) + pow_bits(3, overflowed) + pow_bits(4, overflowed);
-	}
-
-	#undef get_power_for_bits_count_on_the_node_page
-
-	// 5 and onwards it overflows
-	(*overflowed) = 1;
-	return 0;
-}
+static const uint64_t subtree_sizes[5] = {
+	[0] = powers[0],
+	[1] = powers[0] + powers[1],
+	[2] = powers[0] + powers[1] + powers[2],
+	[3] = powers[0] + powers[1] + powers[2] + powers[3],
+	[4] = powers[0] + powers[1] + powers[2] + powers[3] + powers[4],
+};
 
 static inline hint_node_id get_next_sibling_for_hint_node_id(hint_node_id x, int* error)
 {
@@ -97,9 +60,9 @@ static inline hint_node_id get_next_sibling_for_hint_node_id(hint_node_id x, int
 
 	return (hint_node_id) {
 		.level = x.level,
-		.page_id = x.page_id + get_sum_of_powers_for_bits_count_on_the_node_page(x.level, error),
+		.page_id = x.page_id + subtree_sizes[x.level],
 		.child_index = x.child_index + 1,
-		.smallest_managed_extent_id = x.smallest_managed_extent_id + get_power_for_bits_count_on_the_node_page(x.level + 1, error),
+		.smallest_managed_extent_id = x.smallest_managed_extent_id + powers[x.level + 1],
 	};
 }
 
@@ -114,9 +77,9 @@ static inline hint_node_id get_prev_sibling_for_hint_node_id(hint_node_id x, int
 
 	return (hint_node_id) {
 		.level = x.level,
-		.page_id = x.page_id - get_sum_of_powers_for_bits_count_on_the_node_page(x.level, error),
+		.page_id = x.page_id - subtree_sizes[x.level],
 		.child_index = x.child_index - 1,
-		.smallest_managed_extent_id = x.smallest_managed_extent_id - get_power_for_bits_count_on_the_node_page(x.level + 1, error),
+		.smallest_managed_extent_id = x.smallest_managed_extent_id - powers[x.level + 1],
 	};
 }
 
@@ -131,9 +94,9 @@ static inline hint_node_id get_ith_child_for_hint_node_id(hint_node_id x, uint64
 
 	return (hint_node_id) {
 		.level = x.level - 1,
-		.page_id = x.page_id + 1 + i * get_sum_of_powers_for_bits_count_on_the_node_page(x.level - 1, error),
+		.page_id = x.page_id + 1 + i * subtree_sizes[x.level - 1],
 		.child_index = i,
-		.smallest_managed_extent_id = x.smallest_managed_extent_id + i * get_power_for_bits_count_on_the_node_page(x.level, error),
+		.smallest_managed_extent_id = x.smallest_managed_extent_id + i * powers[x.level],
 	};
 }
 
@@ -148,17 +111,17 @@ static inline hint_node_id get_parent_for_hint_node_id(hint_node_id x, int* erro
 
 	return (hint_node_id) {
 		.level = x.level + 1,
-		.page_id = x.page_id - x.child_index * get_sum_of_powers_for_bits_count_on_the_node_page(x.level, error) - 1,
-		.child_index = (x.smallest_managed_extent_id / get_power_for_bits_count_on_the_node_page(x.level + 1, error)) % PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE, // the parent will also be relevant for the x.smallest_managed_extent_id, though it will not be its smallest_managed_extent_id
-		.smallest_managed_extent_id = x.smallest_managed_extent_id - x.child_index * get_power_for_bits_count_on_the_node_page(x.level + 1, error),
+		.page_id = x.page_id - x.child_index * subtree_sizes[x.level] - 1,
+		.child_index = (x.smallest_managed_extent_id / powers[x.level + 1]) % PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE, // the parent will also be relevant for the x.smallest_managed_extent_id, though it will not be its smallest_managed_extent_id
+		.smallest_managed_extent_id = x.smallest_managed_extent_id - x.child_index * powers[x.level + 1],
 	};
 }
 
 // here the indices by level array must be atleast 5 uint64_t's long, only indices corresponding to levels 0 to 4 (both inclusive are used)
-static inline void get_child_indices_by_level_responsible_for_extent_id(uint64_t extent_id, uint64_t* indices_by_level, int* error)
+static inline void get_child_indices_by_level_responsible_for_extent_id(uint64_t extent_id, uint64_t* indices_by_level)
 {
 	for(uint8_t level = 0; level < 5; level++)
-		indices_by_level[level] = (extent_id / get_power_for_bits_count_on_the_node_page(level, error)) % PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE;
+		indices_by_level[level] = (extent_id / powers[level]) % PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE;
 }
 
 // hint_node_id utility functions complete
