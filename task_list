@@ -1,5 +1,7 @@
 PICKED
   * PAGE_ALLOCATION OPTIMIZATION
+    * review the current state of the hint_node_id logic
+
     * initialize bufferpool object and the parameters it takes buffers count = 25 - 100 -> depending the size of ram
     * periodic flush job every minute
 
