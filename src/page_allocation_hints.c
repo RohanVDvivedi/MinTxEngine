@@ -31,6 +31,7 @@ static inline hint_node_id get_root_page_hint_node_id()
 }
 
 // returns PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE ^ p
+// powers[L] = number of extents that a bit in a hint page with level L porvides hints for
 static const uint64_t powers[5] = {
 	[0] = UINT64_C(1),
 	[1] = PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE,
@@ -40,7 +41,7 @@ static const uint64_t powers[5] = {
 };
 
 // returns summation (from 0 to p, both inclusive) for PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE ^ i
-// caches values statically, on first call
+// subtree_sizes[L] = number of pages in the subtree rooted at a page of level L
 static const uint64_t subtree_sizes[5] = {
 	[0] = powers[0],
 	[1] = powers[0] + powers[1],
