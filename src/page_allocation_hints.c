@@ -131,7 +131,7 @@ static inline hint_node_id get_ith_child_for_hint_node_id(hint_node_id x, uint64
 
 	return (hint_node_id) {
 		.level = x.level - 1,
-		.page_id = x.page_id + 1 + get_sum_of_powers_for_bits_count_on_the_node_page(x.level - 1, error),
+		.page_id = x.page_id + 1 + i * get_sum_of_powers_for_bits_count_on_the_node_page(x.level - 1, error),
 		.child_index = i,
 		.smallest_managed_extent_id = x.smallest_managed_extent_id + i * get_power_for_bits_count_on_the_node_page(x.level, error),
 	};
@@ -146,7 +146,12 @@ static inline hint_node_id get_parent_for_hint_node_id(hint_node_id x, int* erro
 		return (hint_node_id){};
 	}
 
-	// TODO
+	return (hint_node_id) {
+		.level = x.level + 1,
+		.page_id = x.page_id - x.child_index * get_sum_of_powers_for_bits_count_on_the_node_page(x.level, error) - 1,
+		.child_index = (x.smallest_managed_extent_id / get_power_for_bits_count_on_the_node_page(x.level + 1, error)) % PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE, // the parent will also be relevant for the x.smallest_managed_extent_id, though it will not be its smallest_managed_extent_id
+		.smallest_managed_extent_id = x.smallest_managed_extent_id - i * get_power_for_bits_count_on_the_node_page(x.level + 1, error),
+	};
 }
 
 // hint_node_id utility functions complete

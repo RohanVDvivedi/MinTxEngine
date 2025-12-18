@@ -58,7 +58,7 @@
 
 	the page_id of the next sibling = X + K(Y) -> where 0 <= Z < P-1
 	the page_id of the previous sibling = X - K(Y) -> where 0 < Z < P
-	the page_id of its ith child = X + 1 + K(Y-1) -> Y != 0 and 0 < i < P
+	the page_id of its ith child = X + 1 + i * K(Y-1) -> Y != 0 and 0 < i < P
 	the page_id of its parent = X - Z * K(Y) - 1
 
 	to find the indices of the extent no E, just write the integer E in base P
