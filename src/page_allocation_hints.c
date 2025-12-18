@@ -78,12 +78,12 @@ static inline uint64_t get_sum_of_powers_for_bits_count_on_the_node_page(uint8_t
 	return 0;
 }
 
-static inline hint_node_id get_next_sibling_for_hint_node_id(hint_node_id x);
+static inline hint_node_id get_next_sibling_for_hint_node_id(hint_node_id x, int* error);
 
-static inline hint_node_id get_prev_sibling_for_hint_node_id(hint_node_id x);
+static inline hint_node_id get_prev_sibling_for_hint_node_id(hint_node_id x, int* error);
 
-static inline hint_node_id get_ith_child_for_hint_node_id(hint_node_id x, uint64_t i);
+static inline hint_node_id get_ith_child_for_hint_node_id(hint_node_id x, uint64_t i, int* error);
 
-static inline hint_node_id get_paret_for_hint_node_id(hint_node_id x);
+static inline hint_node_id get_parent_for_hint_node_id(hint_node_id x, int* error);
 
 // hint_node_id utility functions complete
