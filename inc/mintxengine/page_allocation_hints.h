@@ -72,11 +72,15 @@
 	using the indices we found in the previous step
 */
 
-// this value is fixed now for this implementation and there no scope of changing it, because we are going to have only 5 levels for now and for ever
+// this value is fixed now (and forever!!) for this implementation and there no scope of changing it, because we are going to have only 5 levels for now and for ever
 #define PAGE_ALLOCATION_HINTS_PAGE_SIZE UINT64_C(4096)
 
 // this was our P we discussed earlier
 #define PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE (PAGE_ALLOCATION_HINTS_PAGE_SIZE * UINT64_C(8))
+
+// this is equal to smallest integral value where, 2^64 <= PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE ^ (MAX_LEVEL + 1)
+// tjhis will remain fixed forever!!
+#define MAX_LEVEL 4
 
 #include<blockio/block_io.h>
 #include<bufferpool/bufferpool.h>

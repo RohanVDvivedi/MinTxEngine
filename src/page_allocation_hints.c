@@ -23,7 +23,7 @@ struct hint_node_id
 static inline hint_node_id get_root_page_hint_node_id()
 {
 	return (hint_node_id) {
-		.level = 4,				// root page is at level 4 and page_id = 0
+		.level = MAX_LEVEL,		// root page is at level MAX_LEVEL and page_id = 0
 		.page_id = 0,
 		.child_index = 0,		//and it is at 0th index in its non existent parent
 		.smallest_managed_extent_id = 0,
@@ -102,8 +102,8 @@ static inline hint_node_id get_ith_child_for_hint_node_id(hint_node_id x, uint64
 
 static inline hint_node_id get_parent_for_hint_node_id(hint_node_id x, int* error)
 {
-	// level 4 can not have a parent
-	if(x.level == 4)
+	// node at MAX_LEVEL can not have a parent
+	if(x.level == MAX_LEVEL)
 	{
 		(*error) = 1;
 		return (hint_node_id){};
