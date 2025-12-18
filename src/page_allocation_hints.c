@@ -78,12 +78,52 @@ static inline uint64_t get_sum_of_powers_for_bits_count_on_the_node_page(uint8_t
 	return 0;
 }
 
-static inline hint_node_id get_next_sibling_for_hint_node_id(hint_node_id x, int* error);
+static inline hint_node_id get_next_sibling_for_hint_node_id(hint_node_id x, int* error)
+{
+	// last child can not have a next sibling
+	if(x.child_index == (PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE-1))
+	{
+		(*error) = 1;
+		return (hint_node_id){};
+	}
 
-static inline hint_node_id get_prev_sibling_for_hint_node_id(hint_node_id x, int* error);
+	// TODO
+}
 
-static inline hint_node_id get_ith_child_for_hint_node_id(hint_node_id x, uint64_t i, int* error);
+static inline hint_node_id get_prev_sibling_for_hint_node_id(hint_node_id x, int* error)
+{
+	// 0th child can not have a prev sibling
+	if(x.child_index == 0)
+	{
+		(*error) = 1;
+		return (hint_node_id){};
+	}
 
-static inline hint_node_id get_parent_for_hint_node_id(hint_node_id x, int* error);
+	// TODO
+}
+
+static inline hint_node_id get_ith_child_for_hint_node_id(hint_node_id x, uint64_t i, int* error)
+{
+	// level 0 can not have a child
+	if(x.level == 5)
+	{
+		(*error) = 1;
+		return (hint_node_id){};
+	}
+
+	// TODO
+}
+
+static inline hint_node_id get_parent_for_hint_node_id(hint_node_id x, int* error)
+{
+	// level 5 can not have a parent
+	if(x.level == 5)
+	{
+		(*error) = 1;
+		return (hint_node_id){};
+	}
+
+	// TODO
+}
 
 // hint_node_id utility functions complete
