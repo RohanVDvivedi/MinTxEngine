@@ -52,6 +52,13 @@ static const uint64_t subtree_sizes[5] = {
 
 static inline hint_node_id get_next_sibling_for_hint_node_id(const hint_node_id x, int* error)
 {
+	// root page does not have any siblings
+	if(x.level == MAX_LEVEL)
+	{
+		(*error) = 1;
+		return (hint_node_id){};
+	}
+
 	// last child can not have a next sibling
 	if(x.child_index == (PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE-1))
 	{
@@ -69,6 +76,13 @@ static inline hint_node_id get_next_sibling_for_hint_node_id(const hint_node_id 
 
 static inline hint_node_id get_prev_sibling_for_hint_node_id(const hint_node_id x, int* error)
 {
+	// root page does not have any siblings
+	if(x.level == MAX_LEVEL)
+	{
+		(*error) = 1;
+		return (hint_node_id){};
+	}
+
 	// 0th child can not have a prev sibling
 	if(x.child_index == 0)
 	{
