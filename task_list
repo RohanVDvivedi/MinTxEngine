@@ -29,13 +29,12 @@ PICKED
     * to skip a node level we need to add all the pages that it consists of to it, so we can skip it
 
     * the root pages of the nodes are arranged like this:
-    * page 0 => level 5
-           1 => level 4
-           2 => level 3
-           3 => level 2
-           4 => level 1
+    * page 0 => level 4
+           1 => level 3
+           2 => level 2
+           3 => level 1
+           4 => level 0
            5 => level 0
-           6 => level 0
            .
            . P of them
            .
@@ -55,9 +54,9 @@ PICKED
     * level 1 = (E / P) % P
     * level 2 = (E / (P^2)) % P
     * level 3 = (E / (P^3)) % P
-    * and so on until 5, which would obviously be (E / (P^5)) % P
+    * and so on until 4, which would obviously be (E / (P^4)) % P
 
-    * we will start descending from root page 0, at level 5, and (being at index0 of its parent which does not exists)
+    * we will start descending from root page 0, at level 4, and (being at index0 of its parent which does not exists)
     * using the indices we found in the previous step
 
     * API
