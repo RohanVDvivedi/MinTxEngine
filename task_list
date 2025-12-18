@@ -1,64 +1,18 @@
 PICKED
   * PAGE_ALLOCATION OPTIMIZATION
-    * use hierarchial free space hint bitmaps, built and managed as a separate module, that would only manage these hierarchial free space hint bits in a separate file, in an eventially consistent mode, these bits will not be ACID, will not be WAL-logged and may not even be correct at times
-    * each level 0 bit in this heirarchial bit map points is set to 0 if there is atleast 1 free page in the corresponding extent
-    * each page here is 4096 bytes, and so can hold upto 4096*8 bits
+    * initialize bufferpool object and the parameters it takes buffers count = 25 - 100 -> depending the size of ram
+    * periodic flush job every minute
 
-    * level 0 page is the lowest level where each of its bits point to each of the extents, 0 suggesting that extent has atleast a free page, and 1 if it is completely full
-    * any level 1 page has hint bits for each its children level 0 pages, 4096*8 of them
-    * and so on
+    * implement bufferpool callbacks for read, write and flush
+    * implement bufferpool callbacks for can (returns true) and was flush to disk are no-op
 
-    * the system is not designed to have an upper limit on the number of pages that can be used, but the number of addressable extents is expected to fit in uint64_t, which is already too large
+    * build nodes containing uint64_t extent_id and bstnode for caching on both the bsts
+    * add insert and remove functions, such that they are idempotent
 
-    * lets say P = 4096 * 8 = number of bits on these hint pages
-    * level 0 can potentially have P children extents
-    * level 1 can have P^2 children extents in total
-    * similarly the last level L can have P^(L+1) children extents in total
-    * so if the L is the last level, then P^(L+1) >= 2^64
-    * this gives us L = 3.2 => 4
-    * we need only 5 levels i.e. from 0, 1, 2, 3 and 4
+    * locking rules only need rwlock for caches, bufferpool locking conventions needs to be finalized when to descend and when to ascend the tree
+    * need ascend descend type locks glock type
 
-    * now the pages and group of pages are the nodes of the tree
-    * a level 3 node groups consists of a level 3 node itself and P number of node group levels of level 2
-
-    * a level 0 node is all by itself, so it need only 1 page, i.e. P^0 pages
-    * a level 1 node consists of 1 level 1 node and P level 0 node, i.e. P^0 + P^1
-    * a level 2 node consists of 1 level 2 node and P level 1 node, i.e. 1 + P(P^0 + P^1) = 1 + P + P^2 = P^0 + P^1 + P^2
-    * finally a level L node consists of P^0 + P^1 + P^2 + ... + P^L
-
-    * to skip a node level we need to add all the pages that it consists of to it, so we can skip it
-
-    * the root pages of the nodes are arranged like this:
-    * page 0 => level 4
-           1 => level 3
-           2 => level 2
-           3 => level 1
-           4 => level 0
-           5 => level 0
-           .
-           . P of them
-           .
-           X => level 0
-           Y => level 1 - level 1 of some other group, but child to the immediate previously occurring level 2 group
-
-    * lets define a function called K(L) = P^0 + P^1 + P^2 + ... + P^L 
-
-    * for any computation we only need the page_id = X and it's level Y and it's index in it's parent's subtree Z
-    * the page_id of the next sibling = X + K(Y) -> where 0 <= Z < P-1
-    * the page_id of the previous sibling = X - K(Y) -> where 0 < Z < P
-    * the page_id of its ith child = X + 1 + K(Y-1) -> Y != 0 and 0 < i < P
-    * the page_id of its parent = X - Z * K(Y) - 1
-
-    * to find the indices of the extent no E, just write the integer E in base P
-    * level 0 = E % P
-    * level 1 = (E / P) % P
-    * level 2 = (E / (P^2)) % P
-    * level 3 = (E / (P^3)) % P
-    * and so on until 4, which would obviously be (E / (P^4)) % P
-
-    * we will start descending from root page 0, at level 4, and (being at index0 of its parent which does not exists)
-    * using the indices we found in the previous step
-
-    * API
-      * void notify_modification_for_free_space_mapper_page_to_hints(const void* free_space_mapper_page, uint64_t free_space_mapper_page_id);
-      * uint64_t find_some_extents_with_free_space(uint64_t* result, uint64_t result_size); -> we will need conversions from hints to free space mapper pages
+    * architect the solution now
+    * when to update caches? (always)
+    * when to reconcile with the disk? (eventually)
+    * when to return from free_cache and when from the on-disk hints? (circularly and always possible from cache)
