@@ -1,5 +1,7 @@
 #include<mintxengine/page_allocation_hints.h>
 
+#include<stdint.h>
+
 // each hint page node, in the free space hint hierarchy of the tree is identified by the hint_node_id
 // below are the utility functions for managing the hint_node_ids
 
@@ -11,6 +13,11 @@ struct hint_node_id
 	uint64_t page_id; // page_id of the hint_page we are working with, each page is 4096 bytes big
 
 	uint64_t child_index; // this is the index of this node in it's immediate parent's subtree
+
+	// this is the smallest extent_id that this hint_node manages
+	uint64_t smallest_managed_extent_id;
+
+	// the largest extent_id managed by this hint_node = (smallest_managed_extent_id + PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE ^ level)
 };
 
 static inline hint_node_id get_root_page_hint_node_id()
@@ -19,6 +26,7 @@ static inline hint_node_id get_root_page_hint_node_id()
 		.level = 4,				// root page is at level 4 and page_id = 0
 		.page_id = 0,
 		.child_index = 0,		//and it is at 0th index in its non existent parent
+		.smallest_managed_extent_id = 0,
 	};
 }
 
@@ -54,21 +62,21 @@ static inline uint64_t get_sum_of_powers_for_bits_count_on_the_node_page(uint8_t
 {
 	(*overflowed) = 0;
 
-	#define get_power_for_bits_count_on_the_node_page pow_bits
+	#define pow_bits get_power_for_bits_count_on_the_node_page
 
 	// only 0 to 4 values do not overflow
 	switch(p)
 	{
 		case 0 :
-			return pow_bits(0);
+			return pow_bits(0, overflowed);
 		case 1 :
-			return pow_bits(0) + pow_bits(1);
+			return pow_bits(0, overflowed) + pow_bits(1, overflowed);
 		case 2 :
-			return pow_bits(0) + pow_bits(1) + pow_bits(2);
+			return pow_bits(0, overflowed) + pow_bits(1, overflowed) + pow_bits(2, overflowed);
 		case 3 :
-			return pow_bits(0) + pow_bits(1) + pow_bits(2) + pow_bits(3);
+			return pow_bits(0, overflowed) + pow_bits(1, overflowed) + pow_bits(2, overflowed) + pow_bits(3, overflowed);
 		case 4 :
-			return pow_bits(0) + pow_bits(1) + pow_bits(2) + pow_bits(3) + pow_bits(4);
+			return pow_bits(0, overflowed) + pow_bits(1, overflowed) + pow_bits(2, overflowed) + pow_bits(3, overflowed) + pow_bits(4, overflowed);
 	}
 
 	#undef get_power_for_bits_count_on_the_node_page

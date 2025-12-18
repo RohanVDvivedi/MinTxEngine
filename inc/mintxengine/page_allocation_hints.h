@@ -76,7 +76,10 @@
 #define PAGE_ALLOCATION_HINTS_PAGE_SIZE UINT64_C(4096)
 
 // this was our P we discussed earlier
-#define PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE UINT64_C(PAGE_ALLOCATION_HINTS_PAGE_SIZE*8ULL)
+#define PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE (PAGE_ALLOCATION_HINTS_PAGE_SIZE * UINT64_C(8))
+
+#include<blockio/block_io.h>
+#include<bufferpool/bufferpool.h>
 
 typedef struct page_allocation_hints page_allocation_hints;
 struct page_allocation_hints
