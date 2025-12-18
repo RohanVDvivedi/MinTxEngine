@@ -139,8 +139,8 @@ static inline hint_node_id get_ith_child_for_hint_node_id(hint_node_id x, uint64
 
 static inline hint_node_id get_parent_for_hint_node_id(hint_node_id x, int* error)
 {
-	// level 5 can not have a parent
-	if(x.level == 5)
+	// level 4 can not have a parent
+	if(x.level == 4)
 	{
 		(*error) = 1;
 		return (hint_node_id){};
