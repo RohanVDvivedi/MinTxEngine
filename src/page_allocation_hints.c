@@ -213,7 +213,13 @@ static int read_hint_page(const void* page_io_ops_handle, void* frame_dest, uint
 	size_t block_size = get_block_size_for_block_file(((block_file*)(page_io_ops_handle)));
 	off_t block_id = (page_id * page_size) / block_size;
 	size_t block_count = page_size / block_size;
-	return read_blocks_from_block_file(((block_file*)(page_io_ops_handle)), frame_dest, block_id, block_count);
+	int res = read_blocks_from_block_file(((block_file*)(page_io_ops_handle)), frame_dest, block_id, block_count);
+	if(!res)
+	{
+		printf("FREE SPACE HINTS FILE READ IO FAILED\n");
+		exit(-1);
+	}
+	return res;
 }
 
 static int write_hint_page(const void* page_io_ops_handle, const void* frame_src, uint64_t page_id, uint32_t page_size)
@@ -221,12 +227,24 @@ static int write_hint_page(const void* page_io_ops_handle, const void* frame_src
 	size_t block_size = get_block_size_for_block_file(((block_file*)(page_io_ops_handle)));
 	off_t block_id = (page_id * page_size) / block_size;
 	size_t block_count = page_size / block_size;
-	return write_blocks_to_block_file(((block_file*)(page_io_ops_handle)), frame_src, block_id, block_count);
+	int res = write_blocks_to_block_file(((block_file*)(page_io_ops_handle)), frame_src, block_id, block_count);
+	if(!res)
+	{
+		printf("FREE SPACE HINTS FILE WRITE IO FAILED\n");
+		exit(-1);
+	}
+	return res;
 }
 
 static int flush_all_hint_pages(const void* page_io_ops_handle)
 {
-	return flush_all_writes_to_block_file(((block_file*)(page_io_ops_handle)));
+	int res = flush_all_writes_to_block_file(((block_file*)(page_io_ops_handle)));
+	if(!res)
+	{
+		printf("FREE SPACE HINTS FILE FLUSH FAILED\n");
+		exit(-1);
+	}
+	return res;
 }
 
 // input to the below macro is a pointer to the mini transaction engine
