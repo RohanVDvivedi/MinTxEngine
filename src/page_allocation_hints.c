@@ -1,6 +1,7 @@
 #include<mintxengine/page_allocation_hints.h>
 
 #include<stdint.h>
+#include<inttypes.h>
 
 // each hint page node, in the free space hint hierarchy of the tree is identified by the hint_node_id
 // below are the utility functions for managing the hint_node_ids
@@ -134,9 +135,10 @@ static inline hint_node_id get_parent_for_hint_node_id(const hint_node_id x, int
 }
 
 // debug function
+#include<stdio.h>
 static inline void print_hint_node_id(const hint_node_id x)
 {
-    printf("level = %"PRIu64", page_id = %"PRIu64", child_index = %"PRIu64", first_extent_id = %"PRIu64"\n", x.level, x.page_id, x.child_index, x.smallest_managed_extent_id);
+    printf("level = %"PRIu8", page_id = %"PRIu64", child_index = %"PRIu64", first_extent_id = %"PRIu64"\n", x.level, x.page_id, x.child_index, x.smallest_managed_extent_id);
 }
 
 // here the indices by level array must be atleast 5 uint64_t's long, only indices corresponding to levels 0 to 4 (both inclusive are used)
