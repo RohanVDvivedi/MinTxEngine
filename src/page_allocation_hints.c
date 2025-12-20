@@ -252,3 +252,64 @@ static void hint_page_was_flushed_to_disk(void* flush_callback_handle, uint64_t 
 }
 
 // bufferpool callbacks end
+
+// extent free space caches utility functions
+
+typedef struct cache_entry cache_entry;
+struct cache_entry
+{
+	uint64_t extent_id; // module expects extent_id to be the first attribute
+	bstnode embed_node;
+};
+
+static int compare_cache_entry(const void* e1, const void* e2)
+{
+	return compare_numbers(((const cache_entry*)e1)->extent_id, ((const cache_entry*)e2)->extent_id);
+}
+
+static inline void initialize_cache(bst* cache)
+{
+	initialize_bst(cache, RED_BLACK_TREE, &simple_comparator(compare_cache_entry), offsetof(cache_entry, embed_node));
+}
+
+static inline void insert_in_cache(bst* cache, uint64_t extent_id)
+{
+	// if exists fail
+	if(find_equals_in_bst(cache, &extent_id, FIRST_OCCURENCE)) // this is doable because extent_id is the first attribute
+		return;
+
+	// else insert a new entry
+
+	cache_entry* e = malloc(sizeof(cache_entry));
+	e->extent_id = extent_id;
+	initialize_bstnode(&(e->embed_node));
+
+	insert_in_bst(cache, e);
+}
+
+static inline void remove_from_cache(bst* cache, uint64_t extent_id)
+{
+	cache_entry* e = (cache_entry*)find_equals_in_bst(cache, &extent_id, FIRST_OCCURENCE); // this is doable because extent_id is the first attribute
+
+	// if not exists fail
+	if(e == NULL)
+		return;
+
+	// else remove and free it
+
+	remove_from_bst(cache, e);
+
+	free(e);
+}
+
+static void notify_for_remove_all(void* resource_p, const void* data_p)
+{
+	free((void*)data_p);
+}
+
+static inline void deinitialize_cache(bst* cache)
+{
+	remove_all_from_bst(cache, &((notifier_interface){NULL, notify_for_remove_all}));
+}
+
+//
