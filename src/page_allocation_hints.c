@@ -313,3 +313,53 @@ static inline void deinitialize_cache(bst* cache)
 }
 
 // extent free space caches utility functions ended
+
+page_allocation_hints* get_new_page_allocation_hints(char* extent_allocation_hints_file_path)
+{
+	page_allocation_hints* pah_p = malloc(sizeof(page_allocation_hints));
+
+	// open the block file, if not create it
+	if(!open_block_file(&(pah_p->extent_allocation_hints_file), extent_allocation_hints_file_path, 0) &&
+		!create_and_open_block_file(&(pah_p->extent_allocation_hints_file), extent_allocation_hints_file_path, 0))
+	{
+		printf("FREE SPACE HINTS FILE COULD NOT BE CREATED OR OPENNED\n");
+		free(pah_p);
+		return NULL;
+	}
+
+	// ensure that it has (PAGE_ALLOCATION_HINTS_PAGE_SIZE % block_size) == 0, else close it and return NULL
+	if((PAGE_ALLOCATION_HINTS_PAGE_SIZE % get_block_size_for_block_file(&(pah_p->extent_allocation_hints_file))) != 0)
+	{
+		printf("FREE SPACE HINTS FILE COULD NOT BE USED as => (PAGE_ALLOCATION_HINTS_PAGE_SIZE %% disk.block_size = %zu) == 0\n", get_block_size_for_block_file(&(pah_p->extent_allocation_hints_file)));
+		free(pah_p);
+		return NULL;
+	}
+
+	// create a bufferpool
+	if(!initialize_bufferpool(&(pah_p->bf), HINTS_FRAMES_TO_CACHE, NULL, get_page_io_ops((&(pah_p->extent_allocation_hints_file))), can_hint_page_be_flushed_to_disk, hint_page_was_flushed_to_disk, NULL, 60 * 1000000, HINTS_FRAMES_TO_CACHE)) // flush all frames every minute, unless there is overload
+	{
+		close_block_file(&(pah_p->extent_allocation_hints_file));
+		free(pah_p);
+		return NULL;
+	}
+
+	// initialize caches
+	initialize_cache(&(pah_p->free_cache));
+	initialize_cache(&(pah_p->full_cache));
+
+	return pah_p;
+}
+
+void flush_and_delete_page_allocation_hints(page_allocation_hints* pah_p)
+{
+	blockingly_flush_all_possible_dirty_pages(&(pah_p->bf));
+
+	deinitialize_bufferpool(&(pah_p->bf));
+
+	close_block_file(&(pah_p->extent_allocation_hints_file));
+
+	deinitialize_cache(&(pah_p->free_cache));
+	deinitialize_cache(&(pah_p->full_cache));
+
+	free(pah_p);
+}

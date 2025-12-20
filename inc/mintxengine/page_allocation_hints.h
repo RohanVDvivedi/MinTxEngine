@@ -82,6 +82,8 @@
 // tjhis will remain fixed forever!!
 #define MAX_LEVEL 4
 
+#define HINTS_FRAMES_TO_CACHE 25
+
 #include<blockio/block_io.h>
 #include<bufferpool/bufferpool.h>
 
@@ -95,7 +97,7 @@ struct page_allocation_hints
 
 	// bufferpool for the above file, no need of any steal/force policy here, the pages are not WAL-logged and not undo-able
 	// this bufferpool is small about mo more than 25 pages, each as expected 4KB in size
-	bufferpool* bf;
+	bufferpool bf;
 
 	// recently allocated or free (->having any free page) extents are captured here (extent_ids in increasing order) before sent to the hint pages on the disk
 	bst free_cache; // try ask callee to allocate from here first
@@ -113,7 +115,7 @@ struct page_allocation_hints
 };
 
 // fails if disk block size for extent_allocation_hints_file does not divide PAGE_ALLOCATION_HINTS_PAGE_SIZE
-page_allocation_hints* get_new_page_allocation_hints();
+page_allocation_hints* get_new_page_allocation_hints(char* extent_allocation_hints_file_path);
 
 void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, void* free_space_mapper_page, uint64_t free_space_mapper_page_id);
 
