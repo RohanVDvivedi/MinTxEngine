@@ -97,7 +97,7 @@ struct page_allocation_hints
 	// this bufferpool is small about mo more than 25 pages, each as expected 4KB in size
 	bufferpool* bf;
 
-	// recently allocated or free extents are captured here (extent_ids in increasing order) before sent to the hint pages on the disk
+	// recently allocated or free (->having any free page) extents are captured here (extent_ids in increasing order) before sent to the hint pages on the disk
 	bst free_cache; // try ask callee to allocate from here first
 	bst full_cache;
 	// the cache extents captured here are sent to disk at regular intervals,

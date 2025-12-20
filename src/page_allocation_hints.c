@@ -312,4 +312,4 @@ static inline void deinitialize_cache(bst* cache)
 	remove_all_from_bst(cache, &((notifier_interface){NULL, notify_for_remove_all}));
 }
 
-//
+// extent free space caches utility functions ended
