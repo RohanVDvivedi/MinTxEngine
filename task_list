@@ -3,12 +3,6 @@ PICKED
     * initialize bufferpool object and the parameters it takes buffers count = 25 - 100 -> depending the size of ram
     * periodic flush job every minute
 
-    * implement bufferpool callbacks for read, write and flush
-    * implement bufferpool callbacks for can (returns true) and was flush to disk are no-op
-
-    * build nodes containing uint64_t extent_id and bstnode for caching on both the bsts
-    * add insert and remove functions, such that they are idempotent
-
     * locking rules only need rwlock for caches, bufferpool locking conventions needs to be finalized when to descend and when to ascend the tree
     * need ascend descend type locks glock type
 
