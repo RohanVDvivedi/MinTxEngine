@@ -205,3 +205,50 @@ static inline void get_child_indices_by_level_responsible_for_extent_id(uint64_t
 }
 
 // hint_node_id utility functions complete
+
+// bufferpool callbacks here
+
+static int read_hint_page(const void* page_io_ops_handle, void* frame_dest, uint64_t page_id, uint32_t page_size)
+{
+	size_t block_size = get_block_size_for_block_file(((block_file*)(page_io_ops_handle)));
+	off_t block_id = (page_id * page_size) / block_size;
+	size_t block_count = page_size / block_size;
+	return read_blocks_from_block_file(((block_file*)(page_io_ops_handle)), frame_dest, block_id, block_count);
+}
+
+static int write_hint_page(const void* page_io_ops_handle, const void* frame_src, uint64_t page_id, uint32_t page_size)
+{
+	size_t block_size = get_block_size_for_block_file(((block_file*)(page_io_ops_handle)));
+	off_t block_id = (page_id * page_size) / block_size;
+	size_t block_count = page_size / block_size;
+	return write_blocks_to_block_file(((block_file*)(page_io_ops_handle)), frame_src, block_id, block_count);
+}
+
+static int flush_all_hint_pages(const void* page_io_ops_handle)
+{
+	return flush_all_writes_to_block_file(((block_file*)(page_io_ops_handle)));
+}
+
+// input to the below macro is a pointer to the mini transaction engine
+#define get_page_io_ops(file_handle) (page_io_ops){ \
+					.page_io_ops_handle = (file_handle), \
+					.page_size = PAGE_ALLOCATION_HINTS_PAGE_SIZE, \
+					.page_frame_alignment = PAGE_ALLOCATION_HINTS_PAGE_SIZE, \
+					.read_page = read_hint_page, \
+					.write_page = write_hint_page, \
+					.flush_all_writes = flush_all_hint_pages, \
+				}
+
+// can always flush to disk
+static int can_hint_page_be_flushed_to_disk(void* flush_callback_handle, uint64_t page_id, const void* frame)
+{
+	return 1;
+}
+
+// nothing to be done if a page was flushed
+static void hint_page_was_flushed_to_disk(void* flush_callback_handle, uint64_t page_id, const void* frame)
+{
+	return;
+}
+
+// bufferpool callbacks end
