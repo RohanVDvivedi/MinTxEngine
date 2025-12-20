@@ -142,6 +142,61 @@ static inline void print_hint_node_id(const hint_node_id x)
     printf("level = %"PRIu8", page_id = %"PRIu64", child_index = %"PRIu64", first_extent_id = %"PRIu64"\n", x.level, x.page_id, x.child_index, x.smallest_managed_extent_id);
 }
 
+/*
+// pseudocde to show how to loop over all the pages hierarhially starting the the root page at 0 to the last possible leaf
+void loop_over_all_hint_node_ids_by_page_id()
+{
+	hint_node_id c = get_root_page_hint_node_id();
+	while(1)
+	{
+		// print the c
+		print_hint_node_id(c);
+
+		// below logic just helps us iterate to the next in page_id
+
+		int error = 0;
+		hint_node_id n;
+
+		error = 0;
+		n = get_ith_child_for_hint_node_id(c, 0, &error);
+		if(!error)
+		{
+			c = n;
+			continue;
+		}
+
+		error = 0;
+		n = get_next_sibling_for_hint_node_id(c, &error);
+		if(!error)
+		{
+			c = n;
+			continue;
+		}
+
+		n = c;
+		while(1)
+		{
+			error = 0;
+			n = get_parent_for_hint_node_id(n, &error);
+			if(error)
+				break;
+
+			error = 0;
+			hint_node_id temp = get_next_sibling_for_hint_node_id(n, &error);
+			if(!error)
+			{
+				n = temp;
+				c = n;
+				break;
+			}
+		}
+
+		if(error)
+			break;
+	}
+}
+*/
+
 // here the indices by level array must be atleast 5 uint64_t's long, only indices corresponding to levels 0 to 4 (both inclusive are used)
 static inline void get_child_indices_by_level_responsible_for_extent_id(uint64_t extent_id, uint64_t* indices_by_level)
 {
