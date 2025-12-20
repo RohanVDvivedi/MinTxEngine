@@ -133,6 +133,12 @@ static inline hint_node_id get_parent_for_hint_node_id(const hint_node_id x, int
 	};
 }
 
+// debug function
+static inline void print_hint_node_id(const hint_node_id x)
+{
+    printf("level = %"PRIu64", page_id = %"PRIu64", child_index = %"PRIu64", first_extent_id = %"PRIu64"\n", x.level, x.page_id, x.child_index, x.smallest_managed_extent_id);
+}
+
 // here the indices by level array must be atleast 5 uint64_t's long, only indices corresponding to levels 0 to 4 (both inclusive are used)
 static inline void get_child_indices_by_level_responsible_for_extent_id(uint64_t extent_id, uint64_t* indices_by_level)
 {
