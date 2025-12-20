@@ -127,7 +127,8 @@ static inline hint_node_id get_parent_for_hint_node_id(const hint_node_id x, int
 	return (hint_node_id) {
 		.level = x.level + 1,
 		.page_id = x.page_id - x.child_index * subtree_sizes[x.level] - 1,
-		.child_index = (x.smallest_managed_extent_id / powers[x.level + 1]) % PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE, // the parent will also be relevant for the x.smallest_managed_extent_id, though it will not be its smallest_managed_extent_id
+		.child_index = (x.smallest_managed_extent_id / powers[x.level + 2]) % PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE, // the parent will also be relevant for the x.smallest_managed_extent_id, though it will not be its smallest_managed_extent_id
+		// we only need the child index of this new x.level+1 guy in it's parent
 		.smallest_managed_extent_id = x.smallest_managed_extent_id - x.child_index * powers[x.level + 1],
 	};
 }
