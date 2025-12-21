@@ -51,6 +51,18 @@ static const uint64_t subtree_sizes[5] = {
 	[4] = powers[0] + powers[1] + powers[2] + powers[3] + powers[4],
 };
 
+static inline uint64_t get_largest_managed_extent_id(const hint_node_id x)
+{
+	// root node always manages the complete range
+	if(x.level == MAX_LEVEL)
+		return UINT64_MAX;
+
+	if(will_unsigned_sum_overflow(uint64_t, x.smallest_managed_extent_id, powers[x.level + 1]))
+		return UINT64_MAX;
+
+	return (x.smallest_managed_extent_id + powers[x.level + 1]) - 1;
+}
+
 static inline hint_node_id get_next_sibling_for_hint_node_id(const hint_node_id x, int* error)
 {
 	// root page does not have any siblings
