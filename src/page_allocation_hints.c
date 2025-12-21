@@ -67,6 +67,13 @@ static inline hint_node_id get_next_sibling_for_hint_node_id(const hint_node_id 
 		return (hint_node_id){};
 	}
 
+	// make sure that the smallest_managed_extent_id does not overflow
+	if(will_unsigned_sum_overflow(uint64_t, x.smallest_managed_extent_id, powers[x.level + 1]))
+	{
+		(*error) = 1;
+		return (hint_node_id){};
+	}
+
 	return (hint_node_id) {
 		.level = x.level,
 		.page_id = x.page_id + subtree_sizes[x.level],
@@ -103,6 +110,14 @@ static inline hint_node_id get_ith_child_for_hint_node_id(const hint_node_id x, 
 {
 	// level 0 can not have a child
 	if(x.level == 0)
+	{
+		(*error) = 1;
+		return (hint_node_id){};
+	}
+
+	// make sure that the smallest_managed_extent_id does not overflow
+	if(will_unsigned_mul_overflow(uint64_t, i, powers[x.level]) ||
+		will_unsigned_sum_overflow(uint64_t, x.smallest_managed_extent_id, (i * powers[x.level])))
 	{
 		(*error) = 1;
 		return (hint_node_id){};
