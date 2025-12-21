@@ -104,21 +104,13 @@ struct page_allocation_hints
 	bst full_cache;
 	// the cache extents captured here are sent to disk at regular intervals,
 	// byt a job and full_cache is emptied (all changes persisted) and free_cache is topped up (updates persisted to disk and smallest not-full extent_ids populated)
-
-	const void* callback_context;
-
-	// we only need to know if the extent has free pages, if yes, it's corresponding hint bits will be set to 0, else it will be set to 1 (suggesting fully allocated)
-	int (*has_free_pages_from_free_space_mapper_page)(const void* callback_context, void* free_space_mapper_page);
-
-	// get the extent id from the page_id of the page, this is essentially the, page_id / extent_size
-	uint64_t (*get_extent_id_from_page_id)(const void* callback_context, uint64_t page_id);
 };
 
 // fails if disk block size for extent_allocation_hints_file does not divide PAGE_ALLOCATION_HINTS_PAGE_SIZE
 // the parameter is the name of the file for this module to be managed, ideally it should be the database_file_name.free_space_hints
 page_allocation_hints* get_new_page_allocation_hints(char* extent_allocation_hints_file_path);
 
-void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, void* free_space_mapper_page, uint64_t free_space_mapper_page_id);
+void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_t extent_id, uint64_t free_pages_count_in_extent);
 
 // result_extent_ids is the output parameter, and results_size is the in-out parameter suggesting the size of the array OR the size of the returned result
 // (*results_size) = 0, is essentially a NOP
