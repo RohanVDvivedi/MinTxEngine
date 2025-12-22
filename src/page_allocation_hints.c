@@ -364,11 +364,11 @@ struct cache_iterator
 	const cache_entry* curr_entry; // if this is NULL, we are at the end
 };
 
-cache_iterator get_new_cache_iterator(const bst* cache)
+static cache_iterator get_new_cache_iterator(const bst* cache)
 {
 	// if cache is not provided, return empty, failing all further operations
 	if(cache == NULL)
-		return (cache_entry){};
+		return (cache_iterator){};
 
 	return (cache_iterator) {
 		.cache = cache,
@@ -376,7 +376,7 @@ cache_iterator get_new_cache_iterator(const bst* cache)
 	};
 }
 
-const uint64_t* get_curr_extent_from_cache_iterator(const cache_iterator* cit)
+static const uint64_t* get_curr_extent_from_cache_iterator(const cache_iterator* cit)
 {
 	if(cit == NULL || cit->cache == NULL || cit->curr_entry == NULL)
 		return NULL;
@@ -385,7 +385,7 @@ const uint64_t* get_curr_extent_from_cache_iterator(const cache_iterator* cit)
 	return &(cit->curr_entry->extent_id);
 }
 
-void go_next_in_cache_iterator(cache_iterator* cit)
+static void go_next_in_cache_iterator(cache_iterator* cit)
 {
 	if(cit == NULL || cit->cache == NULL || cit->curr_entry == NULL)
 		return;
@@ -395,6 +395,19 @@ void go_next_in_cache_iterator(cache_iterator* cit)
 }
 
 // extent free space caches utility functions ended
+
+// utility functions to update hints file in bulk 
+
+// returns the bit value for the parent to set in it's page for the child
+static int fix_hint_bits_recursive(hint_node_id node_id, cache_iterator* set_free, cache_iterator* set_full);
+
+static void fix_hint_bits(page_allocation_hints* pah_p, const bst* set_free, const bst* set_full);
+
+static void find_free_hint_extent_ids_recursive(hint_node_id node_id, bst* result, uint64_t* result_count);
+
+static void find_free_hint_extent_ids(page_allocation_hints* pah_p, uint64_t from_extent_id, bst* result, uint64_t result_count);
+
+// utility functions to update hints file in bulk complete
 
 page_allocation_hints* get_new_page_allocation_hints(char* extent_allocation_hints_file_path)
 {
