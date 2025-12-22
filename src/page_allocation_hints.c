@@ -513,7 +513,37 @@ static void fix_hint_bits(bufferpool* bf, const bst* set_free, const bst* set_fu
 	fix_hint_bits_recursive(bf, get_root_page_hint_node_id(), &cit_free, &cit_full);
 }
 
-static void find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id node_id, uint64_t from_extent_id, bst* result, uint64_t* result_count);
+static void find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id node_id, uint64_t from_extent_id, bst* result, uint64_t* result_count)
+{
+	if((*result_count) == 0)
+		return;
+
+	if(get_largest_managed_extent_id(node_id) < from_extent_id)
+		return;
+
+	void* page =  acquire_page_with_reader_lock(bf, node_id.page_id, BLOCKING, 1);
+
+	uint64_t from_child_index = (from_extent_id <= node_id.smallest_managed_extent_id) ? 0 : get_child_index_at_level_responsible_for_extent_id(from_extent_id, node_id.level);
+
+	for(uint64_t child_index = from_child_index; child_index < PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE && (*result_count) > 0; child_index++)
+	{
+		if(get_bit(page, child_index) == 1) // if child is full, skip it
+			continue;
+
+		if(node_id.level == 0)
+		{
+			insert_in_cache(result, node_id.smallest_managed_extent_id + child_index);
+			(*result_count)--;
+		}
+		else
+		{
+			int dummy_error = 0;
+			find_free_hint_extent_ids_recursive(bf, get_ith_child_for_hint_node_id(node_id, child_index, &dummy_error), from_extent_id, result, result_count);
+		}
+	}
+
+	release_reader_lock_on_page(bf, page);
+}
 
 static void find_free_hint_extent_ids(bufferpool* bf, uint64_t from_extent_id, bst* result, uint64_t result_count)
 {
