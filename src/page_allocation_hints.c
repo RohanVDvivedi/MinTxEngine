@@ -357,6 +357,43 @@ static inline void deinitialize_cache(bst* cache)
 	remove_all_from_bst(cache, &((notifier_interface){NULL, notify_for_remove_all}));
 }
 
+typedef struct cache_iterator cache_iterator;
+struct cache_iterator
+{
+	const bst* cache;
+	const cache_entry* curr_entry; // if this is NULL, we are at the end
+};
+
+cache_iterator get_new_cache_iterator(const bst* cache)
+{
+	// if cache is not provided, return empty, failing all further operations
+	if(cache == NULL)
+		return (cache_entry){};
+
+	return (cache_iterator) {
+		.cache = cache,
+		.curr_entry = (cache_entry*) find_smallest_in_bst(cache),
+	};
+}
+
+const uint64_t* get_curr_extent_from_cache_iterator(const cache_iterator* cit)
+{
+	if(cit == NULL || cit->cache == NULL || cit->curr_entry == NULL)
+		return NULL;
+
+	// return the pointer to the extent_id of the current cache_entry
+	return &(cit->curr_entry->extent_id);
+}
+
+void go_next_in_cache_iterator(cache_iterator* cit)
+{
+	if(cit == NULL || cit->cache == NULL || cit->curr_entry == NULL)
+		return;
+
+	// go to in-order next
+	cit->curr_entry = get_inorder_next_of_in_bst(cit->cache, cit->curr_entry);
+}
+
 // extent free space caches utility functions ended
 
 page_allocation_hints* get_new_page_allocation_hints(char* extent_allocation_hints_file_path)
