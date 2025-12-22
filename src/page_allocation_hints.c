@@ -399,13 +399,25 @@ static void go_next_in_cache_iterator(cache_iterator* cit)
 // utility functions to update hints file in bulk 
 
 // returns the bit value for the parent to set in it's page for the child
-static int fix_hint_bits_recursive(hint_node_id node_id, cache_iterator* set_free, cache_iterator* set_full);
+static int fix_hint_bits_recursive(hint_node_id node_id, cache_iterator* cit_free, cache_iterator* cit_full);
 
-static void fix_hint_bits(page_allocation_hints* pah_p, const bst* set_free, const bst* set_full);
+static void fix_hint_bits(page_allocation_hints* pah_p, const bst* set_free, const bst* set_full)
+{
+	cache_iterator cit_free = get_new_cache_iterator(set_free);
+	cache_iterator cit_full = get_new_cache_iterator(set_full);
 
-static void find_free_hint_extent_ids_recursive(hint_node_id node_id, bst* result, uint64_t* result_count);
+	fix_hint_bits_recursive(get_root_page_hint_node_id(), &cit_free, &cit_full);
+}
 
-static void find_free_hint_extent_ids(page_allocation_hints* pah_p, uint64_t from_extent_id, bst* result, uint64_t result_count);
+static void find_free_hint_extent_ids_recursive(hint_node_id node_id, uint64_t from_extent_id, bst* result, uint64_t* result_count);
+
+static void find_free_hint_extent_ids(page_allocation_hints* pah_p, uint64_t from_extent_id, bst* result, uint64_t result_count)
+{
+	if(result_count == 0)
+		return;
+
+	find_free_hint_extent_ids_recursive(get_root_page_hint_node_id(), from_extent_id, result, &result_count);
+}
 
 // utility functions to update hints file in bulk complete
 
