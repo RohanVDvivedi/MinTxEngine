@@ -459,9 +459,13 @@ static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, cache_i
 			{
 				reset_bit(page, child_index);
 				is_confirmed_zero_parent_bit = 1; // we just did a reset on our bit, so the parent bit to be returned must be 0
+				was_modified = 1;
 			}
 			else
+			{
 				set_bit(page, child_index);
+				was_modified = 1;
+			}
 
 			// make the selected iterator to go next
 			// only the level 0 node, can make it go next
@@ -475,11 +479,15 @@ static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, cache_i
 
 			// set it, or reset it
 			if(self_bit)
+			{
 				set_bit(page, child_index);
+				was_modified = 1;
+			}
 			else
 			{
 				reset_bit(page, child_index);
 				is_confirmed_zero_parent_bit = 1; // we just did a reset on our bit, so the parent bit to be returned must be 0
+				was_modified = 1;
 			}
 		}
 	}
