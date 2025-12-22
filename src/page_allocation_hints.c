@@ -1,5 +1,7 @@
 #include<mintxengine/page_allocation_hints.h>
 
+#include<cutlery/bitmap.h>
+
 #include<stdint.h>
 #include<inttypes.h>
 
@@ -378,7 +380,7 @@ static cache_iterator get_new_cache_iterator(const bst* cache)
 
 static const uint64_t* get_curr_extent_from_cache_iterator(const cache_iterator* cit)
 {
-	if(cit == NULL || cit->cache == NULL || cit->curr_entry == NULL)
+	if(cit->cache == NULL || cit->curr_entry == NULL)
 		return NULL;
 
 	// return the pointer to the extent_id of the current cache_entry
@@ -387,7 +389,7 @@ static const uint64_t* get_curr_extent_from_cache_iterator(const cache_iterator*
 
 static void go_next_in_cache_iterator(cache_iterator* cit)
 {
-	if(cit == NULL || cit->cache == NULL || cit->curr_entry == NULL)
+	if(cit->cache == NULL || cit->curr_entry == NULL)
 		return;
 
 	// go to in-order next
@@ -410,24 +412,107 @@ static int get_parent_hint_bit_for_page(const void* page)
 }
 
 // returns the bit value for the parent to set in it's page for the child
-static int fix_hint_bits_recursive(hint_node_id node_id, cache_iterator* cit_free, cache_iterator* cit_full);
+static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, cache_iterator* cit_free, cache_iterator* cit_full)
+{
+	int was_modified = 0;
+	void* page = acquire_page_with_writer_lock(bf, node_id.page_id, BLOCKING, 1, 0);
 
-static void fix_hint_bits(page_allocation_hints* pah_p, const bst* set_free, const bst* set_full)
+	int is_confirmed_zero_parent_bit = 0;
+
+	uint64_t largest_managed_extent_id = get_largest_managed_extent_id(node_id);
+
+	while(1)
+	{
+		cache_iterator* cit_select = NULL;
+		if(get_curr_extent_from_cache_iterator(cit_free) == NULL && get_curr_extent_from_cache_iterator(cit_full) == NULL) // both have reached end, break out of the loop
+			break;
+		else if(get_curr_extent_from_cache_iterator(cit_free) != NULL && get_curr_extent_from_cache_iterator(cit_full) == NULL)
+			cit_select = cit_free;
+		else if(get_curr_extent_from_cache_iterator(cit_free) == NULL && get_curr_extent_from_cache_iterator(cit_full) != NULL)
+			cit_select = cit_full;
+		else
+		{
+			// if both are not null select the lower of the two's value
+			if((*get_curr_extent_from_cache_iterator(cit_free)) < (*get_curr_extent_from_cache_iterator(cit_full)))
+				cit_select = cit_free;
+			else
+				cit_select = cit_full;
+		}
+
+		// already handled case
+		if(cit_select == NULL || get_curr_extent_from_cache_iterator(cit_select) == NULL)
+			break;
+
+		// grab the extent id in context
+		uint64_t extent_id = *get_curr_extent_from_cache_iterator(cit_select);
+
+		// if this extent_id is not managed by this node break out
+		if(extent_id < node_id.smallest_managed_extent_id || largest_managed_extent_id < extent_id)
+			break;
+
+		// get the child_index we need to work with
+		uint64_t child_index = get_child_index_at_level_responsible_for_extent_id(extent_id, node_id.level);
+
+		if(node_id.level == 0) // if it is level 0, set/reset the corresponding bit
+		{
+			if(cit_select == cit_free)
+			{
+				reset_bit(page, child_index);
+				is_confirmed_zero_parent_bit = 1; // we just did a reset on our bit, so the parent bit to be returned must be 0
+			}
+			else
+				set_bit(page, child_index);
+
+			// make the selected iterator to go next
+			// only the level 0 node, can make it go next
+			go_next_in_cache_iterator(cit_select);
+		}
+		else
+		{
+			int dummy_error = 0;
+			// get the bit that we should set in ourself
+			int self_bit = fix_hint_bits_recursive(bf, get_ith_child_for_hint_node_id(node_id, child_index, &dummy_error), cit_free, cit_full);
+
+			// set it, or reset it
+			if(self_bit)
+				set_bit(page, child_index);
+			else
+			{
+				reset_bit(page, child_index);
+				is_confirmed_zero_parent_bit = 1; // we just did a reset on our bit, so the parent bit to be returned must be 0
+			}
+		}
+	}
+
+	int parent_bit;
+	if(node_id.level == MAX_LEVEL) // noone cares about the parent_bit of the root node, so why not set it to -1
+		parent_bit = -1;
+	else if(is_confirmed_zero_parent_bit)
+		parent_bit = 0;
+	else
+		parent_bit = get_parent_hint_bit_for_page(page);
+
+	release_writer_lock_on_page(bf, page, was_modified, 0);
+
+	return parent_bit;
+}
+
+static void fix_hint_bits(bufferpool* bf, const bst* set_free, const bst* set_full)
 {
 	cache_iterator cit_free = get_new_cache_iterator(set_free);
 	cache_iterator cit_full = get_new_cache_iterator(set_full);
 
-	fix_hint_bits_recursive(get_root_page_hint_node_id(), &cit_free, &cit_full);
+	fix_hint_bits_recursive(bf, get_root_page_hint_node_id(), &cit_free, &cit_full);
 }
 
-static void find_free_hint_extent_ids_recursive(hint_node_id node_id, uint64_t from_extent_id, bst* result, uint64_t* result_count);
+static void find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id node_id, uint64_t from_extent_id, bst* result, uint64_t* result_count);
 
-static void find_free_hint_extent_ids(page_allocation_hints* pah_p, uint64_t from_extent_id, bst* result, uint64_t result_count)
+static void find_free_hint_extent_ids(bufferpool* bf, uint64_t from_extent_id, bst* result, uint64_t result_count)
 {
 	if(result_count == 0)
 		return;
 
-	find_free_hint_extent_ids_recursive(get_root_page_hint_node_id(), from_extent_id, result, &result_count);
+	find_free_hint_extent_ids_recursive(bf, get_root_page_hint_node_id(), from_extent_id, result, &result_count);
 }
 
 // utility functions to update hints file in bulk complete
