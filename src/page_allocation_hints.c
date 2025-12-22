@@ -162,6 +162,13 @@ static inline hint_node_id get_parent_for_hint_node_id(const hint_node_id x, int
 	};
 }
 
+// gets the child index that is responsible for the extent_id, at a node for a given level
+// level must only be between 0 to 4 inclusive
+static inline uint64_t get_child_index_at_level_responsible_for_extent_id(uint64_t extent_id, uint64_t level)
+{
+	return (extent_id / powers[level]) % PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE;
+}
+
 // debug function
 #include<stdio.h>
 static inline void print_hint_node_id(const hint_node_id x)
@@ -223,13 +230,6 @@ void loop_over_all_hint_node_ids_by_page_id()
 	}
 }
 */
-
-// here the indices by level array must be atleast 5 uint64_t's long, only indices corresponding to levels 0 to 4 (both inclusive are used)
-static inline void get_child_indices_by_level_responsible_for_extent_id(uint64_t extent_id, uint64_t* indices_by_level)
-{
-	for(uint8_t level = 0; level < 5; level++)
-		indices_by_level[level] = (extent_id / powers[level]) % PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE;
-}
 
 // hint_node_id utility functions complete
 
