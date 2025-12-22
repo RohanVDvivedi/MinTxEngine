@@ -1,14 +1,5 @@
 PICKED
   * PAGE_ALLOCATION OPTIMIZATION
-
-    * void fix_hint_bits(page_allocation_hints* pah_p, const bst* set_free, const bst* set_full);
-      * int fix_hint_bits_recursive(hint_node_id node_id, cache_iterator* set_free, cache_iterator* set_full); // returns 1, if contains all 1s, else returns 0, this is the parent's bit value that needs to be set
-
-    * void find_free_hint_extent_ids(page_allocation_hints* pah_p, uint64_t from_extent_id, bst* result, uint64_t result_count);
-      * void find_free_hint_extent_ids(hint_node_id node_id, bst* result, uint64_t* result_count); // iterates until result_count > 0, and inserts results in the result bst
-
-    * ------------------------------
-
     * initialize bufferpool object and the parameters it takes buffers count = 25 - 100 -> depending the size of ram
     * periodic flush job every minute
 
