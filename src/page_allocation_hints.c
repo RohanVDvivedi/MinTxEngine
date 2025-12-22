@@ -398,6 +398,17 @@ static void go_next_in_cache_iterator(cache_iterator* cit)
 
 // utility functions to update hints file in bulk 
 
+static int get_parent_hint_bit_for_page(const void* page)
+{
+	// if even a single bit is not 1, i.e. has a some free extent in it's children, then return 0
+	for(uint64_t i = 0; i < PAGE_ALLOCATION_HINTS_PAGE_SIZE; i++)
+		if(((const char*)page)[i] != 0xff)
+			return 0;
+
+	// if all are 1 bits (all children extents are full), return 1
+	return 1;
+}
+
 // returns the bit value for the parent to set in it's page for the child
 static int fix_hint_bits_recursive(hint_node_id node_id, cache_iterator* cit_free, cache_iterator* cit_full);
 
