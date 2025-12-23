@@ -246,10 +246,7 @@ static int read_hint_page(const void* page_io_ops_handle, void* frame_dest, uint
 	size_t block_count = page_size / block_size;
 	int res = read_blocks_from_block_file(((block_file*)(page_io_ops_handle)), frame_dest, block_id, block_count);
 	if(!res)
-	{
-		printf("FREE SPACE HINTS FILE READ IO FAILED\n");
-		exit(-1);
-	}
+		memory_set(frame_dest, 0, page_size);
 	return res;
 }
 
