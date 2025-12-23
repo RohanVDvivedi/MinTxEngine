@@ -175,7 +175,9 @@ static inline uint64_t get_child_index_at_level_responsible_for_extent_id(uint64
 #include<stdio.h>
 static inline void print_hint_node_id(const hint_node_id x)
 {
-    printf("level = %"PRIu8", page_id = %"PRIu64", child_index = %"PRIu64", first_extent_id = %"PRIu64"\n", x.level, x.page_id, x.child_index, x.smallest_managed_extent_id);
+	for(int i = 0; i < (MAX_LEVEL - x.level); i++)
+		printf("\t");
+    printf("level = %"PRIu8", page_id = %"PRIu64", child_index = %"PRIu64", first_extent_id = %"PRIu64", last_extent_id = %"PRIu64"\n", x.level, x.page_id, x.child_index, x.smallest_managed_extent_id, get_largest_managed_extent_id(x));
 }
 
 /*
