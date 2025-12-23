@@ -47,7 +47,7 @@ int main()
 	printf("\n");
 
 	result_size = 20;
-	find_free_extents(pah_p, UINT64_C(9223372036854775805), result, &result_size);
+	find_free_extents(pah_p, UINT64_C(9223372036854775800), result, &result_size);
 	for(uint64_t i = 0; i < result_size; i++)
 		printf("%"PRIu64"\n", result[i]);
 	printf("\n");
