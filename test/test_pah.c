@@ -1,5 +1,8 @@
 #include<mintxengine/page_allocation_hints.h>
 
+#include<stdio.h>
+#include<inttypes.h>
+
 int main()
 {
 	page_allocation_hints* pah_p = get_new_page_allocation_hints("./test.db_hints");
@@ -12,27 +15,32 @@ int main()
 	uint64_t result[50];
 	uint64_t result_size = 0;
 
-	find_free_extents(pah_p, 0, result, &(result_size = 50));
+	result_size = 20;
+	find_free_extents(pah_p, 0, result, &result_size);
 	for(uint64_t i = 0; i < result_size; i++)
 		printf("%"PRIu64"\n", result[i]);
 	printf("\n");
 
-	find_free_extents(pah_p, 65000, result, &(result_size = 50));
+	result_size = 20;
+	find_free_extents(pah_p, 65000, result, &result_size);
 	for(uint64_t i = 0; i < result_size; i++)
 		printf("%"PRIu64"\n", result[i]);
 	printf("\n");
 
-	find_free_extents(pah_p, 95000, result, &(result_size = 50));
+	result_size = 5;
+	find_free_extents(pah_p, 95000, result, &result_size);
 	for(uint64_t i = 0; i < result_size; i++)
 		printf("%"PRIu64"\n", result[i]);
 	printf("\n");
 
-	find_free_extents(pah_p, 400000, result, &(result_size = 50));
+	result_size = 50;
+	find_free_extents(pah_p, 400000, result, &result_size);
 	for(uint64_t i = 0; i < result_size; i++)
 		printf("%"PRIu64"\n", result[i]);
 	printf("\n");
 
-	find_free_extents(pah_p, UINT64_C(11564439971254894640), result, &(result_size = 50));
+	result_size = 20;
+	find_free_extents(pah_p, UINT64_C(11564439971254894640), result, &result_size);
 	for(uint64_t i = 0; i < result_size; i++)
 		printf("%"PRIu64"\n", result[i]);
 	printf("\n");
