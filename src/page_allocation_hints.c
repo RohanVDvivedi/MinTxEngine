@@ -416,6 +416,9 @@ static int get_parent_hint_bit_for_page(const void* page)
 // returns the bit value for the parent to set in it's page for the child
 static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, cache_iterator* cit_free, cache_iterator* cit_full)
 {
+	// TODO: debug print to be removed
+	print_hint_node_id(node_id);
+
 	int was_modified = 0;
 	void* page = acquire_page_with_writer_lock(bf, node_id.page_id, BLOCKING, 1, 0);
 
@@ -459,12 +462,18 @@ static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, cache_i
 		{
 			if(cit_select == cit_free)
 			{
+				// TODO: debug print to be removed
+				printf("\t\t\t\t\t%"PRIu64",%"PRIu64" -> 0\n", child_index, node_id.smallest_managed_extent_id + child_index);
+
 				reset_bit(page, child_index);
 				is_confirmed_zero_parent_bit = 1; // we just did a reset on our bit, so the parent bit to be returned must be 0
 				was_modified = 1;
 			}
 			else
 			{
+				// TODO: debug print to be removed
+				printf("\t\t\t\t\t%"PRIu64",%"PRIu64" -> 1\n", child_index, node_id.smallest_managed_extent_id + child_index);
+
 				set_bit(page, child_index);
 				was_modified = 1;
 			}
@@ -517,6 +526,9 @@ static void fix_hint_bits(bufferpool* bf, const bst* set_free, const bst* set_fu
 
 static void find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id node_id, uint64_t from_extent_id, bst* result, uint64_t* result_count)
 {
+	// TODO: debug print to be removed
+	print_hint_node_id(node_id);
+
 	if((*result_count) == 0)
 		return;
 
@@ -534,6 +546,9 @@ static void find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id nod
 
 		if(node_id.level == 0)
 		{
+			// TODO: debug print to be removed
+			printf("\t\t\t\t\t%"PRIu64",%"PRIu64"\n", child_index, node_id.smallest_managed_extent_id + child_index);
+
 			insert_in_cache(result, node_id.smallest_managed_extent_id + child_index);
 			(*result_count)--;
 		}
