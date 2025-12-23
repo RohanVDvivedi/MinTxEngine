@@ -1,6 +1,6 @@
 PICKED
   * PAGE_ALLOCATION OPTIMIZATION
-    * make fix and find function public and print the node_id on every start of recursive call, and debug
+    * discard debug print statements
 
     * locking rules only need rwlock for caches, bufferpool locking conventions needs to be finalized when to descend and when to ascend the tree
     * need ascend descend type locks glock type
