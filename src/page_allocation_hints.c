@@ -247,7 +247,7 @@ static int read_hint_page(const void* page_io_ops_handle, void* frame_dest, uint
 	int res = read_blocks_from_block_file(((block_file*)(page_io_ops_handle)), frame_dest, block_id, block_count);
 	if(!res)
 		memory_set(frame_dest, 0, page_size);
-	return res;
+	return 1;
 }
 
 static int write_hint_page(const void* page_io_ops_handle, const void* frame_src, uint64_t page_id, uint32_t page_size)
