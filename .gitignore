@@ -3,6 +3,7 @@
 *.out
 *.db
 *.db_logs
+*.db_hints
 *.DS_Store
 
 obj
