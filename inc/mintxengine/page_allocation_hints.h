@@ -82,8 +82,6 @@
 // tjhis will remain fixed forever!!
 #define MAX_LEVEL 4
 
-#define HINTS_FRAMES_TO_CACHE 25
-
 #include<blockio/block_io.h>
 #include<bufferpool/bufferpool.h>
 
@@ -108,7 +106,7 @@ struct page_allocation_hints
 
 // fails if disk block size for extent_allocation_hints_file does not divide PAGE_ALLOCATION_HINTS_PAGE_SIZE
 // the parameter is the name of the file for this module to be managed, ideally it should be the database_file_name.free_space_hints
-page_allocation_hints* get_new_page_allocation_hints(char* extent_allocation_hints_file_path);
+page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffer, char* extent_allocation_hints_file_path);
 
 void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_t extent_id, uint64_t free_pages_count_in_extent);
 

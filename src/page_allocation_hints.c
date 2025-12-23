@@ -569,7 +569,7 @@ static void find_free_hint_extent_ids(bufferpool* bf, uint64_t from_extent_id, b
 
 // utility functions to update hints file in bulk complete
 
-page_allocation_hints* get_new_page_allocation_hints(char* extent_allocation_hints_file_path)
+page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffer, char* extent_allocation_hints_file_path)
 {
 	page_allocation_hints* pah_p = malloc(sizeof(page_allocation_hints));
 
@@ -591,7 +591,7 @@ page_allocation_hints* get_new_page_allocation_hints(char* extent_allocation_hin
 	}
 
 	// create a bufferpool
-	if(!initialize_bufferpool(&(pah_p->bf), HINTS_FRAMES_TO_CACHE, NULL, get_page_io_ops((&(pah_p->extent_allocation_hints_file))), can_hint_page_be_flushed_to_disk, hint_page_was_flushed_to_disk, NULL, 60 * 1000000, HINTS_FRAMES_TO_CACHE)) // flush all frames every minute, unless there is overload
+	if(!initialize_bufferpool(&(pah_p->bf), max_pages_to_buffer, NULL, get_page_io_ops((&(pah_p->extent_allocation_hints_file))), can_hint_page_be_flushed_to_disk, hint_page_was_flushed_to_disk, NULL, 60 * 1000000, HINTS_FRAMES_TO_CACHE)) // flush all frames every minute, unless there is overload
 	{
 		close_block_file(&(pah_p->extent_allocation_hints_file));
 		free(pah_p);
