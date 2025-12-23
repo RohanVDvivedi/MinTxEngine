@@ -118,4 +118,10 @@ void suggest_extents_from_page_allocation_hints(page_allocation_hints* pah_p, ui
 
 void flush_and_delete_page_allocation_hints(page_allocation_hints* pah_p);
 
+// test functions below
+
+void update_hints_for_extents(page_allocation_hints* pah_p, uint64_t* free_extents_ids, uint64_t free_extents_ids_count, uint64_t* full_extent_ids, uint64_t full_extent_ids_count);
+
+void find_free_extents(page_allocation_hints* pah_p, uint64_t from_extent_id, uint64_t* free_extents_ids, uint64_t* free_extents_ids_count);
+
 #endif

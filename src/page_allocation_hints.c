@@ -604,3 +604,38 @@ void flush_and_delete_page_allocation_hints(page_allocation_hints* pah_p)
 
 	free(pah_p);
 }
+
+void update_hints_for_extents(page_allocation_hints* pah_p, uint64_t* free_extent_ids, uint64_t free_extent_ids_count, uint64_t* full_extent_ids, uint64_t full_extent_ids_count)
+{
+	bst set_free;
+	initialize_cache(&set_free);
+
+	bst set_full;
+	initialize_cache(&set_full);
+
+	for(uint64_t i = 0; i < free_extent_ids_count; i++)
+		insert_in_cache(&set_free, free_extent_ids[i]);
+
+	for(uint64_t i = 0; i < full_extent_ids_count; i++)
+		insert_in_cache(&set_full, full_extent_ids[i]);
+
+	fix_hint_bits(&(pah_p->bf), &set_free, &set_full);
+
+	deinitialize_cache(&set_free);
+	deinitialize_cache(&set_full);
+}
+
+void find_free_extents(page_allocation_hints* pah_p, uint64_t from_extent_id, uint64_t* free_extent_ids, uint64_t* free_extent_ids_count)
+{
+	bst get_free;
+	initialize_cache(&get_free);
+
+	find_free_hint_extent_ids(&(pah_p->bf), from_extent_id, &get_free, (*free_extent_ids_count));
+
+	uint64_t results_to_accept = (*free_extent_ids_count);
+	(*free_extent_ids_count) = 0;
+	for(cache_entry* e = (cache_entry*) find_smallest_in_bst(&get_free); e != NULL && results_to_accept > 0; e = (cache_entry*) get_inorder_next_of_in_bst(&get_free, e), results_to_accept--)
+		free_extent_ids[(*free_extent_ids_count)++] = e->extent_id;
+
+	deinitialize_cache(&get_free);
+}
