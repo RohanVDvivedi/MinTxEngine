@@ -11,6 +11,7 @@ int main()
 
 	update_hints_for_extents(pah_p, NULL, 0, (uint64_t[]){0,1,9,12,65010,94999,95002,400040,400055, UINT64_C(564439971254894642), UINT64_C(11564439971254894642), UINT64_C(11564439971254894643)}, 12);
 
+	printf("\n\n\n");
 
 	uint64_t result[50];
 	uint64_t result_size = 0;
