@@ -318,34 +318,42 @@ static inline void initialize_extents_set(bst* extents_set)
 	initialize_bst(extents_set, RED_BLACK_TREE, &simple_comparator(compare_extents_set_entry), offsetof(extents_set_entry, embed_node));
 }
 
-static inline void insert_in_extents_set(bst* extents_set, uint64_t extent_id)
+// fails only if extent_id already exists
+static inline int insert_in_extents_set(bst* extents_set, uint64_t extent_id)
 {
 	// if exists fail
 	if(find_equals_in_bst(extents_set, &extent_id, FIRST_OCCURENCE)) // this is doable because extent_id is the first attribute
-		return;
+		return 0;
 
 	// else insert a new entry
 
 	extents_set_entry* e = malloc(sizeof(extents_set_entry));
+	if(e == NULL)
+		exit(-1);
 	e->extent_id = extent_id;
 	initialize_bstnode(&(e->embed_node));
 
 	insert_in_bst(extents_set, e);
+
+	return 1;
 }
 
-static inline void remove_from_extents_set(bst* extents_set, uint64_t extent_id)
+// fails only if the extent to be removed does not exists
+static inline int remove_from_extents_set(bst* extents_set, uint64_t extent_id)
 {
 	extents_set_entry* e = (extents_set_entry*)find_equals_in_bst(extents_set, &extent_id, FIRST_OCCURENCE); // this is doable because extent_id is the first attribute
 
 	// if not exists fail
 	if(e == NULL)
-		return;
+		return 0;
 
 	// else remove and free it
 
 	remove_from_bst(extents_set, e);
 
 	free(e);
+
+	return 1;
 }
 
 static void notify_for_remove_all(void* resource_p, const void* data_p)
