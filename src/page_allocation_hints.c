@@ -580,6 +580,8 @@ static void find_free_hint_extent_ids(bufferpool* bf, uint64_t from_extent_id, b
 page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffer, char* extent_allocation_hints_file_path, uint64_t write_batching_capacity, uint64_t read_cache_size)
 {
 	page_allocation_hints* pah_p = malloc(sizeof(page_allocation_hints));
+	if(pah_p == NULL)
+		return NULL;
 
 	// open the block file, if not create it
 	if(!open_block_file(&(pah_p->extent_allocation_hints_file), extent_allocation_hints_file_path, 0) &&
