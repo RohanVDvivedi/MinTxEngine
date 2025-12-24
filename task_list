@@ -1,11 +1,9 @@
 PICKED
   * PAGE_ALLOCATION OPTIMIZATION
+
+    * add rwlock for the free_extents_set and full_extents_set, bufferpool locks are enough for the hints file
+    * writes go to this sets first and only when they have collective WRITE_BATCH_LIMIT reached, are they flushed to disk and are emptied, with a write cache lock
+    * reads access hints file directly, and newly made full pages are removed from it
+      * these reads will also have atleast READ_CACHE_LIMIT extent pages cached and will remove from this result set when full extent ids show up
+
     * discard debug print statements
-
-    * locking rules only need rwlock for caches, bufferpool locking conventions needs to be finalized when to descend and when to ascend the tree
-    * need ascend descend type locks glock type
-
-    * architect the solution now
-    * when to update caches? (always)
-    * when to reconcile with the disk? (eventually)
-    * when to return from free_cache and when from the on-disk hints? (circularly and always possible from cache)
