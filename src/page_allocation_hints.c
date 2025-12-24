@@ -299,43 +299,43 @@ static void hint_page_was_flushed_to_disk(void* flush_callback_handle, uint64_t 
 
 // bufferpool callbacks end
 
-// extent free space caches utility functions
+// extent free space extents_sets utility functions
 
-typedef struct cache_entry cache_entry;
-struct cache_entry
+typedef struct extents_set_entry extents_set_entry;
+struct extents_set_entry
 {
 	uint64_t extent_id; // module expects extent_id to be the first attribute
 	bstnode embed_node;
 };
 
-static int compare_cache_entry(const void* e1, const void* e2)
+static int compare_extents_set_entry(const void* e1, const void* e2)
 {
-	return compare_numbers(((const cache_entry*)e1)->extent_id, ((const cache_entry*)e2)->extent_id);
+	return compare_numbers(((const extents_set_entry*)e1)->extent_id, ((const extents_set_entry*)e2)->extent_id);
 }
 
-static inline void initialize_cache(bst* cache)
+static inline void initialize_extents_set(bst* extents_set)
 {
-	initialize_bst(cache, RED_BLACK_TREE, &simple_comparator(compare_cache_entry), offsetof(cache_entry, embed_node));
+	initialize_bst(extents_set, RED_BLACK_TREE, &simple_comparator(compare_extents_set_entry), offsetof(extents_set_entry, embed_node));
 }
 
-static inline void insert_in_cache(bst* cache, uint64_t extent_id)
+static inline void insert_in_extents_set(bst* extents_set, uint64_t extent_id)
 {
 	// if exists fail
-	if(find_equals_in_bst(cache, &extent_id, FIRST_OCCURENCE)) // this is doable because extent_id is the first attribute
+	if(find_equals_in_bst(extents_set, &extent_id, FIRST_OCCURENCE)) // this is doable because extent_id is the first attribute
 		return;
 
 	// else insert a new entry
 
-	cache_entry* e = malloc(sizeof(cache_entry));
+	extents_set_entry* e = malloc(sizeof(extents_set_entry));
 	e->extent_id = extent_id;
 	initialize_bstnode(&(e->embed_node));
 
-	insert_in_bst(cache, e);
+	insert_in_bst(extents_set, e);
 }
 
-static inline void remove_from_cache(bst* cache, uint64_t extent_id)
+static inline void remove_from_extents_set(bst* extents_set, uint64_t extent_id)
 {
-	cache_entry* e = (cache_entry*)find_equals_in_bst(cache, &extent_id, FIRST_OCCURENCE); // this is doable because extent_id is the first attribute
+	extents_set_entry* e = (extents_set_entry*)find_equals_in_bst(extents_set, &extent_id, FIRST_OCCURENCE); // this is doable because extent_id is the first attribute
 
 	// if not exists fail
 	if(e == NULL)
@@ -343,7 +343,7 @@ static inline void remove_from_cache(bst* cache, uint64_t extent_id)
 
 	// else remove and free it
 
-	remove_from_bst(cache, e);
+	remove_from_bst(extents_set, e);
 
 	free(e);
 }
@@ -353,49 +353,49 @@ static void notify_for_remove_all(void* resource_p, const void* data_p)
 	free((void*)data_p);
 }
 
-static inline void deinitialize_cache(bst* cache)
+static inline void deinitialize_extents_set(bst* extents_set)
 {
-	remove_all_from_bst(cache, &((notifier_interface){NULL, notify_for_remove_all}));
+	remove_all_from_bst(extents_set, &((notifier_interface){NULL, notify_for_remove_all}));
 }
 
-typedef struct cache_iterator cache_iterator;
-struct cache_iterator
+typedef struct extents_set_iterator extents_set_iterator;
+struct extents_set_iterator
 {
-	const bst* cache;
-	const cache_entry* curr_entry; // if this is NULL, we are at the end
+	const bst* extents_set;
+	const extents_set_entry* curr_entry; // if this is NULL, we are at the end
 };
 
-static cache_iterator get_new_cache_iterator(const bst* cache)
+static extents_set_iterator get_new_extents_set_iterator(const bst* extents_set)
 {
-	// if cache is not provided, return empty, failing all further operations
-	if(cache == NULL)
-		return (cache_iterator){};
+	// if extents_set is not provided, return empty, failing all further operations
+	if(extents_set == NULL)
+		return (extents_set_iterator){};
 
-	return (cache_iterator) {
-		.cache = cache,
-		.curr_entry = (cache_entry*) find_smallest_in_bst(cache),
+	return (extents_set_iterator) {
+		.extents_set = extents_set,
+		.curr_entry = (extents_set_entry*) find_smallest_in_bst(extents_set),
 	};
 }
 
-static const uint64_t* get_curr_extent_from_cache_iterator(const cache_iterator* cit)
+static const uint64_t* get_curr_extent_from_extents_set_iterator(const extents_set_iterator* esi)
 {
-	if(cit->cache == NULL || cit->curr_entry == NULL)
+	if(esi->extents_set == NULL || esi->curr_entry == NULL)
 		return NULL;
 
-	// return the pointer to the extent_id of the current cache_entry
-	return &(cit->curr_entry->extent_id);
+	// return the pointer to the extent_id of the current extents_set_entry
+	return &(esi->curr_entry->extent_id);
 }
 
-static void go_next_in_cache_iterator(cache_iterator* cit)
+static void go_next_in_extents_set_iterator(extents_set_iterator* esi)
 {
-	if(cit->cache == NULL || cit->curr_entry == NULL)
+	if(esi->extents_set == NULL || esi->curr_entry == NULL)
 		return;
 
 	// go to in-order next
-	cit->curr_entry = get_inorder_next_of_in_bst(cit->cache, cit->curr_entry);
+	esi->curr_entry = get_inorder_next_of_in_bst(esi->extents_set, esi->curr_entry);
 }
 
-// extent free space caches utility functions ended
+// extent free space extents_sets utility functions ended
 
 // utility functions to update hints file in bulk 
 
@@ -411,7 +411,7 @@ static int get_parent_hint_bit_for_page(const void* page)
 }
 
 // returns the bit value for the parent to set in it's page for the child
-static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, cache_iterator* cit_free, cache_iterator* cit_full)
+static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, extents_set_iterator* esi_free, extents_set_iterator* esi_full)
 {
 	// TODO: debug print to be removed
 	print_hint_node_id(node_id);
@@ -425,28 +425,28 @@ static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, cache_i
 
 	while(1)
 	{
-		cache_iterator* cit_select = NULL;
-		if(get_curr_extent_from_cache_iterator(cit_free) == NULL && get_curr_extent_from_cache_iterator(cit_full) == NULL) // both have reached end, break out of the loop
+		extents_set_iterator* esi_select = NULL;
+		if(get_curr_extent_from_extents_set_iterator(esi_free) == NULL && get_curr_extent_from_extents_set_iterator(esi_full) == NULL) // both have reached end, break out of the loop
 			break;
-		else if(get_curr_extent_from_cache_iterator(cit_free) != NULL && get_curr_extent_from_cache_iterator(cit_full) == NULL)
-			cit_select = cit_free;
-		else if(get_curr_extent_from_cache_iterator(cit_free) == NULL && get_curr_extent_from_cache_iterator(cit_full) != NULL)
-			cit_select = cit_full;
+		else if(get_curr_extent_from_extents_set_iterator(esi_free) != NULL && get_curr_extent_from_extents_set_iterator(esi_full) == NULL)
+			esi_select = esi_free;
+		else if(get_curr_extent_from_extents_set_iterator(esi_free) == NULL && get_curr_extent_from_extents_set_iterator(esi_full) != NULL)
+			esi_select = esi_full;
 		else
 		{
 			// if both are not null select the lower of the two's value
-			if((*get_curr_extent_from_cache_iterator(cit_free)) < (*get_curr_extent_from_cache_iterator(cit_full)))
-				cit_select = cit_free;
+			if((*get_curr_extent_from_extents_set_iterator(esi_free)) < (*get_curr_extent_from_extents_set_iterator(esi_full)))
+				esi_select = esi_free;
 			else
-				cit_select = cit_full;
+				esi_select = esi_full;
 		}
 
 		// already handled case
-		if(cit_select == NULL || get_curr_extent_from_cache_iterator(cit_select) == NULL)
+		if(esi_select == NULL || get_curr_extent_from_extents_set_iterator(esi_select) == NULL)
 			break;
 
 		// grab the extent id in context
-		uint64_t extent_id = *get_curr_extent_from_cache_iterator(cit_select);
+		uint64_t extent_id = *get_curr_extent_from_extents_set_iterator(esi_select);
 
 		// if this extent_id is not managed by this node break out
 		if(extent_id < node_id.smallest_managed_extent_id || largest_managed_extent_id < extent_id)
@@ -457,7 +457,7 @@ static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, cache_i
 
 		if(node_id.level == 0) // if it is level 0, set/reset the corresponding bit
 		{
-			if(cit_select == cit_free)
+			if(esi_select == esi_free)
 			{
 				// TODO: debug print to be removed
 				printf("\t\t\t\t\t%"PRIu64",%"PRIu64" -> 0\n", child_index, node_id.smallest_managed_extent_id + child_index);
@@ -477,13 +477,13 @@ static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, cache_i
 
 			// make the selected iterator to go next
 			// only the level 0 node, can make it go next
-			go_next_in_cache_iterator(cit_select);
+			go_next_in_extents_set_iterator(esi_select);
 		}
 		else
 		{
 			int dummy_error = 0;
 			// get the bit that we should set in ourself
-			int self_bit = fix_hint_bits_recursive(bf, get_ith_child_for_hint_node_id(node_id, child_index, &dummy_error), cit_free, cit_full);
+			int self_bit = fix_hint_bits_recursive(bf, get_ith_child_for_hint_node_id(node_id, child_index, &dummy_error), esi_free, esi_full);
 
 			// set it, or reset it
 			if(self_bit)
@@ -515,10 +515,10 @@ static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, cache_i
 
 static void fix_hint_bits(bufferpool* bf, const bst* set_free, const bst* set_full)
 {
-	cache_iterator cit_free = get_new_cache_iterator(set_free);
-	cache_iterator cit_full = get_new_cache_iterator(set_full);
+	extents_set_iterator esi_free = get_new_extents_set_iterator(set_free);
+	extents_set_iterator esi_full = get_new_extents_set_iterator(set_full);
 
-	fix_hint_bits_recursive(bf, get_root_page_hint_node_id(), &cit_free, &cit_full);
+	fix_hint_bits_recursive(bf, get_root_page_hint_node_id(), &esi_free, &esi_full);
 }
 
 static void find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id node_id, uint64_t from_extent_id, bst* result, uint64_t* result_count)
@@ -546,7 +546,7 @@ static void find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id nod
 			// TODO: debug print to be removed
 			printf("\t\t\t\t\t%"PRIu64",%"PRIu64"\n", child_index, node_id.smallest_managed_extent_id + child_index);
 
-			insert_in_cache(result, node_id.smallest_managed_extent_id + child_index);
+			insert_in_extents_set(result, node_id.smallest_managed_extent_id + child_index);
 			(*result_count)--;
 		}
 		else
@@ -598,9 +598,9 @@ page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffe
 		return NULL;
 	}
 
-	// initialize caches
-	initialize_cache(&(pah_p->free_cache));
-	initialize_cache(&(pah_p->full_cache));
+	// initialize extents_sets
+	initialize_extents_set(&(pah_p->free_extents_set));
+	initialize_extents_set(&(pah_p->full_extents_set));
 
 	return pah_p;
 }
@@ -613,8 +613,8 @@ void flush_and_delete_page_allocation_hints(page_allocation_hints* pah_p)
 
 	close_block_file(&(pah_p->extent_allocation_hints_file));
 
-	deinitialize_cache(&(pah_p->free_cache));
-	deinitialize_cache(&(pah_p->full_cache));
+	deinitialize_extents_set(&(pah_p->free_extents_set));
+	deinitialize_extents_set(&(pah_p->full_extents_set));
 
 	free(pah_p);
 }
@@ -622,34 +622,34 @@ void flush_and_delete_page_allocation_hints(page_allocation_hints* pah_p)
 void update_hints_for_extents(page_allocation_hints* pah_p, uint64_t* free_extent_ids, uint64_t free_extent_ids_count, uint64_t* full_extent_ids, uint64_t full_extent_ids_count)
 {
 	bst set_free;
-	initialize_cache(&set_free);
+	initialize_extents_set(&set_free);
 
 	bst set_full;
-	initialize_cache(&set_full);
+	initialize_extents_set(&set_full);
 
 	for(uint64_t i = 0; i < free_extent_ids_count; i++)
-		insert_in_cache(&set_free, free_extent_ids[i]);
+		insert_in_extents_set(&set_free, free_extent_ids[i]);
 
 	for(uint64_t i = 0; i < full_extent_ids_count; i++)
-		insert_in_cache(&set_full, full_extent_ids[i]);
+		insert_in_extents_set(&set_full, full_extent_ids[i]);
 
 	fix_hint_bits(&(pah_p->bf), &set_free, &set_full);
 
-	deinitialize_cache(&set_free);
-	deinitialize_cache(&set_full);
+	deinitialize_extents_set(&set_free);
+	deinitialize_extents_set(&set_full);
 }
 
 void find_free_extents(page_allocation_hints* pah_p, uint64_t from_extent_id, uint64_t* free_extent_ids, uint64_t* free_extent_ids_count)
 {
 	bst get_free;
-	initialize_cache(&get_free);
+	initialize_extents_set(&get_free);
 
 	find_free_hint_extent_ids(&(pah_p->bf), from_extent_id, &get_free, (*free_extent_ids_count));
 
 	uint64_t results_to_accept = (*free_extent_ids_count);
 	(*free_extent_ids_count) = 0;
-	for(cache_entry* e = (cache_entry*) find_smallest_in_bst(&get_free); e != NULL && results_to_accept > 0; e = (cache_entry*) get_inorder_next_of_in_bst(&get_free, e), results_to_accept--)
+	for(extents_set_entry* e = (extents_set_entry*) find_smallest_in_bst(&get_free); e != NULL && results_to_accept > 0; e = (extents_set_entry*) get_inorder_next_of_in_bst(&get_free, e), results_to_accept--)
 		free_extent_ids[(*free_extent_ids_count)++] = e->extent_id;
 
-	deinitialize_cache(&get_free);
+	deinitialize_extents_set(&get_free);
 }

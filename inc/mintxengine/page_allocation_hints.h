@@ -98,10 +98,8 @@ struct page_allocation_hints
 	bufferpool bf;
 
 	// recently allocated or free (->having any free page) extents are captured here (extent_ids in increasing order) before sent to the hint pages on the disk
-	bst free_cache; // try ask callee to allocate from here first
-	bst full_cache;
-	// the cache extents captured here are sent to disk at regular intervals,
-	// byt a job and full_cache is emptied (all changes persisted) and free_cache is topped up (updates persisted to disk and smallest not-full extent_ids populated)
+	bst free_extents_set;
+	bst full_extents_set;
 };
 
 // fails if disk block size for extent_allocation_hints_file does not divide PAGE_ALLOCATION_HINTS_PAGE_SIZE
