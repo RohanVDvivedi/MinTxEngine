@@ -569,7 +569,7 @@ static void find_free_hint_extent_ids(bufferpool* bf, uint64_t from_extent_id, b
 
 // utility functions to update hints file in bulk complete
 
-page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffer, char* extent_allocation_hints_file_path)
+page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffer, char* extent_allocation_hints_file_path, uint64_t write_batching_capacity, uint64_t read_cache_size)
 {
 	page_allocation_hints* pah_p = malloc(sizeof(page_allocation_hints));
 
@@ -601,6 +601,13 @@ page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffe
 	// initialize extents_sets
 	initialize_extents_set(&(pah_p->free_extents_set));
 	initialize_extents_set(&(pah_p->full_extents_set));
+	initialize_extents_set(&(pah_p->results_set));
+
+	initialize_rwlock(&(pah_p->in_mem_lock), NULL);
+
+	pah_p->write_batching_capacity = write_batching_capacity;
+	pah_p->write_batching_size = 0;
+	pah_p->read_cache_size = read_cache_size;
 
 	return pah_p;
 }
@@ -615,6 +622,9 @@ void flush_and_delete_page_allocation_hints(page_allocation_hints* pah_p)
 
 	deinitialize_extents_set(&(pah_p->free_extents_set));
 	deinitialize_extents_set(&(pah_p->full_extents_set));
+	deinitialize_extents_set(&(pah_p->results_set));
+
+	deinitialize_rwlock(&(pah_p->in_mem_lock));
 
 	free(pah_p);
 }

@@ -84,7 +84,7 @@
 
 #include<blockio/block_io.h>
 #include<bufferpool/bufferpool.h>
-
+#include<lockking/rwlock.h>
 #include<cutlery/bst.h>
 
 typedef struct page_allocation_hints page_allocation_hints;
@@ -97,14 +97,30 @@ struct page_allocation_hints
 	// this bufferpool is small about mo more than 25 pages, each as expected 4KB in size
 	bufferpool bf;
 
+	// presistent memory structures end here and in-memory structures start from here
+
+	// rwlock for the attributes below
+	rwlock in_mem_lock;
+
 	// recently allocated or free (->having any free page) extents are captured here (extent_ids in increasing order) before sent to the hint pages on the disk
 	bst free_extents_set;
 	bst full_extents_set;
+
+	uint64_t write_batching_size;
+
+	// max capacity for the free_extents_set and full_extents_set collectively, after which they must be flushed
+	uint64_t write_batching_capacity;
+
+	// maximum size possible for the free_result_set, a cache for finding allocatable page extents quickly
+	uint64_t read_cache_size;
+
+	// cached results for free extents, the reads first touch here, only later the bufferpool itself
+	bst results_set;
 };
 
 // fails if disk block size for extent_allocation_hints_file does not divide PAGE_ALLOCATION_HINTS_PAGE_SIZE
 // the parameter is the name of the file for this module to be managed, ideally it should be the database_file_name.free_space_hints
-page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffer, char* extent_allocation_hints_file_path);
+page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffer, char* extent_allocation_hints_file_path, uint64_t write_batching_capacity, uint64_t read_cache_size);
 
 void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_t extent_id, uint64_t free_pages_count_in_extent);
 
