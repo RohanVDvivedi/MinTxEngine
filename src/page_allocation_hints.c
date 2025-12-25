@@ -647,6 +647,16 @@ void flush_and_delete_page_allocation_hints(page_allocation_hints* pah_p)
 	free(pah_p);
 }
 
+void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_t extent_id, uint64_t free_pages_count_in_extent)
+{
+	// TODO
+}
+
+void suggest_extents_from_page_allocation_hints(page_allocation_hints* pah_p, uint64_t* result_extent_ids, uint32_t* results_size)
+{
+	// TODO
+}
+
 void update_hints_for_extents(page_allocation_hints* pah_p, uint64_t* free_extent_ids, uint64_t free_extent_ids_count, uint64_t* full_extent_ids, uint64_t full_extent_ids_count)
 {
 	bst set_free;
