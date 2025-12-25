@@ -649,7 +649,46 @@ void flush_and_delete_page_allocation_hints(page_allocation_hints* pah_p)
 
 void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_t extent_id, uint64_t free_pages_count_in_extent)
 {
-	// TODO
+	// this extent is full if it does not have any free pages in it
+	int is_full = (free_pages_count_in_extent == 0);
+
+	write_lock(&(pah_p->in_mem_lock), BLOCKING);
+
+	// update caches based on whether it is full or free
+	if(is_full)
+	{
+		pah_p->write_batching_size += insert_in_extents_set(&(pah_p->full_extents_set), extent_id);
+		pah_p->write_batching_size -= remove_from_extents_set(&(pah_p->free_extents_set), extent_id);
+		pah_p->read_cache_size -= remove_from_extents_set(&(pah_p->results_set), extent_id);
+	}
+	else
+	{
+		pah_p->write_batching_size -= remove_from_extents_set(&(pah_p->full_extents_set), extent_id);
+		pah_p->write_batching_size += insert_in_extents_set(&(pah_p->free_extents_set), extent_id);
+		pah_p->read_cache_size += insert_in_extents_set(&(pah_p->results_set), extent_id);
+	}
+
+	// if write batches are full, then persist them to disk
+	int persisted_batch = 0;
+	if(pah_p->write_batching_size >= pah_p->write_batching_capacity)
+	{
+		// persist batches to the disk
+		fix_hint_bits(&(pah_p->bf), &(pah_p->free_extents_set), &(pah_p->full_extents_set));
+
+		persisted_batch = 1;
+
+		// reintialize all the write batches
+		deinitialize_extents_set(&(pah_p->free_extents_set));
+		deinitialize_extents_set(&(pah_p->full_extents_set));
+		initialize_extents_set(&(pah_p->free_extents_set));
+		initialize_extents_set(&(pah_p->full_extents_set));
+	}
+
+	write_unlock(&(pah_p->in_mem_lock));
+
+	// if we persisted to the disk, then do an async flush
+	if(persisted_batch)
+		trigger_flush_all_possible_dirty_pages(&(pah_p->bf));
 }
 
 void suggest_extents_from_page_allocation_hints(page_allocation_hints* pah_p, uint64_t* result_extent_ids, uint32_t* results_size)
