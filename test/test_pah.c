@@ -66,9 +66,6 @@ int main()
 
 	printf("\n\n\n\n\n");
 
-	uint64_t result[50];
-	uint64_t result_size = 0;
-
 	result_size = 20;
 	find_free_extents(pah_p, 0, result, &result_size);
 	for(uint64_t i = 0; i < result_size; i++)
