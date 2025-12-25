@@ -489,9 +489,13 @@ static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, extents
 		}
 		else
 		{
-			int dummy_error = 0;
+			int error = 0;
+			hint_node_id child_node_id = get_ith_child_for_hint_node_id(node_id, child_index, &error);
+			if(error)
+				break;
+
 			// get the bit that we should set in ourself
-			int self_bit = fix_hint_bits_recursive(bf, get_ith_child_for_hint_node_id(node_id, child_index, &dummy_error), esi_free, esi_full);
+			int self_bit = fix_hint_bits_recursive(bf, child_node_id, esi_free, esi_full);
 
 			// set it, or reset it
 			if(self_bit)
@@ -559,8 +563,12 @@ static void find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id nod
 		}
 		else
 		{
-			int dummy_error = 0;
-			find_free_hint_extent_ids_recursive(bf, get_ith_child_for_hint_node_id(node_id, child_index, &dummy_error), from_extent_id, result, result_count);
+			int error = 0;
+			hint_node_id child_node_id = get_ith_child_for_hint_node_id(node_id, child_index, &error);
+			if(error)
+				break;
+
+			find_free_hint_extent_ids_recursive(bf, child_node_id, from_extent_id, result, result_count);
 		}
 	}
 
