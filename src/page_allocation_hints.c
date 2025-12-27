@@ -579,12 +579,12 @@ static uint64_t find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id
 	return free_extent_ids_captured;
 }
 
-static uint64_t find_free_hint_extent_ids(bufferpool* bf, uint64_t from_extent_id, bst* result, uint64_t result_count)
+static uint64_t find_free_hint_extent_ids(bufferpool* bf, uint64_t from_extent_id, bst* result, uint64_t result_count_requested)
 {
-	if(result_count == 0)
+	if(result_count_requested == 0)
 		return 0;
 
-	return find_free_hint_extent_ids_recursive(bf, get_root_page_hint_node_id(), from_extent_id, result, &result_count);
+	return find_free_hint_extent_ids_recursive(bf, get_root_page_hint_node_id(), from_extent_id, result, &result_count_requested);
 }
 
 // utility functions to update hints file in bulk complete
