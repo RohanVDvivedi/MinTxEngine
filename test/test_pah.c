@@ -50,6 +50,24 @@ int main()
 		}
 	}
 
+	{
+		for(int j = 0; j < MAX_EXTENT_ID; j++)
+		{
+			uint64_t extent_id = j;
+			int is_full = 0;
+			printf("%"PRIu64" -> %d\n", extent_id, is_full);
+			update_hints_in_page_allocation_hints(pah_p, extent_id, is_full);
+
+			{
+				uint64_t free_extent_ids[RESULTS_SIZE];
+				uint64_t free_extent_ids_count = suggest_extents_from_page_allocation_hints(pah_p, free_extent_ids, RESULTS_SIZE * 2);
+				for(uint64_t i = 0; i < free_extent_ids_count; i++)
+					printf("%"PRIu64" ", free_extent_ids[i]);
+				printf("\n\n");
+			}
+		}
+	}
+
 	flush_and_delete_page_allocation_hints(pah_p);
 
 	return 0;
