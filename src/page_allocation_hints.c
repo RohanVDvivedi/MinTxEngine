@@ -560,7 +560,7 @@ static uint64_t find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id
 			// TODO: debug print to be removed
 			printf("\t\t\t\t\t%"PRIu64",%"PRIu64"\n", child_index, node_id.smallest_managed_extent_id + child_index);
 
-			insert_in_extents_set(result, node_id.smallest_managed_extent_id + child_index);
+			free_extent_ids_captured += insert_in_extents_set(result, node_id.smallest_managed_extent_id + child_index);
 			(*result_count)--;
 		}
 		else
