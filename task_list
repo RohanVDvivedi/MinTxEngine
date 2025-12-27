@@ -1,11 +1,8 @@
 PICKED
   * PAGE_ALLOCATION OPTIMIZATION
+    * test freeing and allocating some random 64K extent_ids
 
     * utility function for any page to get it's extent_id
     * utility function for free_space_mapper_pages to get its counter for the number of free pages in that extent
-
-    * writes go to this sets first and only when they have collective WRITE_BATCH_LIMIT reached, are they flushed to disk and are emptied, with a write cache lock
-    * reads access hints file directly, and newly made full pages are removed from it
-      * these reads will also have atleast READ_CACHE_LIMIT extent pages cached and will remove from this result set when full extent ids show up
 
     * discard debug print statements
