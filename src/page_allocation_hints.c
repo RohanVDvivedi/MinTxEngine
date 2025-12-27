@@ -585,7 +585,7 @@ static void find_free_hint_extent_ids(bufferpool* bf, uint64_t from_extent_id, b
 
 // utility functions to update hints file in bulk complete
 
-page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffer, char* extent_allocation_hints_file_path, uint64_t write_batching_capacity, uint64_t read_cache_size)
+page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffer, char* extent_allocation_hints_file_path, uint64_t write_batching_capacity, uint64_t results_capacity)
 {
 	page_allocation_hints* pah_p = malloc(sizeof(page_allocation_hints));
 	if(pah_p == NULL)
@@ -625,7 +625,8 @@ page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffe
 
 	pah_p->write_batching_capacity = write_batching_capacity;
 	pah_p->write_batching_size = 0;
-	pah_p->read_cache_size = read_cache_size;
+	pah_p->results_capacity = results_capacity;
+	pah_p->results_size = 0;
 
 	return pah_p;
 }
@@ -659,13 +660,13 @@ void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_
 	{
 		pah_p->write_batching_size += insert_in_extents_set(&(pah_p->full_extents_set), extent_id);
 		pah_p->write_batching_size -= remove_from_extents_set(&(pah_p->free_extents_set), extent_id);
-		pah_p->read_cache_size -= remove_from_extents_set(&(pah_p->results_set), extent_id);
+		pah_p->results_size -= remove_from_extents_set(&(pah_p->results_set), extent_id);
 	}
 	else
 	{
 		pah_p->write_batching_size -= remove_from_extents_set(&(pah_p->full_extents_set), extent_id);
 		pah_p->write_batching_size += insert_in_extents_set(&(pah_p->free_extents_set), extent_id);
-		pah_p->read_cache_size += insert_in_extents_set(&(pah_p->results_set), extent_id);
+		pah_p->results_size += insert_in_extents_set(&(pah_p->results_set), extent_id);
 	}
 
 	// if write batches are full, then persist them to disk
