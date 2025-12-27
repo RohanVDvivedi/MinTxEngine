@@ -533,14 +533,14 @@ static void fix_hint_bits(bufferpool* bf, const bst* set_free, const bst* set_fu
 	fix_hint_bits_recursive(bf, get_root_page_hint_node_id(), &esi_free, &esi_full);
 }
 
-static uint64_t find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id node_id, uint64_t from_extent_id, bst* result, uint64_t* result_count)
+static uint64_t find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id node_id, uint64_t from_extent_id, bst* result, uint64_t* result_count_remaining)
 {
 	// TODO: debug print to be removed
 	print_hint_node_id(node_id);
 
 	uint64_t free_extent_ids_captured = 0;
 
-	if((*result_count) == 0)
+	if((*result_count_remaining) == 0)
 		return free_extent_ids_captured;
 
 	if(get_largest_managed_extent_id(node_id) < from_extent_id)
@@ -550,7 +550,7 @@ static uint64_t find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id
 
 	uint64_t from_child_index = (from_extent_id <= node_id.smallest_managed_extent_id) ? 0 : get_child_index_at_level_responsible_for_extent_id(from_extent_id, node_id.level);
 
-	for(uint64_t child_index = from_child_index; child_index < PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE && (*result_count) > 0; child_index++)
+	for(uint64_t child_index = from_child_index; child_index < PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE && (*result_count_remaining) > 0; child_index++)
 	{
 		if(get_bit(page, child_index) == 1) // if child is full, skip it
 			continue;
@@ -561,7 +561,7 @@ static uint64_t find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id
 			printf("\t\t\t\t\t%"PRIu64",%"PRIu64"\n", child_index, node_id.smallest_managed_extent_id + child_index);
 
 			free_extent_ids_captured += insert_in_extents_set(result, node_id.smallest_managed_extent_id + child_index);
-			(*result_count)--;
+			(*result_count_remaining)--;
 		}
 		else
 		{
@@ -570,7 +570,7 @@ static uint64_t find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id
 			if(error)
 				break;
 
-			free_extent_ids_captured += find_free_hint_extent_ids_recursive(bf, child_node_id, from_extent_id, result, result_count);
+			free_extent_ids_captured += find_free_hint_extent_ids_recursive(bf, child_node_id, from_extent_id, result, result_count_remaining);
 		}
 	}
 
