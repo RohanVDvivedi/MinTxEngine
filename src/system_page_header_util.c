@@ -128,3 +128,20 @@ uint64_t get_extent_id_for_page_id(uint64_t page_id, const mini_transaction_engi
 {
 	return page_id / PAGE_POS_MULTIPLIER(stats);
 }
+
+int is_full_free_space_mapper_page(void* page, const mini_transaction_engine_stats* stats)
+{
+	// get system header size assuming that it is a free_space_mapper_page, it only has a checksum and a pageLSN on it
+	uint32_t system_header_size = sizeof(uint32_t) + stats->log_sequence_number_width;
+
+	// get it's page contents
+	char* page_contents = page + system_header_size;
+
+	// and make sure that there is atleast 1 zero-byte, if so return 0 i.e. not full
+	for(uint64_t i = 0; i < (stats->page_size - system_header_size); i++)
+		if(page_contents[i] != 0xff) // even if a single bit is 0, return 0
+			return 0;
+
+	// if all the bits are 1, then this extent is full, so return 1
+	return 1;
+}
