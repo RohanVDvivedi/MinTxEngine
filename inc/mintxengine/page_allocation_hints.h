@@ -103,6 +103,7 @@ struct page_allocation_hints
 	rwlock in_mem_lock;
 
 	// recently allocated or free (->having any free page) extents are captured here (extent_ids in increasing order) before sent to the hint pages on the disk
+	// these are the writes batched for the calls to update_hints_in_page_allocation_hints() function calls
 	bst free_extents_set;
 	bst full_extents_set;
 
@@ -111,11 +112,12 @@ struct page_allocation_hints
 	// max capacity for the free_extents_set and full_extents_set collectively, after which they must be flushed
 	uint64_t write_batching_capacity;
 
-	// maximum size possible for the free_result_set, a cache for finding allocatable page extents quickly
+	// maximum capacity possible and the size for the results_set, a cache for finding allocatable page extents quickly, without traversing bitmaps on disk
 	uint64_t results_capacity;
 	uint64_t results_size;
 
 	// cached results for free extents, the reads first touch here, only later the bufferpool itself
+	// this is the caches results for suggest_extents_from_page_allocation_hints() function calls
 	bst results_set;
 };
 
