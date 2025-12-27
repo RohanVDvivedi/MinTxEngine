@@ -740,12 +740,11 @@ void find_free_extents(page_allocation_hints* pah_p, uint64_t from_extent_id, ui
 	bst get_free;
 	initialize_extents_set(&get_free);
 
-	find_free_hint_extent_ids(&(pah_p->bf), from_extent_id, &get_free, (*free_extent_ids_count));
+	(*free_extent_ids_count) = find_free_hint_extent_ids(&(pah_p->bf), from_extent_id, &get_free, (*free_extent_ids_count));
 
-	uint64_t results_to_accept = (*free_extent_ids_count);
-	(*free_extent_ids_count) = 0;
-	for(extents_set_entry* e = (extents_set_entry*) find_smallest_in_bst(&get_free); e != NULL && results_to_accept > 0; e = (extents_set_entry*) get_inorder_next_of_in_bst(&get_free, e), results_to_accept--)
-		free_extent_ids[(*free_extent_ids_count)++] = e->extent_id;
+	uint64_t i = 0;
+	for(extents_set_entry* e = (extents_set_entry*) find_smallest_in_bst(&get_free); e != NULL; e = (extents_set_entry*) get_inorder_next_of_in_bst(&get_free, e), i++)
+		free_extent_ids[i++] = e->extent_id;
 
 	deinitialize_extents_set(&get_free);
 }
