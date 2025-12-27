@@ -704,6 +704,27 @@ void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_
 		}
 	}
 
+	// if the results size is already too huge (huge by 25%)
+	if(pah_p->results_size > (pah_p->results_capacity * 1.25))
+	{
+		const extents_set_entry* largest_entry = find_largest_in_bst(&(pah_p->results_set));
+		while(pah_p->results_size > pah_p->results_capacity && largest_entry != NULL) // keep on going as long as there are excess elements and there is some largest entry
+		{
+			// find the what next largest will be
+			const extents_set_entry* new_largest_entry = get_inorder_prev_of_in_bst(&(pah_p->results_set), largest_entry);
+
+			// remove largest_entry
+			remove_from_bst(&(pah_p->results_set), largest_entry);
+			free(((extents_set_entry*)largest_entry));
+
+			// make the new_one the largest one
+			largest_entry = new_largest_entry;
+
+			// decrement the result_size
+			pah_p->results_size--;
+		}
+	}
+
 	write_unlock(&(pah_p->in_mem_lock));
 
 	// if we persisted to the disk, then do an async flush
