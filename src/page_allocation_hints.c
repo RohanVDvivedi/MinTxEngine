@@ -627,9 +627,9 @@ page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffe
 
 	initialize_rwlock(&(pah_p->in_mem_lock), NULL);
 
-	pah_p->write_batching_capacity = max(results_capacity, 1024);
+	pah_p->write_batching_capacity = max(results_capacity, 15);
 	pah_p->write_batching_size = 0;
-	pah_p->results_capacity = max(results_capacity, 1024);
+	pah_p->results_capacity = max(results_capacity, 15);
 	pah_p->results_size = 0;
 
 	// populate the results
