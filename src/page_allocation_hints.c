@@ -696,6 +696,7 @@ void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_
 		deinitialize_extents_set(&(pah_p->full_extents_set));
 		initialize_extents_set(&(pah_p->free_extents_set));
 		initialize_extents_set(&(pah_p->full_extents_set));
+		pah_p->write_batching_size = 0;
 
 		// we may even need to upate the results_set cache, if it goes too low in size
 		if(pah_p->results_size < (pah_p->results_capacity * 0.75))
