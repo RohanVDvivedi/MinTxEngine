@@ -126,5 +126,5 @@ void* get_page_for_page_contents(void* page_contents, uint64_t page_id, const mi
 
 uint64_t get_extent_id_for_page_id(uint64_t page_id, const mini_transaction_engine_stats* stats)
 {
-	return page_d / PAGE_POS_MULTIPLIER(stats);
+	return page_id / PAGE_POS_MULTIPLIER(stats);
 }
