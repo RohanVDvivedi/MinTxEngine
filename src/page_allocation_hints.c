@@ -533,16 +533,18 @@ static void fix_hint_bits(bufferpool* bf, const bst* set_free, const bst* set_fu
 	fix_hint_bits_recursive(bf, get_root_page_hint_node_id(), &esi_free, &esi_full);
 }
 
-static void find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id node_id, uint64_t from_extent_id, bst* result, uint64_t* result_count)
+static uint64_t find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id node_id, uint64_t from_extent_id, bst* result, uint64_t* result_count)
 {
 	// TODO: debug print to be removed
 	print_hint_node_id(node_id);
 
+	uint64_t free_extent_ids_captured = 0;
+
 	if((*result_count) == 0)
-		return;
+		return free_extent_ids_captured;
 
 	if(get_largest_managed_extent_id(node_id) < from_extent_id)
-		return;
+		return free_extent_ids_captured;
 
 	void* page =  acquire_page_with_reader_lock(bf, node_id.page_id, BLOCKING, 1);
 
@@ -568,19 +570,21 @@ static void find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id nod
 			if(error)
 				break;
 
-			find_free_hint_extent_ids_recursive(bf, child_node_id, from_extent_id, result, result_count);
+			free_extent_ids_captured += find_free_hint_extent_ids_recursive(bf, child_node_id, from_extent_id, result, result_count);
 		}
 	}
 
 	release_reader_lock_on_page(bf, page);
+
+	return free_extent_ids_captured;
 }
 
-static void find_free_hint_extent_ids(bufferpool* bf, uint64_t from_extent_id, bst* result, uint64_t result_count)
+static uint64_t find_free_hint_extent_ids(bufferpool* bf, uint64_t from_extent_id, bst* result, uint64_t result_count)
 {
 	if(result_count == 0)
-		return;
+		return 0;
 
-	find_free_hint_extent_ids_recursive(bf, get_root_page_hint_node_id(), from_extent_id, result, &result_count);
+	return find_free_hint_extent_ids_recursive(bf, get_root_page_hint_node_id(), from_extent_id, result, &result_count);
 }
 
 // utility functions to update hints file in bulk complete
