@@ -125,7 +125,7 @@ struct page_allocation_hints
 // the parameter is the name of the file for this module to be managed, ideally it should be the database_file_name.free_space_hints
 page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffer, char* extent_allocation_hints_file_path, uint64_t write_batching_capacity, uint64_t results_capacity);
 
-void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_t extent_id, uint64_t free_pages_count_in_extent);
+void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_t extent_id, int is_full);
 
 // result_extent_ids is the output parameter
 // (*result_extent_ids_capacity) = 0, is essentially a NOP

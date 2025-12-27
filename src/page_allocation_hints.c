@@ -655,11 +655,8 @@ void flush_and_delete_page_allocation_hints(page_allocation_hints* pah_p)
 	free(pah_p);
 }
 
-void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_t extent_id, uint64_t free_pages_count_in_extent)
+void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_t extent_id, int is_full)
 {
-	// this extent is full if it does not have any free pages in it
-	int is_full = (free_pages_count_in_extent == 0);
-
 	write_lock(&(pah_p->in_mem_lock), BLOCKING);
 
 	// update caches based on whether it is full or free
