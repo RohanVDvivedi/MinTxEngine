@@ -13,7 +13,7 @@
 
 int main()
 {
-	page_allocation_hints* pah_p = get_new_page_allocation_hints(100, "./test.db_hints", 12, 12);
+	page_allocation_hints* pah_p = get_new_page_allocation_hints(100, "./test.db_hints", ((OUTER_ITERATIONS * INNER_ITERATIONS) / 3), 12);
 
 	for(int i = 0; i < OUTER_ITERATIONS; i++)
 	{
