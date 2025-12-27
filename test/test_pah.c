@@ -4,7 +4,7 @@
 #include<stdlib.h>
 #include<inttypes.h>
 
-#define MAX_EXTENT_ID 100
+#define MAX_EXTENT_ID 50
 
 #define OUTER_ITERATIONS 10
 #define INNER_ITERATIONS 10
