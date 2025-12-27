@@ -628,6 +628,9 @@ page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffe
 	pah_p->results_capacity = results_capacity;
 	pah_p->results_size = 0;
 
+	// populate the results
+	find_free_hint_extent_ids(&(pah_p->bf), 0, &(pah_p->results_set), pah_p->results_capacity);
+
 	return pah_p;
 }
 
