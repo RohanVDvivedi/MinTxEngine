@@ -71,4 +71,10 @@ uint32_t get_page_content_size_for_free_space_mapper_pages(const mini_transactio
 void* get_page_contents_for_page(void* page, uint64_t page_id, const mini_transaction_engine_stats* stats);
 void* get_page_for_page_contents(void* page_contents, uint64_t page_id, const mini_transaction_engine_stats* stats);
 
+// now each free_space_mapper_page is followed by a fixed number of data pages (which are allocatable), this collective group of a free_space_mapper_page and it's dependent data pages is from now on called as an extent
+
+// below function converts a page_id into it's extent_id, extents are numbered from 0 onwards
+// extent_id of a page also represents the total number of complete extents that exists before it
+uint64_t get_extent_id_for_page_id(uint64_t page_id, const mini_transaction_engine_stats* stats);
+
 #endif
