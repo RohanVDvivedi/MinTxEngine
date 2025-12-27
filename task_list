@@ -1,7 +1,5 @@
 PICKED
   * PAGE_ALLOCATION OPTIMIZATION
-    * test freeing and allocating some random 64K extent_ids
-
     * utility function for any page to get it's extent_id
     * utility function for free_space_mapper_pages to get its counter for the number of free pages in that extent
 
