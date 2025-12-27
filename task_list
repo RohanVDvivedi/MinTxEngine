@@ -1,6 +1,3 @@
 PICKED
   * PAGE_ALLOCATION OPTIMIZATION
-    * utility function for any page to get it's extent_id
-    * utility function for free_space_mapper_pages to get its counter for the number of free pages in that extent
-
     * discard debug print statements
