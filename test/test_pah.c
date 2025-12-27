@@ -20,9 +20,9 @@ int main()
 		for(int j = 0; j < INNER_ITERATIONS; j++)
 		{
 			uint64_t extent_id = ((unsigned int)rand()) % MAX_EXTENT_ID;
-			uint64_t free_pages_count_in_extent = rand() % 2;
-			printf("%"PRIu64" -> %d\n", extent_id, (free_pages_count_in_extent == 0));
-			update_hints_in_page_allocation_hints(pah_p, extent_id, free_pages_count_in_extent);
+			int is_full = (rand() & 1); // we only need 1 bit
+			printf("%"PRIu64" -> %d\n", extent_id, is_full);
+			update_hints_in_page_allocation_hints(pah_p, extent_id, is_full);
 		}
 
 		uint64_t free_extent_ids[RESULTS_SIZE];
@@ -36,9 +36,9 @@ int main()
 		for(int j = 0; j < MAX_EXTENT_ID; j++)
 		{
 			uint64_t extent_id = j;
-			uint64_t free_pages_count_in_extent = 0;
-			printf("%"PRIu64" -> %d\n", extent_id, (free_pages_count_in_extent == 0));
-			update_hints_in_page_allocation_hints(pah_p, extent_id, free_pages_count_in_extent);
+			int is_full = 1;
+			printf("%"PRIu64" -> %d\n", extent_id, is_full);
+			update_hints_in_page_allocation_hints(pah_p, extent_id, is_full);
 
 			{
 				uint64_t free_extent_ids[RESULTS_SIZE];
