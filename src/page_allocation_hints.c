@@ -703,16 +703,17 @@ void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_
 		trigger_flush_all_possible_dirty_pages(&(pah_p->bf));
 }
 
-void suggest_extents_from_page_allocation_hints(page_allocation_hints* pah_p, uint64_t* result_extent_ids, uint32_t* results_size)
+uint64_t suggest_extents_from_page_allocation_hints(page_allocation_hints* pah_p, uint64_t* result_extent_ids, uint64_t result_extent_ids_capacity)
 {
 	read_lock(&(pah_p->in_mem_lock), READ_PREFERRING, BLOCKING);
 
-	uint64_t results_to_accept = (*results_size);
-	(*results_size) = 0;
-	for(extents_set_entry* e = (extents_set_entry*) find_smallest_in_bst(&(pah_p->results_set)); e != NULL && results_to_accept > 0; e = (extents_set_entry*) get_inorder_next_of_in_bst(&(pah_p->results_set), e), results_to_accept--)
-		result_extent_ids[(*results_size)++] = e->extent_id;
+	uint64_t result_extent_ids_size = 0;
+	for(extents_set_entry* e = (extents_set_entry*) find_smallest_in_bst(&(pah_p->results_set)); e != NULL && result_extent_ids_size < result_extent_ids_capacity; e = (extents_set_entry*) get_inorder_next_of_in_bst(&(pah_p->results_set), e))
+		result_extent_ids[result_extent_ids_size++] = e->extent_id;
 
 	read_unlock(&(pah_p->in_mem_lock));
+
+	return result_extent_ids_size;
 }
 
 void update_hints_for_extents(page_allocation_hints* pah_p, uint64_t* free_extent_ids, uint64_t free_extent_ids_count, uint64_t* full_extent_ids, uint64_t full_extent_ids_count)

@@ -127,9 +127,9 @@ page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffe
 
 void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_t extent_id, uint64_t free_pages_count_in_extent);
 
-// result_extent_ids is the output parameter, and results_size is the in-out parameter suggesting the size of the array OR the size of the returned result
-// (*results_size) = 0, is essentially a NOP
-void suggest_extents_from_page_allocation_hints(page_allocation_hints* pah_p, uint64_t* result_extent_ids, uint32_t* results_size);
+// result_extent_ids is the output parameter
+// (*result_extent_ids_capacity) = 0, is essentially a NOP
+uint64_t suggest_extents_from_page_allocation_hints(page_allocation_hints* pah_p, uint64_t* result_extent_ids, uint64_t result_extent_ids_capacity);
 
 void flush_and_delete_page_allocation_hints(page_allocation_hints* pah_p);
 
