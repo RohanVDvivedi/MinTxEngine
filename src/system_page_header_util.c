@@ -137,9 +137,9 @@ int is_full_free_space_mapper_page(void* page, const mini_transaction_engine_sta
 	// get it's page contents
 	char* page_contents = page + system_header_size;
 
-	// and make sure that there is atleast 1 zero-byte, if so return 0 i.e. not full
+	// and make sure that there is atleast 1 zero-bit (implying that some page is free), if so return 0 i.e. not full
 	for(uint64_t i = 0; i < (stats->page_size - system_header_size); i++)
-		if(page_contents[i] != 0xff) // even if a single bit is 0, return 0
+		if(page_contents[i] != '\xff') // even if a single bit is 0, return 0
 			return 0;
 
 	// if all the bits are 1, then this extent is full, so return 1
