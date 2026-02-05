@@ -1049,9 +1049,9 @@ void construct_tuple(char* tuple, const tuple_def* tpl_def, const char* a, uint6
 {
 	init_tuple(tpl_def, tuple);
 	if(a != NULL) // if NULL leave it NULL
-		set_element_in_tuple(tpl_def, STATIC_POSITION(0), tuple, &(user_value){.string_value = a, .string_size = strlen(a)}, UINT32_MAX);
+		set_element_in_tuple(tpl_def, STATIC_POSITION(0), tuple, &(datum){.string_value = a, .string_size = strlen(a)}, UINT32_MAX);
 	if(b != -1) // if -1 leave it NULL
-		set_element_in_tuple(tpl_def, STATIC_POSITION(1), tuple, &(user_value){.uint_value = b}, UINT32_MAX);
+		set_element_in_tuple(tpl_def, STATIC_POSITION(1), tuple, &(datum){.uint_value = b}, UINT32_MAX);
 }
 
 void main0()
@@ -1096,10 +1096,10 @@ void main0()
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 		page = acquire_page_with_writer_latch_for_mini_tx(&mte, mt, page_id);
 
-		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 0, STATIC_POSITION(0), &(user_value){.string_value = "Rohan Dvivedi", .string_size = strlen("Rohan Dvivedi")});
-		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 0, STATIC_POSITION(1), &(user_value){.uint_value = (2024 - 1996)});
-		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 1, STATIC_POSITION(0), &(user_value){.string_value = "Rupa Dvivedi", .string_size = strlen("Rupa Dvivedi")});
-		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 1, STATIC_POSITION(1), &(user_value){.uint_value = (2024 - 1966)});
+		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 0, STATIC_POSITION(0), &(datum){.string_value = "Rohan Dvivedi", .string_size = strlen("Rohan Dvivedi")});
+		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 0, STATIC_POSITION(1), &(datum){.uint_value = (2024 - 1996)});
+		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 1, STATIC_POSITION(0), &(datum){.string_value = "Rupa Dvivedi", .string_size = strlen("Rupa Dvivedi")});
+		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 1, STATIC_POSITION(1), &(datum){.uint_value = (2024 - 1966)});
 
 		printf("printing after update\n");
 		print_page(page, mte.user_stats.page_size, &record_def);

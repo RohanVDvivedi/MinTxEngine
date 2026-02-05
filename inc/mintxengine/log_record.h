@@ -120,7 +120,7 @@ struct page_set_header_log_record
 	// new_page_header as is
 	const void* new_page_header_contents;
 
-	// this is not stored in the log record, it is derieved from the blob_size of old_page_header_contents
+	// this is not stored in the log record, it is derieved from the binary_size of old_page_header_contents
 	uint32_t page_header_size;
 };
 
@@ -235,8 +235,8 @@ struct tuple_update_element_in_place_log_record
 	uint32_t tuple_index;
 	positional_accessor element_index; // to be destroyed if parsed, i.e. if serialized_log_record != NULL
 
-	user_value old_element;
-	user_value new_element;
+	datum old_element;
+	datum new_element;
 };
 
 // log record struct for PAGE_CLONE
@@ -395,10 +395,10 @@ struct log_record_tuple_defs
 	data_type_info LSN_type; // type for log sequence number
 	data_type_info page_index_type; // type used for tuple and element_indices
 	data_type_info tuple_positional_accessor_type; // to store positional_accessor, a variable sized array of page_index_type
-	data_type_info data_in_bytes_type; // BLOB type atmost as big as max_size = page_size, for tuples and elements
-	data_type_info size_def_in_bytes_type; // BLOB type atmost as big as 13 bytes -> dictated by tuplestore
+	data_type_info data_in_bytes_type; // BINARY type atmost as big as max_size = page_size, for tuples and elements
+	data_type_info size_def_in_bytes_type; // BINARY type atmost as big as 13 bytes -> dictated by tuplestore
 	data_type_info type_info_in_bytes_type; // for data_type_info of type_info for tuple types atmost page size bytes
-	data_type_info info_in_bytes_type; // BLOB type atmost as big as max_size = 6 * page_size, for user info that gets posted in cmtlr and uilr
+	data_type_info info_in_bytes_type; // BINARY type atmost as big as max_size = 6 * page_size, for user info that gets posted in cmtlr and uilr
 
 	data_type_info* mini_transaction_type; // tuple type that consists of mini_transaction_id, lastLSN and state
 	data_type_info* dirty_page_table_entry_type; // tuple type that consists of page_id and recLSN

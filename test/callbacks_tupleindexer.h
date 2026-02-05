@@ -241,7 +241,7 @@ int swap_tuples_on_page_mtx(void* context, const void* transaction_id, void* pag
 	(*abort_error) = get_abort_error_for_mini_tx(context, (void*)transaction_id);
 	return result;
 }
-int set_element_in_tuple_in_place_on_page_mtx(void* context, const void* transaction_id, void* page, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const user_value* value, int* abort_error)
+int set_element_in_tuple_in_place_on_page_mtx(void* context, const void* transaction_id, void* page, uint32_t page_size, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const datum* value, int* abort_error)
 {
 	#ifdef GENERATE_TRACE
 		printf("%p set_element_in_tuple_in_place_on_page_mtx\n", transaction_id);

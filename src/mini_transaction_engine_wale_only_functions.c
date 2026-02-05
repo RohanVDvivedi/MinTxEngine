@@ -695,13 +695,13 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 	return result;
 }
 
-int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const user_value* value)
+int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const datum* value)
 {
 	// if the tuple to be updated in place is NULL, fail
 	const void* tuple_to_update_in_place = get_nth_tuple_on_page(page_contents, mte->user_stats.page_size, &(tpl_d->size_def), tuple_index);
 	if(tuple_to_update_in_place == NULL)
 		return 0;
-	user_value old_element;
+	datum old_element;
 	if(!get_value_from_element_from_tuple(&old_element, tpl_d, element_index, tuple_to_update_in_place))
 		return 0;
 

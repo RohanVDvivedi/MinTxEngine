@@ -26,9 +26,9 @@ int main()
 
 	char old_tuple[1024];
 	init_tuple(&tpl_def, old_tuple);
-	set_element_in_tuple(&tpl_def, STATIC_POSITION(0), old_tuple, &((user_value){.uint_value = 12}), UINT32_MAX);
-	set_element_in_tuple(&tpl_def, STATIC_POSITION(1), old_tuple, &((user_value){.bit_field_value = 0x15}), UINT32_MAX);
-	set_element_in_tuple(&tpl_def, STATIC_POSITION(2), old_tuple, &((user_value){.string_value = "hello", .string_size = strlen("hello")}), UINT32_MAX);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(0), old_tuple, &((datum){.uint_value = 12}), UINT32_MAX);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(1), old_tuple, &((datum){.bit_field_value = 0x15}), UINT32_MAX);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(2), old_tuple, &((datum){.string_value = "hello", .string_size = strlen("hello")}), UINT32_MAX);
 
 	printf("old_tuple : ");
 	for(uint32_t i = 0; i < get_tuple_size(&tpl_def, old_tuple); i++)
@@ -37,9 +37,9 @@ int main()
 
 	char new_tuple[1024];
 	init_tuple(&tpl_def, new_tuple);
-	set_element_in_tuple(&tpl_def, STATIC_POSITION(0), new_tuple, &((user_value){.uint_value = 124}), UINT32_MAX);
-	set_element_in_tuple(&tpl_def, STATIC_POSITION(1), new_tuple, &((user_value){.bit_field_value = 0x0a}), UINT32_MAX);
-	set_element_in_tuple(&tpl_def, STATIC_POSITION(2), new_tuple, &((user_value){.string_value = "world", .string_size = strlen("world")}), UINT32_MAX);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(0), new_tuple, &((datum){.uint_value = 124}), UINT32_MAX);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(1), new_tuple, &((datum){.bit_field_value = 0x0a}), UINT32_MAX);
+	set_element_in_tuple(&tpl_def, STATIC_POSITION(2), new_tuple, &((datum){.string_value = "world", .string_size = strlen("world")}), UINT32_MAX);
 
 	printf("new_tuple : ");
 	for(uint32_t i = 0; i < get_tuple_size(&tpl_def, new_tuple); i++)
@@ -649,8 +649,8 @@ int main()
 				.tpl_def = tpl_def,
 				.tuple_index = 44,
 				.element_index = STATIC_POSITION(0),
-				.old_element = (user_value){.uint_value = 35},
-				.new_element = (user_value){.uint_value = 36},
+				.old_element = (datum){.uint_value = 35},
+				.new_element = (datum){.uint_value = 36},
 			}
 		};
 
