@@ -6,7 +6,7 @@
 #include<inttypes.h>
 
 // each hint page node, in the free space hint hierarchy of the tree is identified by the hint_node_id
-// below are the utility functions for managing the hint_node_ids
+// below are the struct and it's utility functions for managing the hint_node_id-s
 
 typedef struct hint_node_id hint_node_id;
 struct hint_node_id
@@ -28,7 +28,7 @@ static inline hint_node_id get_root_page_hint_node_id()
 	return (hint_node_id) {
 		.level = MAX_LEVEL,		// root page is at level MAX_LEVEL and page_id = 0
 		.page_id = 0,
-		.child_index = 0,		//and it is at 0th index in its non existent parent
+		.child_index = 0,		// and it is at 0th index in its non existent parent
 		.smallest_managed_extent_id = 0,
 	};
 }
@@ -157,7 +157,7 @@ static inline hint_node_id get_parent_for_hint_node_id(const hint_node_id x, int
 	return (hint_node_id) {
 		.level = x.level + 1,
 		.page_id = x.page_id - x.child_index * subtree_sizes[x.level] - 1,
-		.child_index = ((x.level + 1) == MAX_LEVEL) ? 0 : (x.smallest_managed_extent_id / powers[x.level + 2]) % PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE, // the parent will also be relevant for the x.smallest_managed_extent_id, though it will not be its smallest_managed_extent_id
+		.child_index = ((x.level + 1) == MAX_LEVEL) ? 0 : (x.smallest_managed_extent_id / powers[x.level + 2]) % PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE, // the parent will also be relevant for the x.smallest_managed_extent_id, though this value will/may not be its own smallest_managed_extent_id
 		// we only need the child index of this new x.level+1 guy in it's parent
 		// if the x.level of the new page is the MAX_LEVEL, then it is root page and will always be the 0th child of it's parent
 		.smallest_managed_extent_id = x.smallest_managed_extent_id - x.child_index * powers[x.level + 1],
@@ -165,13 +165,13 @@ static inline hint_node_id get_parent_for_hint_node_id(const hint_node_id x, int
 }
 
 // gets the child index that is responsible for the extent_id, at a node for a given level
-// level must only be between 0 to 4 inclusive
+// level must only be between 0 to 4, both inclusive
 static inline uint64_t get_child_index_at_level_responsible_for_extent_id(uint64_t extent_id, uint64_t level)
 {
 	return (extent_id / powers[level]) % PAGE_ALLOCATION_HINTS_BITS_COUNT_PER_NODE;
 }
 
-// debug function
+// debug function, TO BE REMOVED
 #include<stdio.h>
 static inline void print_hint_node_id(const hint_node_id x)
 {
@@ -181,7 +181,8 @@ static inline void print_hint_node_id(const hint_node_id x)
 }
 
 /*
-// pseudocde to show how to loop over all the pages hierarhially starting the the root page at 0 to the last possible leaf
+// pseudocde to show how to loop over all the pages hierarchially starting with the the root page at 0 to the last possible leaf
+// in order of their page_id, in deresing order of their level, in BFS-fashion but without a queue
 void loop_over_all_hint_node_ids_by_page_id()
 {
 	hint_node_id c = get_root_page_hint_node_id();
@@ -275,7 +276,7 @@ static int flush_all_hint_pages(const void* page_io_ops_handle)
 	return res;
 }
 
-// input to the below macro is a pointer to the mini transaction engine
+// the below macro takes pointer to the block_file* of extent_allocation_hints_file
 #define get_page_io_ops(file_handle) (page_io_ops){ \
 					.page_io_ops_handle = (file_handle), \
 					.page_size = PAGE_ALLOCATION_HINTS_PAGE_SIZE, \
