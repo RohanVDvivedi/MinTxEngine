@@ -7,3 +7,4 @@ PICKED
 
   * in callbacks_bufferpool.h
     * set page alignment to something feasible for both direct io and dma transfer
+    * same macro also needed in mini_transaction_engine_checkpointer_util.c
