@@ -4,3 +4,6 @@ PICKED
     * review new get_extent_id and extent's (using pointer to free_space_mapper_page based) is_full functions
     * find a large enough dataset such that page_allocation is bottleneck and test with and without page_allocation_hints module, so see this module optimizing the logic in real time on a large enough dataset
     * integrate, commit and push
+
+  * in callbacks_bufferpool.h
+    * set page alignment to something feasible for both direct io and dma transfer
