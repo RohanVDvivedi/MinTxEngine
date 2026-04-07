@@ -408,6 +408,9 @@ static void go_next_in_extents_set_iterator(extents_set_iterator* esi)
 
 // utility functions to update hints file in bulk 
 
+// these many number of dirty pages will be evicted at max for any read/write bufferpool call, if there are no available clean pages
+#define MAX_DIRTY_EVICTIONS_PER_CALL 10
+
 static int get_parent_hint_bit_for_page(const void* page)
 {
 	// if even a single bit is not 1, i.e. has a some free extent in it's children, then return 0
@@ -426,7 +429,7 @@ static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, extents
 	print_hint_node_id(node_id);
 
 	int was_modified = 0;
-	void* page = acquire_page_with_writer_lock(bf, node_id.page_id, BLOCKING, 1, 0);
+	void* page = acquire_page_with_writer_lock(bf, node_id.page_id, BLOCKING, MAX_DIRTY_EVICTIONS_PER_CALL, 0);
 
 	int is_confirmed_zero_parent_bit = 0;
 
@@ -547,7 +550,7 @@ static uint64_t find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id
 	if(get_largest_managed_extent_id(node_id) < from_extent_id)
 		return free_extent_ids_captured;
 
-	void* page =  acquire_page_with_reader_lock(bf, node_id.page_id, BLOCKING, 1);
+	void* page =  acquire_page_with_reader_lock(bf, node_id.page_id, BLOCKING, MAX_DIRTY_EVICTIONS_PER_CALL);
 
 	uint64_t from_child_index = (from_extent_id <= node_id.smallest_managed_extent_id) ? 0 : get_child_index_at_level_responsible_for_extent_id(from_extent_id, node_id.level);
 

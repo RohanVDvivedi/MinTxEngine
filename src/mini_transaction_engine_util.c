@@ -218,10 +218,14 @@ void scroll_wal_buffers_UNSAFE(mini_transaction_engine* mte)
 	}
 }
 
+#define MAX_DIRTY_EVICTIONS_PER_CALL 8
+
 void* acquire_page_with_reader_latch_N_flush_wal_if_necessary_UNSAFE(mini_transaction_engine* mte, uint64_t page_id, int evict_dirty_if_necessary)
 {
+	uint64_t allowed_dirty_eviction_count = evict_dirty_if_necessary ? MAX_DIRTY_EVICTIONS_PER_CALL : 0;
+
 	// first attempt to grab latch immediately and quit
-	void* page = acquire_page_with_reader_lock(&(mte->bufferpool_handle), page_id, 0, evict_dirty_if_necessary);
+	void* page = acquire_page_with_reader_lock(&(mte->bufferpool_handle), page_id, 0, allowed_dirty_eviction_count);
 	if(page != NULL)
 		return page;
 
@@ -229,13 +233,15 @@ void* acquire_page_with_reader_latch_N_flush_wal_if_necessary_UNSAFE(mini_transa
 
 	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
 
-	return acquire_page_with_reader_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, evict_dirty_if_necessary);
+	return acquire_page_with_reader_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, allowed_dirty_eviction_count);
 }
 
 void* acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mini_transaction_engine* mte, uint64_t page_id, int evict_dirty_if_necessary, int to_be_overwritten)
 {
+	uint64_t allowed_dirty_eviction_count = evict_dirty_if_necessary ? MAX_DIRTY_EVICTIONS_PER_CALL : 0;
+
 	// first attempt to grab latch immediately and quit
-	void* page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, 0, evict_dirty_if_necessary, to_be_overwritten);
+	void* page = acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, 0, allowed_dirty_eviction_count, to_be_overwritten);
 	if(page != NULL)
 		return page;
 
@@ -243,7 +249,7 @@ void* acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mini_transa
 
 	flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
 
-	return acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, evict_dirty_if_necessary, to_be_overwritten);
+	return acquire_page_with_writer_lock(&(mte->bufferpool_handle), page_id, mte->latch_wait_timeout_in_microseconds, allowed_dirty_eviction_count, to_be_overwritten);
 }
 
 uint256 perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id)
