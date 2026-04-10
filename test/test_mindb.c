@@ -434,7 +434,7 @@ int insert_uint_hash_table(mini_transaction* mt, uint64_t x, char* value, int al
 			}
 			else
 			{
-				int next_res = next_hash_table_iterator(hti, 0, mt, &abort_error);
+				int next_res = next_hash_table_iterator(hti, GO_NEXT_TUPLE_IN_SAME_BUCKET, mt, &abort_error);
 				if(abort_error)
 				{
 					printf("aborted %d while going next for inserting\n", get_abort_error_for_mini_tx(&mte, mt));
@@ -519,7 +519,7 @@ int update_uint_hash_table(mini_transaction* mt, uint64_t x, char* value, int al
 			}
 			else
 			{
-				int next_res = next_hash_table_iterator(hti, 0, mt, &abort_error);
+				int next_res = next_hash_table_iterator(hti, GO_NEXT_TUPLE_IN_SAME_BUCKET, mt, &abort_error);
 				if(abort_error)
 				{
 					printf("aborted %d while going next for update\n", get_abort_error_for_mini_tx(&mte, mt));
@@ -590,7 +590,7 @@ int delete_uint_hash_table(mini_transaction* mt, uint64_t x, int allow_vaccum)
 			}
 			else
 			{
-				int next_res = next_hash_table_iterator(hti, 0, mt, &abort_error);
+				int next_res = next_hash_table_iterator(hti, GO_NEXT_TUPLE_IN_SAME_BUCKET, mt, &abort_error);
 				if(abort_error)
 				{
 					printf("aborted %d while goinf next for deleting\n", get_abort_error_for_mini_tx(&mte, mt));
