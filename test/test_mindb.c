@@ -28,12 +28,12 @@ mini_transaction_engine mte;
 
 const char* db_filename = "test.db";
 
-uint64_t root_page_id;
-
 #define JOBS_COUNT 100000
 uint64_t input[JOBS_COUNT];
 
 // tests for bplus tree
+
+uint64_t root_page_id;
 
 bplus_tree_tuple_defs bpttd;
 
@@ -388,12 +388,14 @@ int main1()
 	return 0;
 }
 
+hash_table_handle hth;
+
 hash_table_tuple_defs httd;
 
 void create_uint_hash_table(mini_transaction* mt, uint64_t bucket_count)
 {
 	int abort_error = 0;
-	root_page_id = get_new_hash_table(bucket_count, &httd, &pam, &pmm, mt, &abort_error);
+	hth = get_new_hash_table(bucket_count, &httd, &pam, &pmm, mt, &abort_error);
 
 	if(abort_error)
 	{
@@ -412,7 +414,7 @@ int insert_uint_hash_table(mini_transaction* mt, uint64_t x, char* value, int al
 	char record[BUFFER_SIZE];
 	construct_record(record, x, 0, value);
 
-	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, key, &httd, &pam, &pmm, mt, &abort_error);
+	hash_table_iterator* hti = get_new_hash_table_iterator(&hth, WHOLE_BUCKET_RANGE, key, &httd, &pam, &pmm, mt, &abort_error);
 	if(abort_error)
 	{
 		printf("aborted %d while inserting\n", get_abort_error_for_mini_tx(&mte, mt));
@@ -470,7 +472,7 @@ int insert_uint_hash_table(mini_transaction* mt, uint64_t x, char* value, int al
 
 	if(allow_vaccum)
 	{
-		perform_vaccum_hash_table(root_page_id, &htvp, 1, &httd, &pam, &pmm, mt, &abort_error);
+		perform_vaccum_hash_table(&hth, &htvp, 1, &httd, &pam, &pmm, mt, &abort_error);
 		if(abort_error)
 		{
 			printf("aborted %d while vaccumming after insert\n", get_abort_error_for_mini_tx(&mte, mt));
@@ -491,7 +493,7 @@ int update_uint_hash_table(mini_transaction* mt, uint64_t x, char* value, int al
 	char record[BUFFER_SIZE];
 	construct_record(record, x, 0, value);
 
-	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, key, &httd, &pam, &pmm, mt, &abort_error);
+	hash_table_iterator* hti = get_new_hash_table_iterator(&hth, WHOLE_BUCKET_RANGE, key, &httd, &pam, &pmm, mt, &abort_error);
 	if(abort_error)
 	{
 		printf("aborted %d while deleting\n", get_abort_error_for_mini_tx(&mte, mt));
@@ -544,7 +546,7 @@ int update_uint_hash_table(mini_transaction* mt, uint64_t x, char* value, int al
 
 	if(allow_vaccum)
 	{
-		perform_vaccum_hash_table(root_page_id, &htvp, 1, &httd, &pam, &pmm, mt, &abort_error);
+		perform_vaccum_hash_table(&hth, &htvp, 1, &httd, &pam, &pmm, mt, &abort_error);
 		if(abort_error)
 		{
 			printf("aborted %d while vaccumming after update\n", get_abort_error_for_mini_tx(&mte, mt));
@@ -562,7 +564,7 @@ int delete_uint_hash_table(mini_transaction* mt, uint64_t x, int allow_vaccum)
 	char key[BUFFER_SIZE];
 	construct_key(key, x, 0);
 
-	hash_table_iterator* hti = get_new_hash_table_iterator(root_page_id, WHOLE_BUCKET_RANGE, key, &httd, &pam, &pmm, mt, &abort_error);
+	hash_table_iterator* hti = get_new_hash_table_iterator(&hth, WHOLE_BUCKET_RANGE, key, &httd, &pam, &pmm, mt, &abort_error);
 	if(abort_error)
 	{
 		printf("aborted %d while deleting\n", get_abort_error_for_mini_tx(&mte, mt));
@@ -615,7 +617,7 @@ int delete_uint_hash_table(mini_transaction* mt, uint64_t x, int allow_vaccum)
 
 	if(allow_vaccum)
 	{
-		perform_vaccum_hash_table(root_page_id, &htvp, 1, &httd, &pam, &pmm, mt, &abort_error);
+		perform_vaccum_hash_table(&hth, &htvp, 1, &httd, &pam, &pmm, mt, &abort_error);
 		if(abort_error)
 		{
 			printf("aborted %d while vaccumming after delete\n", get_abort_error_for_mini_tx(&mte, mt));
@@ -629,7 +631,7 @@ int delete_uint_hash_table(mini_transaction* mt, uint64_t x, int allow_vaccum)
 void print_uint_hash_table(mini_transaction* mt)
 {
 	int abort_error = 0;
-	print_hash_table(root_page_id, &httd, &pam, mt, &abort_error);
+	print_hash_table(&hth, &httd, &pam, mt, &abort_error);
 
 	if(mt != NULL && abort_error)
 	{
@@ -641,7 +643,7 @@ void print_uint_hash_table(mini_transaction* mt)
 void destroy_uint_hash_table(mini_transaction* mt)
 {
 	int abort_error = 0;
-	destroy_hash_table(root_page_id, &httd, &pam, mt, &abort_error);
+	destroy_hash_table(&hth, &httd, &pam, mt, &abort_error);
 
 	if(abort_error)
 	{
@@ -1300,7 +1302,7 @@ void main5(uint64_t _root_page_id)
 
 void main6(uint64_t _root_page_id)
 {
-	root_page_id = _root_page_id;
+	hth = (hash_table_handle){_root_page_id, 0};
 
 	initialize_tuple_defs();
 	if(!init_hash_table_tuple_definitions(&httd, &(pam.pas), &record_def, KEY_POS, RECORD_S_KEY_ELEMENT_COUNT, FNV_64_TUPLE_HASHER))
