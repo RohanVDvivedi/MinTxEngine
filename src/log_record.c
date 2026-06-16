@@ -53,8 +53,6 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		exit(-1);
 	}
 
-	#define count_for_POS_ACC 80
-
 	#define size_for_PAGE_ID            (stats->page_id_width)
 	#define size_for_LSN                (stats->log_sequence_number_width)
 	#define size_for_PAGE_OFFSET        (bytes_for_page_index(stats->page_size + 1))

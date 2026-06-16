@@ -7,6 +7,8 @@
 
 #include<tuplestore/tuple.h>
 
+#define count_for_POS_ACC 80
+
 #define USER_INFO_MAX_DATA_SIZE UINT32_C(80*1000*1000)
 #define TYPE_INFO_MAX_DATA_SIZE UINT32_C(80*1000*1000)
 
