@@ -397,7 +397,7 @@ struct log_record_tuple_defs
 	data_type_info page_id_type; // type for page_id
 	data_type_info LSN_type; // type for log sequence number
 	data_type_info page_offset_type; // type used for page size, page offsets, tuple and element_indices on the page
-	data_type_info tuple_positional_accessor_type; // to store positional_accessor, a variable sized array of page_index_type
+	data_type_info tuple_positional_accessor_type; // to store positional_accessor, a variable sized array of page_offset_type
 	data_type_info data_in_bytes_type; // BINARY type atmost as big as max_size = page_size, for tuples and elements
 	data_type_info size_def_in_bytes_type; // BINARY type atmost as big as 13 bytes -> dictated by tuplestore
 	data_type_info type_info_in_bytes_type; // for data_type_info of type_info for tuple types atmost page size bytes
