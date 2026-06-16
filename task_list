@@ -1,8 +1,4 @@
 PICKED
-  * make changes in log format
-    * max size for each record type must be different, in accordance to it's requirement
-    * max user record size has to be set big like 80 MB
-    * reject user records greater than 80MB, just crash exit(-1) with printf error
 
   * PAGE_ALLOCATION OPTIMIZATION (almost done)
     * discard debug print statements
