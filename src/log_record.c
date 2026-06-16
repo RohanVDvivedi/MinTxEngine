@@ -52,28 +52,39 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		printf("ISSUE :: page_size to big for log_record_tuple_defs, (page_size * 20) must for 32 bit unsigned integer\n");
 		exit(-1);
 	}
-	lrtd->max_log_record_size = stats->page_size * 20;
+
+	#define count_for_POS_ACC 80
+
+	#define size_for_PAGE_ID            (stats->page_id_width)
+	#define size_for_LSN                (stats->log_sequence_number_width)
+	#define size_for_PAGE_OFFSET        (bytes_for_page_index(stats->page_size + 1))
+	#define size_for_POS_ACC            (4 + 4 + (count_for_POS_ACC * 4))
+	#define size_for_PAGE_DATA          (4 + 4 + stats->page_size)
+	#define size_for_SIZE_DEF           (4 + 4 + 13)
+	#define size_for_TYPE_INFO_DATA     (4 + 4 + TYPE_INFO_MAX_DATA_SIZE)
+	#define size_for_USER_INFO_DATA     (4 + 4 + USER_INFO_MAX_DATA_SIZE)
 
 	// first initialize the dtis required
-	lrtd->page_id_type = define_uint_non_nullable_type("page_id", stats->page_id_width);
-	lrtd->LSN_type = define_large_uint_non_nullable_type("LSN", stats->log_sequence_number_width);
-	lrtd->page_index_type = define_uint_non_nullable_type("page_index", bytes_for_page_index(stats->page_size));
-	lrtd->tuple_positional_accessor_type = get_variable_element_count_array_type("tuple_positional_accessor_type", stats->page_size, &(lrtd->page_index_type));
+	lrtd->page_id_type = define_uint_non_nullable_type("page_id", size_for_PAGE_ID);
+	lrtd->LSN_type = define_large_uint_non_nullable_type("LSN", size_for_LSN);
+	lrtd->page_offset_type = define_uint_non_nullable_type("page_index", size_for_PAGE_OFFSET);
+	lrtd->tuple_positional_accessor_type = get_variable_element_count_array_type("tuple_positional_accessor_type", size_for_POS_ACC, &(lrtd->page_offset_type));
 	// in the below 4 data types 4 is added to include the element count in sizes for the corresponding types
-	lrtd->data_in_bytes_type = get_variable_length_binary_type("data", stats->page_size + 4);
-	lrtd->size_def_in_bytes_type = get_variable_length_binary_type("size_def", 13 + 4);
-	lrtd->type_info_in_bytes_type = get_variable_length_binary_type("type_info", 4 * stats->page_size + 4);
-	lrtd->info_in_bytes_type = get_variable_length_binary_type("info_data_type", 6 * stats->page_size + 4);
+	lrtd->data_in_bytes_type = get_variable_length_binary_type("data", size_for_PAGE_DATA);
+	lrtd->size_def_in_bytes_type = get_variable_length_binary_type("size_def", size_for_SIZE_DEF);
+	lrtd->type_info_in_bytes_type = get_variable_length_binary_type("type_info", size_for_TYPE_INFO_DATA);
+	lrtd->info_in_bytes_type = get_variable_length_binary_type("info", size_for_USER_INFO_DATA);
 
 	// mark all the above initilaized data types to static
 	lrtd->page_id_type.is_static = 1;
 	lrtd->LSN_type.is_static = 1;
-	lrtd->page_index_type.is_static = 1;
+	lrtd->page_offset_type.is_static = 1;
 	lrtd->tuple_positional_accessor_type.is_static = 1;
 	lrtd->data_in_bytes_type.is_static = 1;
 	lrtd->size_def_in_bytes_type.is_static = 1;
 	lrtd->type_info_in_bytes_type.is_static = 1;
 
+	#define size_for_MINI_TX_ENTRY           (size_for_LSN * 2 + 1 + 4)
 	{
 		lrtd->mini_transaction_type = malloc(sizeof_tuple_data_type_info(4));
 		if(lrtd->mini_transaction_type == NULL)
@@ -81,7 +92,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(lrtd->mini_transaction_type, "mini_transaction", 0, lrtd->max_log_record_size, 4);
+		initialize_tuple_data_type_info(lrtd->mini_transaction_type, "mini_transaction", 0, size_for_MINI_TX_ENTRY, 4);
 
 		strcpy(lrtd->mini_transaction_type->containees[0].field_name, "mini_transaction_id");
 		lrtd->mini_transaction_type->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -93,9 +104,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		lrtd->mini_transaction_type->containees[2].al.type_info = UINT_NON_NULLABLE[1];
 
 		strcpy(lrtd->mini_transaction_type->containees[3].field_name, "abort_error");
-		lrtd->mini_transaction_type->containees[3].al.type_info = INT_NON_NULLABLE[sizeof(int)];
+		lrtd->mini_transaction_type->containees[3].al.type_info = INT_NON_NULLABLE[4];
 	}
 
+	#define size_for_DPT_ENTRY               (size_for_PAGE_ID + size_for_LSN)
 	{
 		lrtd->dirty_page_table_entry_type = malloc(sizeof_tuple_data_type_info(2));
 		if(lrtd->dirty_page_table_entry_type == NULL)
@@ -103,7 +115,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(lrtd->dirty_page_table_entry_type, "dirty_page_table_entry", 0, lrtd->max_log_record_size, 2);
+		initialize_tuple_data_type_info(lrtd->dirty_page_table_entry_type, "dirty_page_table_entry", 0, size_for_DPT_ENTRY, 2);
 
 		strcpy(lrtd->dirty_page_table_entry_type->containees[0].field_name, "page_id");
 		lrtd->dirty_page_table_entry_type->containees[0].al.type_info = &(lrtd->page_id_type);
@@ -119,7 +131,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "palr_def", 0, lrtd->max_log_record_size, 3);
+		initialize_tuple_data_type_info(dti, "palr_def", 0, (size_for_LSN * 2 + size_for_PAGE_ID), 3);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -141,7 +153,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "pilr_def", 0, lrtd->max_log_record_size, 6);
+		initialize_tuple_data_type_info(dti, "pilr_def", 0, (size_for_LSN * 2 + size_for_PAGE_ID + size_for_PAGE_DATA + size_for_PAGE_OFFSET + size_for_SIZE_DEF), 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -156,7 +168,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		dti->containees[3].al.type_info = &(lrtd->data_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "new_page_header_size");
-		dti->containees[4].al.type_info = &(lrtd->page_index_type);
+		dti->containees[4].al.type_info = &(lrtd->page_offset_type);
 
 		strcpy(dti->containees[5].field_name, "new_size_def");
 		dti->containees[5].al.type_info = &(lrtd->size_def_in_bytes_type);
@@ -172,7 +184,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "pshlr_def", 0, lrtd->max_log_record_size, 5);
+		initialize_tuple_data_type_info(dti, "pshlr_def", 0, (size_for_LSN * 2 + size_for_PAGE_ID + size_for_PAGE_DATA * 2), 5);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -200,7 +212,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "talr_def", 0, lrtd->max_log_record_size, 5);
+		initialize_tuple_data_type_info(dti, "talr_def", 0, (size_for_LSN * 2 + size_for_PAGE_ID + size_for_SIZE_DEF + size_for_PAGE_DATA), 5);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -228,7 +240,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "tilr_def", 0, lrtd->max_log_record_size, 6);
+		initialize_tuple_data_type_info(dti, "tilr_def", 0, (size_for_LSN * 2 + size_for_PAGE_ID + size_for_SIZE_DEF + size_for_PAGE_OFFSET + size_for_PAGE_DATA), 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -243,7 +255,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		dti->containees[3].al.type_info = &(lrtd->size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "insert_index");
-		dti->containees[4].al.type_info = &(lrtd->page_index_type);
+		dti->containees[4].al.type_info = &(lrtd->page_offset_type);
 
 		strcpy(dti->containees[5].field_name, "new_tuple");
 		dti->containees[5].al.type_info = &(lrtd->data_in_bytes_type);
@@ -259,7 +271,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "tulr_def", 0, lrtd->max_log_record_size, 7);
+		initialize_tuple_data_type_info(dti, "tulr_def", 0, (size_for_LSN * 2 + size_for_PAGE_ID + size_for_SIZE_DEF + size_for_PAGE_OFFSET + size_for_PAGE_DATA * 2), 7);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -274,7 +286,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		dti->containees[3].al.type_info = &(lrtd->size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "update_index");
-		dti->containees[4].al.type_info = &(lrtd->page_index_type);
+		dti->containees[4].al.type_info = &(lrtd->page_offset_type);
 
 		strcpy(dti->containees[5].field_name, "old_tuple");
 		dti->containees[5].al.type_info = &(lrtd->data_in_bytes_type);
@@ -293,7 +305,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "tdlr_def", 0, lrtd->max_log_record_size, 6);
+		initialize_tuple_data_type_info(dti, "tdlr_def", 0, (size_for_LSN * 2 + size_for_PAGE_ID + size_for_SIZE_DEF + size_for_PAGE_OFFSET + size_for_PAGE_DATA), 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -308,7 +320,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		dti->containees[3].al.type_info = &(lrtd->size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "discard_index");
-		dti->containees[4].al.type_info = &(lrtd->page_index_type);
+		dti->containees[4].al.type_info = &(lrtd->page_offset_type);
 
 		strcpy(dti->containees[5].field_name, "old_tuple");
 		dti->containees[5].al.type_info = &(lrtd->data_in_bytes_type);
@@ -324,7 +336,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "tdalr_def", 0, lrtd->max_log_record_size, 5);
+		initialize_tuple_data_type_info(dti, "tdalr_def", 0, (size_for_LSN * 2 + size_for_PAGE_ID + size_for_SIZE_DEF + size_for_PAGE_DATA), 5);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -352,7 +364,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "tdttlr_def", 0, lrtd->max_log_record_size, 5);
+		initialize_tuple_data_type_info(dti, "tdttlr_def", 0, (size_for_LSN * 2 + size_for_PAGE_ID + size_for_SIZE_DEF + size_for_PAGE_OFFSET), 5);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -367,7 +379,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		dti->containees[3].al.type_info = &(lrtd->size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "discarded_trailing_tombstones_count");
-		dti->containees[4].al.type_info = &(lrtd->page_index_type);
+		dti->containees[4].al.type_info = &(lrtd->page_offset_type);
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd->tdttlr_def), dti);
@@ -380,7 +392,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "tslr_def", 0, lrtd->max_log_record_size, 6);
+		initialize_tuple_data_type_info(dti, "tslr_def", 0, (size_for_LSN * 2 + size_for_PAGE_ID + size_for_SIZE_DEF + size_for_PAGE_OFFSET * 2), 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -395,10 +407,10 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		dti->containees[3].al.type_info = &(lrtd->size_def_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "swap_index1");
-		dti->containees[4].al.type_info = &(lrtd->page_index_type);
+		dti->containees[4].al.type_info = &(lrtd->page_offset_type);
 
 		strcpy(dti->containees[5].field_name, "swap_index2");
-		dti->containees[5].al.type_info = &(lrtd->page_index_type);
+		dti->containees[5].al.type_info = &(lrtd->page_offset_type);
 
 		// this shall never fail
 		initialize_tuple_def(&(lrtd->tslr_def), dti);
@@ -411,7 +423,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "tueiplr_def", 0, lrtd->max_log_record_size, 8);
+		initialize_tuple_data_type_info(dti, "tueiplr_def", 0, (size_for_LSN * 2 + size_for_PAGE_ID + size_for_TYPE_INFO_DATA + size_for_PAGE_OFFSET + size_for_POS_ACC + size_for_PAGE_DATA * 2), 8);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -426,7 +438,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		dti->containees[3].al.type_info = &(lrtd->type_info_in_bytes_type);
 
 		strcpy(dti->containees[4].field_name, "tuple_index");
-		dti->containees[4].al.type_info = &(lrtd->page_index_type);
+		dti->containees[4].al.type_info = &(lrtd->page_offset_type);
 
 		strcpy(dti->containees[5].field_name, "element_index");
 		dti->containees[5].al.type_info = &(lrtd->tuple_positional_accessor_type);
@@ -448,7 +460,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "pclr_def", 0, lrtd->max_log_record_size, 6);
+		initialize_tuple_data_type_info(dti, "pclr_def", 0, (size_for_LSN * 2 + size_for_PAGE_ID + size_for_SIZE_DEF + size_for_PAGE_DATA * 2), 6);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -479,7 +491,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "pcptlr_def", 0, lrtd->max_log_record_size, 4);
+		initialize_tuple_data_type_info(dti, "pcptlr_def", 0, (size_for_LSN * 2 + size_for_PAGE_ID + size_for_SIZE_DEF), 4);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -501,7 +513,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 		data_type_info* dti = malloc(sizeof_tuple_data_type_info(5));
 		if(dti == NULL)
 			exit(-1);
-		initialize_tuple_data_type_info(dti, "fpwlr_def", 0, lrtd->max_log_record_size, 5);
+		initialize_tuple_data_type_info(dti, "fpwlr_def", 0, (size_for_LSN * 3 + size_for_PAGE_ID + size_for_PAGE_DATA), 5);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -529,7 +541,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "clr_def", 0, lrtd->max_log_record_size, 3);
+		initialize_tuple_data_type_info(dti, "clr_def", 0, (size_for_LSN * 3), 3);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -551,7 +563,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "amtlr_def", 0, lrtd->max_log_record_size, 3);
+		initialize_tuple_data_type_info(dti, "amtlr_def", 0, (size_for_LSN * 2 + 4), 3);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -573,7 +585,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "cmtlr_def", 0, lrtd->max_log_record_size, 4);
+		initialize_tuple_data_type_info(dti, "cmtlr_def", 0, (size_for_LSN * 2 + 1 + size_for_USER_INFO_DATA), 4);
 
 		strcpy(dti->containees[0].field_name, "mini_transaction_id");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -598,7 +610,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "ckptmttelr_def", 0, lrtd->max_log_record_size, 2);
+		initialize_tuple_data_type_info(dti, "ckptmttelr_def", 0, (size_for_LSN + size_for_MINI_TX_ENTRY), 2);
 
 		strcpy(dti->containees[0].field_name, "prev_log_record_LSN");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -617,7 +629,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "ckptdptelr_def", 0, lrtd->max_log_record_size, 2);
+		initialize_tuple_data_type_info(dti, "ckptdptelr_def", 0, (size_for_LSN + size_for_DPT_ENTRY), 2);
 
 		strcpy(dti->containees[0].field_name, "prev_log_record_LSN");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -636,7 +648,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "ckptelr_def", 0, lrtd->max_log_record_size, 2);
+		initialize_tuple_data_type_info(dti, "ckptelr_def", 0, (size_for_LSN * 2), 2);
 
 		strcpy(dti->containees[0].field_name, "prev_log_record_LSN");
 		dti->containees[0].al.type_info = &(lrtd->LSN_type);
@@ -655,7 +667,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 			printf("ISSUE :: unable to allocate memory for log record tuple definitions\n");
 			exit(-1);
 		}
-		initialize_tuple_data_type_info(dti, "uilr_def", 0, lrtd->max_log_record_size, 1);
+		initialize_tuple_data_type_info(dti, "uilr_def", 0, (size_for_USER_INFO_DATA), 1);
 
 		strcpy(dti->containees[0].field_name, "info");
 		dti->containees[0].al.type_info = &(lrtd->info_in_bytes_type);
@@ -793,7 +805,7 @@ static inline const datum getter_for_attribute_of_uncompressed_log_record_conten
 
 log_record uncompress_and_parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size)
 {
-	if(serialized_log_record_size <= 1 || serialized_log_record_size > lrtd_p->max_log_record_size)
+	if(serialized_log_record_size <= 1)
 		return (log_record){};
 
 	// uncompress it before parsing
@@ -1778,7 +1790,20 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 		{
 			const data_type_info* ele_def = get_type_info_for_element_from_tuple_def(&(lr->tueiplr.tpl_def), lr->tueiplr.element_index);
 
-			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tueiplr_def)) + (4 + get_byte_count_for_serialized_type_info(lr->tueiplr.tpl_def.type_info));
+			uint32_t cached_type_info_size = get_byte_count_for_serialized_type_info(lr->tueiplr.tpl_def.type_info);
+			if(cached_type_info_size > TYPE_INFO_MAX_DATA_SIZE)
+			{
+				printf("type info too large can not serialize log record\n");
+				exit(-1);
+			}
+
+			if(lr->tueiplr.element_index.positions_length > count_for_POS_ACC)
+			{
+				printf("positional_accessor too large (too deep) can not serialize log record\n");
+				exit(-1);
+			}
+
+			uint32_t capacity = 1 + get_minimum_tuple_size(&(lrtd_p->tueiplr_def)) + (4 + cached_type_info_size);
 			capacity += (4 + 4 * lr->tueiplr.element_index.positions_length);
 			if(!is_datum_NULL(&(lr->tueiplr.old_element)))
 			{
@@ -1823,7 +1848,7 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 				goto ERROR;
 
 			{
-				datum tpl_def = {.binary_value = malloc(get_byte_count_for_serialized_type_info(lr->tueiplr.tpl_def.type_info))};
+				datum tpl_def = {.binary_value = malloc(cached_type_info_size)};
 				tpl_def.binary_size = serialize_type_info(lr->tueiplr.tpl_def.type_info, (void*)(tpl_def.binary_value));
 				if(!set_element_in_tuple(&(lrtd_p->tueiplr_def), STATIC_POSITION(3), result + 1, &tpl_def, UINT32_MAX))
 				{
@@ -2085,6 +2110,11 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			}
 			else
 			{
+				if(lr->cmtlr.info_size > USER_INFO_MAX_DATA_SIZE)
+				{
+					printf("user info too large can not serialize log record\n");
+					exit(-1);
+				}
 				if(!set_element_in_tuple(&(lrtd_p->cmtlr_def), STATIC_POSITION(3), result + 1, &(datum){.binary_value = lr->cmtlr.info, .binary_size = lr->cmtlr.info_size}, UINT32_MAX))
 					goto ERROR;
 			}
@@ -2188,6 +2218,11 @@ const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_
 			}
 			else
 			{
+				if(lr->uilr.info_size > USER_INFO_MAX_DATA_SIZE)
+				{
+					printf("user info too large can not serialize log record\n");
+					exit(-1);
+				}
 				if(!set_element_in_tuple(&(lrtd_p->uilr_def), STATIC_POSITION(0), result + 1, &(datum){.binary_value = lr->uilr.info, .binary_size = lr->uilr.info_size}, UINT32_MAX))
 					goto ERROR;
 			}

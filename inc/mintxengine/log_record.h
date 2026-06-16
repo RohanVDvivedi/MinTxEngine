@@ -7,6 +7,9 @@
 
 #include<tuplestore/tuple.h>
 
+#define USER_INFO_MAX_DATA_SIZE UINT32_C(80*1000*1000)
+#define TYPE_INFO_MAX_DATA_SIZE UINT32_C(80*1000*1000)
+
 typedef enum log_record_type log_record_type;
 enum log_record_type
 {
@@ -389,11 +392,9 @@ struct log_record
 typedef struct log_record_tuple_defs log_record_tuple_defs;
 struct log_record_tuple_defs
 {
-	uint32_t max_log_record_size;
-
 	data_type_info page_id_type; // type for page_id
 	data_type_info LSN_type; // type for log sequence number
-	data_type_info page_index_type; // type used for tuple and element_indices
+	data_type_info page_offset_type; // type used for page size, page offsets, tuple and element_indices on the page
 	data_type_info tuple_positional_accessor_type; // to store positional_accessor, a variable sized array of page_index_type
 	data_type_info data_in_bytes_type; // BINARY type atmost as big as max_size = page_size, for tuples and elements
 	data_type_info size_def_in_bytes_type; // BINARY type atmost as big as 13 bytes -> dictated by tuplestore
