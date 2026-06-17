@@ -1179,7 +1179,10 @@ log_record uncompress_and_parse_log_record(const log_record_tuple_defs* lrtd_p, 
 
 			datum info = getter_for_attribute_of_uncompressed_log_record_contents(&(lrtd_p->cmtlr_def), STATIC_POSITION(3), log_record_contents);
 			if(is_datum_NULL(&info))
+			{
 				lr.cmtlr.info = NULL;
+				lr.cmtlr.info_size = 0;
+			}
 			else
 			{
 				lr.cmtlr.info = info.binary_value;
@@ -1239,7 +1242,10 @@ log_record uncompress_and_parse_log_record(const log_record_tuple_defs* lrtd_p, 
 
 			datum info = getter_for_attribute_of_uncompressed_log_record_contents(&(lrtd_p->uilr_def), STATIC_POSITION(0), log_record_contents);
 			if(is_datum_NULL(&info))
+			{
 				lr.uilr.info = NULL;
+				lr.uilr.info_size = 0;
+			}
 			else
 			{
 				lr.uilr.info = info.binary_value;
