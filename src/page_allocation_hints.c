@@ -415,7 +415,7 @@ static int get_parent_hint_bit_for_page(const void* page)
 {
 	// if even a single bit is not 1, i.e. has a some free extent in it's children, then return 0
 	for(uint64_t i = 0; i < PAGE_ALLOCATION_HINTS_PAGE_SIZE; i++)
-		if(((const char*)page)[i] != 0xff)
+		if(((const char*)page)[i] != 'xff')
 			return 0;
 
 	// if all are 1 bits (all children extents are full), return 1
