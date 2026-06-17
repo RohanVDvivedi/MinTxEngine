@@ -363,9 +363,7 @@ void debug_print_wal_logs_for_mini_transaction_engine(mini_transaction_engine* m
 
 void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 {
-	// stop periodic_checkpointer, what for it and delete it
-	shutdown_periodic_job(mte->periodic_checkpointer_job);
-	wait_for_pause_or_shutdown_of_periodic_job(mte->periodic_checkpointer_job);
+	// does the shutdown of the periodic job and deletes it
 	delete_periodic_job(mte->periodic_checkpointer_job);
 
 	pthread_mutex_lock(&(mte->global_lock));
