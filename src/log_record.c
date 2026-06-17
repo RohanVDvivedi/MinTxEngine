@@ -81,6 +81,7 @@ void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_tr
 	lrtd->data_in_bytes_type.is_static = 1;
 	lrtd->size_def_in_bytes_type.is_static = 1;
 	lrtd->type_info_in_bytes_type.is_static = 1;
+	lrtd->info_in_bytes_type.is_static = 1;
 
 	#define size_for_MINI_TX_ENTRY           (size_for_LSN * 2 + 1 + 4)
 	{
