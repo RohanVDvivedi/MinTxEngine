@@ -6,8 +6,7 @@
 #include<stdlib.h>
 #include<stdio.h>
 
-// page_id * page_size, will only overflow if the 64 bit off_t offset you are trying to read/write overflows, hence no problem here
-static off_t get_first_block_id_for_page_id(uint64_t page_id, uint32_t page_size, size_t block_size)
+static uint64_t get_first_block_id_for_page_id(uint64_t page_id, uint32_t page_size, size_t block_size)
 {
 	return ((page_id * page_size) / block_size) + 1; // this +1 ensures that we do not read/write the first read-only header block
 }
@@ -15,7 +14,7 @@ static off_t get_first_block_id_for_page_id(uint64_t page_id, uint32_t page_size
 int read_page_from_database_file(mini_transaction_engine* mte, void* frame_dest, uint64_t page_id)
 {
 	size_t block_size = get_block_size_for_block_file(&(mte->database_block_file));
-	off_t block_id = get_first_block_id_for_page_id(page_id, mte->stats.page_size, block_size);
+	uint64_t block_id = get_first_block_id_for_page_id(page_id, mte->stats.page_size, block_size);
 	size_t block_count = mte->stats.page_size / block_size;
 	int res = read_blocks_from_block_file(&(mte->database_block_file), frame_dest, block_id, block_count);
 
@@ -46,7 +45,7 @@ int write_page_to_database_file(mini_transaction_engine* mte, const void* frame_
 	recalculate_page_checksum((void*)frame_src, &(mte->stats));
 
 	size_t block_size = get_block_size_for_block_file(&(mte->database_block_file));
-	off_t block_id = get_first_block_id_for_page_id(page_id, mte->stats.page_size, block_size);
+	uint64_t block_id = get_first_block_id_for_page_id(page_id, mte->stats.page_size, block_size);
 	size_t block_count = mte->stats.page_size / block_size;
 	int res = write_blocks_to_block_file(&(mte->database_block_file), frame_src, block_id, block_count);
 

@@ -243,7 +243,7 @@ void loop_over_all_hint_node_ids_by_page_id()
 static int read_hint_page(const void* page_io_ops_handle, void* frame_dest, uint64_t page_id, uint32_t page_size)
 {
 	size_t block_size = get_block_size_for_block_file(((block_file*)(page_io_ops_handle)));
-	off_t block_id = (page_id * page_size) / block_size;
+	uint64_t block_id = (page_id * page_size) / block_size;
 	size_t block_count = page_size / block_size;
 	int res = read_blocks_from_block_file(((block_file*)(page_io_ops_handle)), frame_dest, block_id, block_count);
 	if(!res)
@@ -254,7 +254,7 @@ static int read_hint_page(const void* page_io_ops_handle, void* frame_dest, uint
 static int write_hint_page(const void* page_io_ops_handle, const void* frame_src, uint64_t page_id, uint32_t page_size)
 {
 	size_t block_size = get_block_size_for_block_file(((block_file*)(page_io_ops_handle)));
-	off_t block_id = (page_id * page_size) / block_size;
+	uint64_t block_id = (page_id * page_size) / block_size;
 	size_t block_count = page_size / block_size;
 	int res = write_blocks_to_block_file(((block_file*)(page_io_ops_handle)), frame_src, block_id, block_count);
 	if(!res)
