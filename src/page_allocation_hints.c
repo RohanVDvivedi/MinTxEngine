@@ -631,7 +631,7 @@ page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffe
 
 	initialize_rwlock(&(pah_p->in_mem_lock), NULL);
 
-	pah_p->write_batching_capacity = max(results_capacity, 15);
+	pah_p->write_batching_capacity = max(write_batching_capacity, 15);
 	pah_p->write_batching_size = 0;
 	pah_p->results_capacity = max(results_capacity, 15);
 	pah_p->results_size = 0;
@@ -670,7 +670,7 @@ void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_
 		pah_p->write_batching_size -= remove_from_extents_set(&(pah_p->free_extents_set), extent_id);
 
 		// only update the results_set cache if it falls within it's bounds
-		if(extent_id <= ((const extents_set_entry*)find_largest_in_bst(&(pah_p->results_set)))->extent_id)
+		if(!is_empty_bst(&(pah_p->results_set)) && extent_id <= ((const extents_set_entry*)find_largest_in_bst(&(pah_p->results_set)))->extent_id)
 			pah_p->results_size -= remove_from_extents_set(&(pah_p->results_set), extent_id);
 	}
 	else
@@ -679,7 +679,7 @@ void update_hints_in_page_allocation_hints(page_allocation_hints* pah_p, uint64_
 		pah_p->write_batching_size += insert_in_extents_set(&(pah_p->free_extents_set), extent_id);
 
 		// only update the results_set cache if it falls within it's bounds
-		if(extent_id <= ((const extents_set_entry*)find_largest_in_bst(&(pah_p->results_set)))->extent_id)
+		if(is_empty_bst(&(pah_p->results_set)) || extent_id <= ((const extents_set_entry*)find_largest_in_bst(&(pah_p->results_set)))->extent_id)
 			pah_p->results_size += insert_in_extents_set(&(pah_p->results_set), extent_id);
 	}
 
