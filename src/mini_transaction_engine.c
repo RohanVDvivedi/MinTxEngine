@@ -18,7 +18,7 @@
 
 #define MAXIMUM_WAL_FILE_SIZE UINT64_C(1000000000) // maximum wale file size is 1 GB
 
-int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint64_t bufferpool_frame_count, uint64_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds, uint64_t checkpointing_LSN_diff_in_bytes, uint64_t max_wal_file_size_in_bytes)
+void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint64_t bufferpool_frame_count, uint64_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds, uint64_t checkpointing_LSN_diff_in_bytes, uint64_t max_wal_file_size_in_bytes)
 {
 	// initialize everything that does not need resource allocation first
 	mte->database_file_name = database_file_name;
@@ -41,15 +41,24 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	// with less than 2 buffers in bufferpool you can not redo all types of log records
 	// with less than 1 buffer in append only buffers of writer WALe, no log records can be appended
 	if(mte->bufferpool_frame_count < 2 || mte->wale_append_only_buffer_block_count < 1)
-		return 0;
+	{
+		printf("ISSUE :: buffer frames too low or WAL append buffer too small\n");
+		exit(-1);
+	}
 
 	// latch and lock wait timeouts can not be 0, checkpointing period must be more than a second
 	if(mte->latch_wait_timeout_in_microseconds == 0 || mte->write_lock_wait_timeout_in_microseconds == 0 || checkpointing_period_in_microseconds < MINIMUM_CHECKPOINTER_PERIOD)
-		return 0;
+	{
+		printf("ISSUE :: timeouts for locks/latches and time-periods for checkpointer too low\n");
+		exit(-1);
+	}
 
 	// adding checks to ensure the limits of the mini transaction engine
 	if(mte->checkpointing_LSN_diff_in_bytes < MINIMUM_WAL_FILE_SIZE || mte->max_wal_file_size_in_bytes > MAXIMUM_WAL_FILE_SIZE)
-		return 0;
+	{
+		printf("ISSUE :: checkpointing WAL file size and max wal file size do not satisfy the ranges expected\n");
+		exit(-1);
+	}
 
 	int recovery_required = 0;
 
@@ -57,16 +66,15 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	{
 		if(!read_from_first_block(&(mte->database_block_file), &(mte->stats)))
 		{
-			close_block_file(&(mte->database_block_file));
-			return 0;
+			printf("ISSUE :: unable to read first block of database file\n");
+			exit(-1);
 		}
 
 		if(mte->stats.page_size % get_block_size_for_block_file(&(mte->database_block_file)) ||
 			(page_size != 0 && page_size != mte->stats.page_size) || (page_id_width != 0 && page_id_width != mte->stats.page_id_width) || (log_sequence_number_width != 0 && log_sequence_number_width != mte->stats.log_sequence_number_width))
 		{
-			printf("illegal parameters supplied\n");
-			close_block_file(&(mte->database_block_file));
-			return 0;
+			printf("ISSUE :: page_size, page_id_width, and log_sequence_number_width, do not seem right for this database file and WAL files\n");
+			exit(-1);
 		}
 
 		// initialize user_stats
@@ -74,23 +82,22 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		mte->user_stats = get_mini_transaction_engine_user_stats(&(mte->stats), get_block_size_for_block_file(&(mte->database_block_file)));
 		if(mte->database_page_count > mte->user_stats.max_page_count)
 		{
-			close_block_file(&(mte->database_block_file));
-			return 0;
+			printf("ISSUE :: got too high database file page count\n");
+			exit(-1);
 		}
 
 		// initialize bufferpool
 		if(!initialize_bufferpool(&(mte->bufferpool_handle), mte->bufferpool_frame_count, &(mte->global_lock), get_page_io_ops_for_bufferpool(mte), can_be_flushed_to_disk_for_bufferpool, was_flushed_to_disk_for_bufferpool, mte, (checkpointing_period_in_microseconds * 0.3), (mte->bufferpool_frame_count * 0.3)))
 		{
-			close_block_file(&(mte->database_block_file));
-			return 0;
+			printf("ISSUE :: could not start bufferpool for the database\n");
+			exit(-1);
 		}
 
 		// initialize wa_list
 		if(!initialize_wal_list(mte))
 		{
-			deinitialize_bufferpool(&(mte->bufferpool_handle));
-			close_block_file(&(mte->database_block_file));
-			return 0;
+			printf("ISSUE :: could not start some or more WALe for WAL files\n");
+			exit(-1);
 		}
 
 		recovery_required = 1;
@@ -105,9 +112,8 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		if(page_size % get_block_size_for_block_file(&(mte->database_block_file)) ||
 			page_id_width == 0 || page_id_width > 8 || log_sequence_number_width == 0 || log_sequence_number_width > 32)
 		{
-			printf("illegal parameters supplied\n");
-			close_block_file(&(mte->database_block_file));
-			return 0;
+			printf("ISSUE :: page_size, page_id_width, and log_sequence_number_width, do not seem right for creating database file and WAL files\n");
+			exit(-1);
 		}
 
 		mte->stats.page_size = page_size;
@@ -115,8 +121,8 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		mte->stats.log_sequence_number_width = log_sequence_number_width;
 		if(!write_to_first_block(&(mte->database_block_file), &(mte->stats)))
 		{
-			close_block_file(&(mte->database_block_file));
-			return 0;
+			printf("ISSUE :: unable to write to first block of database file\n");
+			exit(-1);
 		}
 
 		// initialize user_stats
@@ -126,20 +132,22 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 		// initialize bufferpool
 		if(!initialize_bufferpool(&(mte->bufferpool_handle), mte->bufferpool_frame_count, &(mte->global_lock), get_page_io_ops_for_bufferpool(mte), can_be_flushed_to_disk_for_bufferpool, was_flushed_to_disk_for_bufferpool, mte, (checkpointing_period_in_microseconds * 0.3), (mte->bufferpool_frame_count * 0.3)))
 		{
-			close_block_file(&(mte->database_block_file));
-			return 0;
+			printf("ISSUE :: could not start bufferpool for the new database file\n");
+			exit(-1);
 		}
 
 		// initialize wa_list
 		if(!create_new_wal_list(mte))
 		{
-			deinitialize_bufferpool(&(mte->bufferpool_handle));
-			close_block_file(&(mte->database_block_file));
-			return 0;
+			printf("ISSUE :: could not start first WALe for WAL files\n");
+			exit(-1);
 		}
 	}
 	else
-		return 0;
+	{
+		printf("ISSUE :: could neither create or open the database file\n");
+		exit(-1);
+	}
 
 	if(!initialize_mini_transaction_table(&(mte->writer_mini_transactions), mte->bufferpool_frame_count))
 	{
@@ -188,8 +196,6 @@ int initialize_mini_transaction_engine(mini_transaction_engine* mte, const char*
 	}
 
 	resume_periodic_job(mte->periodic_checkpointer_job);
-
-	return 1;
 }
 
 uint256 append_user_info_log_record_for_mini_transaction_engine(mini_transaction_engine* mte, int flush_after_append, const void* info, uint32_t info_size)

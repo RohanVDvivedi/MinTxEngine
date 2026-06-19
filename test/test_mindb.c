@@ -1328,11 +1328,8 @@ void main6(uint64_t _root_page_id)
 
 int main()
 {
-	if(!initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US, CHECKPOINT_PERIOD_SIZE, MAX_WAL_FILE_SIZE))
-	{
-		printf("failed to initialize mini transaction engine\n");
-		exit(-1);
-	}
+	initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US, CHECKPOINT_PERIOD_SIZE, MAX_WAL_FILE_SIZE);
+
 	init_pam_for_mini_tx_engine(&mte);
 	init_pmm_for_mini_tx_engine(&mte);
 
