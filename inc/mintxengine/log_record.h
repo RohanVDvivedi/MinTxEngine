@@ -313,7 +313,7 @@ struct complete_mini_tx_log_record
 	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
 	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transaction
 
-	int is_aborted:1; // this bit is set if the mini transaction was aborted
+	unsigned int is_aborted:1; // this bit is set if the mini transaction was aborted
 
 	const void* info; // must not be more than 1 page in size
 	uint32_t info_size;
