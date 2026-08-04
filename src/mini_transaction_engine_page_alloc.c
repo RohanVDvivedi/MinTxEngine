@@ -101,7 +101,8 @@ void* get_new_page_with_write_latch_for_mini_tx(mini_transaction_engine* mte, mi
 		pthread_mutex_unlock(&(mte->global_lock));
 
 		// this function needs to be called with shared_lock on manager_lock
-		new_page = allocate_page_without_database_expansion_INTERNAL(mte, mt, page_id_returned);
+		new_page = allocate_page_from_hints_without_database_expansion_INTERNAL(mte, mt, page_id_returned);
+		//new_page = allocate_page_without_database_expansion_INTERNAL(mte, mt, page_id_returned);
 
 		pthread_mutex_lock(&(mte->global_lock));
 		if(new_page != NULL)// page was allocated, so latch acquisition was a success so increment the latch counter for this mini transaction
