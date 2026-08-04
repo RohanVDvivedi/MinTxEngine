@@ -167,9 +167,9 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 
 	// recovery redo and undo will need to fix/change hints if there is anything related to allocation/deallocation in the wal
 	{
-		char* hints_file_name = malloc(strlen(database_file_name) + 100);
+		char* hints_file_name = malloc(strlen(database_file_name) + 10);
 		sprintf(hints_file_name, "%s_hints", database_file_name);
-		mte->page_allocation_suggester = get_new_page_allocation_hints(20 /* 20 maximu pages to buffer, any thing more is overkill it only has 5 levels in the tree */, hints_file_name, 1000 /* batch 1000 writes*/, 1000 /* max result may query 1000 reads*/);
+		mte->page_allocation_suggester = get_new_page_allocation_hints(32 /* 32 maximum hints pages to buffer, any thing more is overkill it only has 5 levels in the tree */, hints_file_name, 100 /* batch 100 writes*/, 1000 /* max result may query 1000 reads*/);
 		free(hints_file_name);
 		if(mte->page_allocation_suggester == NULL)
 		{

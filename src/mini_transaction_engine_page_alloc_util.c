@@ -229,7 +229,7 @@ static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine*
 void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
 {
 	// first extract the hints
-	uint64_t hinted_extent_ids[64];
+	uint64_t hinted_extent_ids[128];
 	uint64_t hinted_extent_ids_count = suggest_extents_from_page_allocation_hints(mte->page_allocation_suggester, hinted_extent_ids, sizeof(hinted_extent_ids)/sizeof(hinted_extent_ids[0]));
 
 	// we are calling a free spacemapper page and group of pages following it an extent for the context of this function
