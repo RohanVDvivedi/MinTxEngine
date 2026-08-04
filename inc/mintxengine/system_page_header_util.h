@@ -77,6 +77,9 @@ void* get_page_for_page_contents(void* page_contents, uint64_t page_id, const mi
 // extent_id of a page also represents the total number of complete extents that exists before it
 uint64_t get_extent_id_for_page_id(uint64_t page_id, const mini_transaction_engine_stats* stats);
 
+// returns the first page_id, in the corresponding extent, this also happens to be the only free_space_mapper_page_id in this extent
+uint64_t get_free_space_mapper_page_id_for_extent_id(uint64_t extent_id, const mini_transaction_engine_stats* stats);
+
 // returns 1, only if all the data_pages in the allocated free_space_mapper_page are allocated, and so this one does not have any free allocatable pages
 int is_full_free_space_mapper_page(void* page, const mini_transaction_engine_stats* stats);
 

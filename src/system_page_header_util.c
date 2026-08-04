@@ -129,6 +129,11 @@ uint64_t get_extent_id_for_page_id(uint64_t page_id, const mini_transaction_engi
 	return page_id / PAGE_POS_MULTIPLIER(stats);
 }
 
+uint64_t get_free_space_mapper_page_id_for_extent_id(uint64_t extent_id, const mini_transaction_engine_stats* stats)
+{
+	return extent_id * PAGE_POS_MULTIPLIER(stats);
+}
+
 int is_full_free_space_mapper_page(void* page, const mini_transaction_engine_stats* stats)
 {
 	// get system header size assuming that it is a free_space_mapper_page, it only has a checksum and a pageLSN on it

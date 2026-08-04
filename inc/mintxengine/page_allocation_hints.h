@@ -136,11 +136,4 @@ uint64_t suggest_extents_from_page_allocation_hints(page_allocation_hints* pah_p
 
 void flush_and_delete_page_allocation_hints(page_allocation_hints* pah_p);
 
-// test functions below, they directly touch the hint file on the disk (through the bufferpool), and are only meant for debugging purpose and are not the api of this module, please refrain from using them directly
-// the above functions instead use cached results for reads and batch writes for efficient disk usage and minimize write aplification
-
-void update_hints_for_extents(page_allocation_hints* pah_p, uint64_t* free_extents_ids, uint64_t free_extents_ids_count, uint64_t* full_extent_ids, uint64_t full_extent_ids_count);
-
-void find_free_extents(page_allocation_hints* pah_p, uint64_t from_extent_id, uint64_t* free_extents_ids, uint64_t* free_extents_ids_count);
-
 #endif

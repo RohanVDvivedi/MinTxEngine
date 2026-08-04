@@ -471,8 +471,8 @@ static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, extents
 		{
 			if(esi_select == esi_free)
 			{
-				// TODO: debug print to be removed
-				printf("\t\t\t\t\t%"PRIu64",%"PRIu64" -> 0\n", child_index, node_id.smallest_managed_extent_id + child_index);
+				// commented out debug print
+				// printf("\t\t\t\t\t%"PRIu64",%"PRIu64" -> 0\n", child_index, node_id.smallest_managed_extent_id + child_index);
 
 				reset_bit(page, child_index);
 				is_confirmed_zero_parent_bit = 1; // we just did a reset on our bit, so the parent bit to be returned must be 0
@@ -480,8 +480,8 @@ static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, extents
 			}
 			else
 			{
-				// TODO: debug print to be removed
-				printf("\t\t\t\t\t%"PRIu64",%"PRIu64" -> 1\n", child_index, node_id.smallest_managed_extent_id + child_index);
+				// commented out debug print
+				// printf("\t\t\t\t\t%"PRIu64",%"PRIu64" -> 1\n", child_index, node_id.smallest_managed_extent_id + child_index);
 
 				set_bit(page, child_index);
 				was_modified = 1;
@@ -561,8 +561,8 @@ static uint64_t find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id
 
 		if(node_id.level == 0)
 		{
-			// TODO: debug print to be removed
-			printf("\t\t\t\t\t%"PRIu64",%"PRIu64"\n", child_index, node_id.smallest_managed_extent_id + child_index);
+			// commented out debug print
+			// printf("\t\t\t\t\t%"PRIu64",%"PRIu64"\n", child_index, node_id.smallest_managed_extent_id + child_index);
 
 			free_extent_ids_captured += insert_in_extents_set(result, node_id.smallest_managed_extent_id + child_index);
 			(*result_count_remaining)--;
@@ -749,6 +749,10 @@ uint64_t suggest_extents_from_page_allocation_hints(page_allocation_hints* pah_p
 	return result_extent_ids_size;
 }
 
+/*
+
+debug function that directly modify/read the hints file without the cache or buffering
+
 void update_hints_for_extents(page_allocation_hints* pah_p, uint64_t* free_extent_ids, uint64_t free_extent_ids_count, uint64_t* full_extent_ids, uint64_t full_extent_ids_count)
 {
 	bst set_free;
@@ -782,3 +786,4 @@ void find_free_extents(page_allocation_hints* pah_p, uint64_t from_extent_id, ui
 
 	deinitialize_extents_set(&get_free);
 }
+*/
