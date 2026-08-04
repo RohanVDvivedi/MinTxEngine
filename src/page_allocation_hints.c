@@ -425,8 +425,8 @@ static int get_parent_hint_bit_for_page(const void* page)
 // returns the bit value for the parent to set in it's page for the child
 static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, extents_set_iterator* esi_free, extents_set_iterator* esi_full)
 {
-	// TODO: debug print to be removed
-	print_hint_node_id(node_id);
+	// debug print
+	// print_hint_node_id(node_id);
 
 	int was_modified = 0;
 	void* page = acquire_page_with_writer_lock(bf, node_id.page_id, BLOCKING, MAX_DIRTY_EVICTIONS_PER_CALL, 0);
@@ -539,8 +539,8 @@ static void fix_hint_bits(bufferpool* bf, const bst* set_free, const bst* set_fu
 
 static uint64_t find_free_hint_extent_ids_recursive(bufferpool* bf, hint_node_id node_id, uint64_t from_extent_id, bst* result, uint64_t* result_count_remaining)
 {
-	// TODO: debug print to be removed
-	print_hint_node_id(node_id);
+	// debug print
+	// print_hint_node_id(node_id);
 
 	uint64_t free_extent_ids_captured = 0;
 
