@@ -1,0 +1,1 @@
+rm -rf test.db test.db_logs test.db_hints
