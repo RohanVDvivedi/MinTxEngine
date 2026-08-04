@@ -196,6 +196,16 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 	}
 
 	resume_periodic_job(mte->periodic_checkpointer_job);
+
+	char* hints_file_name = malloc(strlen(database_file_name) + 100);
+	sprintf(hints_file_name, "%s.alloc_hints", database_file_name);
+	mte->page_allocation_suggester = get_new_page_allocation_hints(20 /* 20 maximu pages to buffer, any thing more is overkill it only has 5 levels in the tree */, hints_file_name, 1000 /* batch 1000 writes*/, 1000 /* max result may query 1000 reads*/);
+	free(hints_file_name);
+	if(mte->page_allocation_suggester == NULL)
+	{
+		printf("ISSUE :: could not start page_allocation_hints module\n");
+		exit(-1);
+	}
 }
 
 uint256 append_user_info_log_record_for_mini_transaction_engine(mini_transaction_engine* mte, int flush_after_append, const void* info, uint32_t info_size)
@@ -415,4 +425,6 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 	pthread_mutex_destroy(&(mte->database_expansion_lock));
 
 	pthread_mutex_destroy(&(mte->recovery_mode_lock));
+
+	flush_and_delete_page_allocation_hints(mte->page_allocation_suggester);
 }

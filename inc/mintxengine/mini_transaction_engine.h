@@ -17,6 +17,8 @@
 
 #include<mintxengine/mini_transaction.h>
 
+#include<mintxengine/page_allocation_hints.h>
+
 #include<mintxengine/abort_errors_list.h>
 
 /*
@@ -132,6 +134,9 @@ struct mini_transaction_engine
 	// and a mutex to protect it
 	int is_in_recovery_mode;
 	pthread_mutex_t recovery_mode_lock;
+
+	// this module suggests set of extent_id-s that need to be checked first for the next page_allocation
+	page_allocation_hints* page_allocation_suggester;
 };
 
 // page_size, page_id_width and log_sequence_number_width parameter is only used if passed as non-zero
