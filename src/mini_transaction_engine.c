@@ -165,6 +165,19 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 
 	initialize_log_record_tuple_defs(&(mte->lrtd), &(mte->stats));
 
+	// recovery redo and undo will need to fix/change hints if there is anything related to allocation/deallocation in the wal
+	{
+		char* hints_file_name = malloc(strlen(database_file_name) + 100);
+		sprintf(hints_file_name, "%s_hints", database_file_name);
+		mte->page_allocation_suggester = get_new_page_allocation_hints(20 /* 20 maximu pages to buffer, any thing more is overkill it only has 5 levels in the tree */, hints_file_name, 1000 /* batch 1000 writes*/, 1000 /* max result may query 1000 reads*/);
+		free(hints_file_name);
+		if(mte->page_allocation_suggester == NULL)
+		{
+			printf("ISSUE :: could not start page_allocation_hints module\n");
+			exit(-1);
+		}
+	}
+
 	if(recovery_required)
 	{
 		// put the mini transaction engine in recovery mode
@@ -196,16 +209,6 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 	}
 
 	resume_periodic_job(mte->periodic_checkpointer_job);
-
-	char* hints_file_name = malloc(strlen(database_file_name) + 100);
-	sprintf(hints_file_name, "%s_hints", database_file_name);
-	mte->page_allocation_suggester = get_new_page_allocation_hints(20 /* 20 maximu pages to buffer, any thing more is overkill it only has 5 levels in the tree */, hints_file_name, 1000 /* batch 1000 writes*/, 1000 /* max result may query 1000 reads*/);
-	free(hints_file_name);
-	if(mte->page_allocation_suggester == NULL)
-	{
-		printf("ISSUE :: could not start page_allocation_hints module\n");
-		exit(-1);
-	}
 }
 
 uint256 append_user_info_log_record_for_mini_transaction_engine(mini_transaction_engine* mte, int flush_after_append, const void* info, uint32_t info_size)
