@@ -223,6 +223,100 @@ static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine*
 	return page;
 }
 
+void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
+{
+	// first extract the hints
+	uint64_t hinted_extent_ids[64];
+	uint64_t hinted_extent_ids_count = suggest_extents_from_page_allocation_hints(mte->page_allocation_suggester, hinted_extent_ids, sizeof(hinted_extent_ids)/sizeof(hinted_extent_ids[0]));
+
+	// we are calling a free spacemapper page and group of pages following it an extent for the context of this function
+	const uint64_t data_pages_per_extent = is_valid_bits_count_on_free_space_mapper_page(&(mte->stats));
+	//const uint64_t total_pages_per_extent = data_pages_per_extent + 1;
+
+	pthread_mutex_lock(&(mte->global_lock));
+	uint64_t current_database_page_count = mte->database_page_count; // since we hold the shared lock on the manager_lock, this value can increment but not decrement
+	pthread_mutex_unlock(&(mte->global_lock));
+
+	for(uint64_t i = 0; i < hinted_extent_ids_count; i++)
+	{
+		uint64_t free_space_mapper_page_id = get_free_space_mapper_page_id_for_extent_id(hinted_extent_ids[i], &(mte->stats));
+		if(free_space_mapper_page_id >= current_database_page_count)
+			continue;
+
+		{
+			// write latch free space mapper page
+			pthread_mutex_lock(&(mte->global_lock));
+			void* free_space_mapper_page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, free_space_mapper_page_id, 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+			if(free_space_mapper_page == NULL) // could not lock free_space_mapper_page, so abort
+			{
+				mt->state = MIN_TX_ABORTED;
+				mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+				pthread_mutex_unlock(&(mte->global_lock));
+				return NULL;
+			}
+			pthread_mutex_unlock(&(mte->global_lock));
+
+			uint64_t free_space_mapper_bit_index = 0;
+			while(free_space_mapper_bit_index < data_pages_per_extent)
+			{
+				// calculate respective page_id, and ensure that it does not overflow
+				if(will_unsigned_sum_overflow(uint64_t, free_space_mapper_page_id, (free_space_mapper_bit_index + 1)))
+					break;
+				(*page_id) = free_space_mapper_page_id + (free_space_mapper_bit_index + 1);
+				if((*page_id) >= current_database_page_count)
+					break;
+
+				// if the free_space_mapper_bit_index is set, continue
+				{
+					const void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
+					if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_index))
+					{
+						free_space_mapper_bit_index++;
+						continue;
+					}
+				}
+
+				{
+					// write latch page at page_id
+					pthread_mutex_lock(&(mte->global_lock));
+					void* page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, (*page_id), 1, 0); // evict_dirty_if_necessary -> not to be overwritten
+					if(page == NULL) // could not lock page at page_id, so abort
+					{
+						release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+						mt->state = MIN_TX_ABORTED;
+						mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+						pthread_mutex_unlock(&(mte->global_lock));
+						return NULL;
+					}
+
+					// if write locked by NULL or SELF, we are done
+					mini_transaction* mt_locked_by = get_mini_transaction_that_last_persistent_write_locked_this_page_UNSAFE(mte, page);
+					if(mt_locked_by == NULL || mt_locked_by == mt)
+					{
+						pthread_mutex_unlock(&(mte->global_lock));
+						// allocate page and quit
+						return allocate_page_holding_write_latch_INTERNAL(mte, mt, free_space_mapper_page, free_space_mapper_page_id, page, (*page_id));
+					}
+
+					// unlatch page at page_id
+					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // was_modified = 0, force_flush = 0
+					pthread_mutex_unlock(&(mte->global_lock));
+				}
+
+				free_space_mapper_bit_index++;
+			}
+
+			// unlatch free space mapper page
+			pthread_mutex_lock(&(mte->global_lock));
+			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+			pthread_mutex_unlock(&(mte->global_lock));
+		}
+	}
+
+	// we iterated through the entire database and found no page that can be safely allocated
+	return NULL;
+}
+
 void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
 {
 	// we are calling a free spacemapper page and group of pages following it an extent for the context of this function
