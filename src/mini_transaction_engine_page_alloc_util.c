@@ -242,8 +242,6 @@ void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transact
 
 	for(uint64_t i = 0; i < hinted_extent_ids_count; i++)
 	{
-		uint64_t non_free_page_count_in_this_extent = 0;
-
 		uint64_t free_space_mapper_page_id = get_free_space_mapper_page_id_for_extent_id(hinted_extent_ids[i], &(mte->stats));
 		if(free_space_mapper_page_id >= current_database_page_count)
 			continue;
@@ -261,6 +259,7 @@ void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transact
 			}
 			pthread_mutex_unlock(&(mte->global_lock));
 
+			uint64_t non_free_page_count_in_this_extent = 0;
 			uint64_t free_space_mapper_bit_index = 0;
 			while(free_space_mapper_bit_index < data_pages_per_extent)
 			{
@@ -312,14 +311,16 @@ void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transact
 				free_space_mapper_bit_index++;
 			}
 
+			if(non_free_page_count_in_this_extent == data_pages_per_extent)
+				update_hints_in_page_allocation_hints(mte->page_allocation_suggester, get_extent_id_for_page_id(free_space_mapper_page_id, &(mte->stats)), 1); // surely full
+
+
 			// unlatch free space mapper page
 			pthread_mutex_lock(&(mte->global_lock));
 			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
 			pthread_mutex_unlock(&(mte->global_lock));
 		}
 
-		if(non_free_page_count_in_this_extent == data_pages_per_extent)
-			update_hints_in_page_allocation_hints(mte->page_allocation_suggester, get_extent_id_for_page_id(free_space_mapper_page_id, &(mte->stats)), 1); // surely full
 	}
 
 	// we iterated through the entire database and found no page that can be safely allocated
@@ -339,8 +340,6 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 	uint64_t free_space_mapper_page_id = 0;
 	while(free_space_mapper_page_id < current_database_page_count)
 	{
-		uint64_t non_free_page_count_in_this_extent = 0;
-
 		{
 			// write latch free space mapper page
 			pthread_mutex_lock(&(mte->global_lock));
@@ -354,6 +353,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 			}
 			pthread_mutex_unlock(&(mte->global_lock));
 
+			uint64_t non_free_page_count_in_this_extent = 0;
 			uint64_t free_space_mapper_bit_index = 0;
 			while(free_space_mapper_bit_index < data_pages_per_extent)
 			{
@@ -405,15 +405,16 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 				free_space_mapper_bit_index++;
 			}
 
+			// if no pages are free
+			if(non_free_page_count_in_this_extent == data_pages_per_extent)
+				update_hints_in_page_allocation_hints(mte->page_allocation_suggester, get_extent_id_for_page_id(free_space_mapper_page_id, &(mte->stats)), 1); // surely full
+
+
 			// unlatch free space mapper page
 			pthread_mutex_lock(&(mte->global_lock));
 			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
 			pthread_mutex_unlock(&(mte->global_lock));
 		}
-
-		// if no pages are free
-		if(non_free_page_count_in_this_extent == data_pages_per_extent)
-			update_hints_in_page_allocation_hints(mte->page_allocation_suggester, get_extent_id_for_page_id(free_space_mapper_page_id, &(mte->stats)), 1); // surely full
 
 		// check for overflow and increment
 		if(will_unsigned_sum_overflow(uint64_t, free_space_mapper_page_id, total_pages_per_extent))
