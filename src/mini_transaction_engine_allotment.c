@@ -315,6 +315,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 					exit(-1);
 				}
 				reset_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
+				update_hints_in_page_allocation_hints(mte->page_allocation_suggester, get_extent_id_for_page_id(free_space_mapper_page_id, &(mte->stats)), 0); // surely not full
 			}
 			else
 			{
@@ -324,6 +325,8 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 					exit(-1);
 				}
 				set_bit(free_space_mapper_page_contents, free_space_mapper_bit_pos);
+				if(is_full_free_space_mapper_page(free_space_mapper_page, &(mte->stats)))
+					update_hints_in_page_allocation_hints(mte->page_allocation_suggester, get_extent_id_for_page_id(free_space_mapper_page_id, &(mte->stats)), 1); // surely full
 			}
 		}
 
