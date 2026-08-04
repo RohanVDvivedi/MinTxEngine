@@ -1,5 +1,0 @@
-PICKED
-
-  * PAGE_ALLOCATION OPTIMIZATION (almost done)
-    * integrate, commit and push
-    * find a large enough dataset such that page_allocation is bottleneck and test with and without page_allocation_hints module, so see this module optimizing the logic in real time on a large enough dataset
