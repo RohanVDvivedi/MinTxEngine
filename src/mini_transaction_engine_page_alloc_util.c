@@ -259,6 +259,9 @@ void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transact
 			}
 			pthread_mutex_unlock(&(mte->global_lock));
 
+			// to access it's is_valid bits per each page in the extent
+			const void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
+
 			uint64_t non_free_page_count_in_this_extent = 0;
 			uint64_t free_space_mapper_bit_index = 0;
 			while(free_space_mapper_bit_index < data_pages_per_extent)
@@ -272,7 +275,6 @@ void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transact
 
 				// if the free_space_mapper_bit_index is set, continue
 				{
-					const void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
 					if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_index))
 					{
 						free_space_mapper_bit_index++;
@@ -353,6 +355,9 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 			}
 			pthread_mutex_unlock(&(mte->global_lock));
 
+			// to access it's is_valid bits per each page in the extent
+			const void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
+
 			uint64_t non_free_page_count_in_this_extent = 0;
 			uint64_t free_space_mapper_bit_index = 0;
 			while(free_space_mapper_bit_index < data_pages_per_extent)
@@ -366,7 +371,6 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 
 				// if the free_space_mapper_bit_index is set, continue
 				{
-					const void* free_space_mapper_page_contents = get_page_contents_for_page(free_space_mapper_page, free_space_mapper_page_id, &(mte->stats));
 					if(get_bit(free_space_mapper_page_contents, free_space_mapper_bit_index))
 					{
 						free_space_mapper_bit_index++;
