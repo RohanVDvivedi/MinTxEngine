@@ -266,6 +266,14 @@ void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transact
 			uint64_t free_space_mapper_bit_index = 0;
 			while(free_space_mapper_bit_index < data_pages_per_extent)
 			{
+				// fast path check, iterate over 8 bits at a time
+				if((free_space_mapper_bit_index % 8) == 0 && (*(((char*)free_space_mapper_page_contents) + (free_space_mapper_bit_index/8))) == '\xff')
+				{
+					non_free_page_count_in_this_extent += 8; // all 8 of them are not free
+					free_space_mapper_bit_index += 8;
+					continue;
+				}
+
 				// calculate respective page_id, and ensure that it does not overflow
 				if(will_unsigned_sum_overflow(uint64_t, free_space_mapper_page_id, (free_space_mapper_bit_index + 1)))
 					break;
@@ -362,6 +370,14 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 			uint64_t free_space_mapper_bit_index = 0;
 			while(free_space_mapper_bit_index < data_pages_per_extent)
 			{
+				// fast path check, iterate over 8 bits at a time
+				if((free_space_mapper_bit_index % 8) == 0 && (*(((char*)free_space_mapper_page_contents) + (free_space_mapper_bit_index/8))) == '\xff')
+				{
+					non_free_page_count_in_this_extent += 8; // all 8 of them are not free
+					free_space_mapper_bit_index += 8;
+					continue;
+				}
+
 				// calculate respective page_id, and ensure that it does not overflow
 				if(will_unsigned_sum_overflow(uint64_t, free_space_mapper_page_id, (free_space_mapper_bit_index + 1)))
 					break;
