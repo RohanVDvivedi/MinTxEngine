@@ -1279,7 +1279,7 @@ void destroy_and_free_parsed_log_record(log_record* lr)
 }
 
 // compression limit should be set in some 100s of bytes
-#define COMPRESSION_LIMIT 250 // all log records with size greater than COMPRESSION_LIMIT will be compressed
+#define COMPRESSION_LIMIT 400 // all log records with size greater than COMPRESSION_LIMIT will be compressed
 
 // input is always consumed and freed
 static void* compress_serialized_log_record_idempotently(void* input, uint32_t input_size, uint32_t* output_size)
@@ -1327,7 +1327,7 @@ static void* compress_serialized_log_record_idempotently(void* input, uint32_t i
 		zstrm.next_out = output + 1;
 		zstrm.avail_out = output_capacity - 1;
 
-		if(Z_OK != deflateInit(&zstrm, Z_DEFAULT_COMPRESSION))
+		if(Z_OK != deflateInit(&zstrm, 3)) // Z_DEFAULT_COMPRESSION can also be used gives good compression but very slow, so we choose level 3
 		{
 			printf("ISSUE :: failure to initialize zlib compression stream for compressing log record\n");
 			exit(-1);
