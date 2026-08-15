@@ -62,7 +62,7 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 
 	int recovery_required = 0;
 
-	if(open_block_file(&(mte->database_block_file), mte->database_file_name, O_DIRECT))
+	if(open_block_file(&(mte->database_block_file), mte->database_file_name, O_DIRECT)) // set O_DIRECT to 0, to avail OS page cache benefits
 	{
 		if(!read_from_first_block(&(mte->database_block_file), &(mte->stats)))
 		{
@@ -107,7 +107,7 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 			recovery_required = 0;
 		}
 	}
-	else if(create_and_open_block_file(&(mte->database_block_file), mte->database_file_name, O_DIRECT))
+	else if(create_and_open_block_file(&(mte->database_block_file), mte->database_file_name, O_DIRECT)) // set O_DIRECT to 0, to avail OS page cache benefits
 	{
 		if(page_size % get_block_size_for_block_file(&(mte->database_block_file)) ||
 			page_id_width == 0 || page_id_width > 8 || log_sequence_number_width == 0 || log_sequence_number_width > 32)

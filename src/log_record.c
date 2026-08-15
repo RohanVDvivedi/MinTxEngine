@@ -1279,6 +1279,7 @@ void destroy_and_free_parsed_log_record(log_record* lr)
 }
 
 // compression limit should be set in some 100s of bytes
+// set it to UINT32_MAX to completely disable compression, this would save a lot on the compute, but will blow up your log sizes, you can try and see if you want it
 #define COMPRESSION_LIMIT 400 // all log records with size greater than COMPRESSION_LIMIT will be compressed
 
 // input is always consumed and freed
