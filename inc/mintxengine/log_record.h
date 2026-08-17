@@ -119,14 +119,14 @@ struct page_set_header_log_record
 	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 
+	// this is not stored in the log record, it is derieved from the binary_size of old_page_header_contents
+	uint32_t page_header_size;
+
 	// prior_page_header as is
 	const void* old_page_header_contents;
 
 	// new_page_header as is
 	const void* new_page_header_contents;
-
-	// this is not stored in the log record, it is derieved from the binary_size of old_page_header_contents
-	uint32_t page_header_size;
 };
 
 // log record struct for TUPLE_APPEND

@@ -163,9 +163,9 @@ void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction*
 			.mini_transaction_id = mt->mini_transaction_id,
 			.prev_log_record_LSN = mt->lastLSN,
 			.page_id = page_id,
+			.page_header_size = page_header_size,
 			.old_page_header_contents = old_page_header_contents,
 			.new_page_header_contents = hdr,
-			.page_header_size = page_header_size,
 		},
 	};
 
