@@ -163,8 +163,6 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 	}
 	initialize_linkedlist(&(mte->free_dirty_page_entries_list), offsetof(dirty_page_table_entry, enode));
 
-	initialize_log_record_tuple_defs(&(mte->lrtd), &(mte->stats));
-
 	// recovery redo and undo will need to fix/change hints if there is anything related to allocation/deallocation in the wal
 	{
 		char* hints_file_name = malloc(strlen(database_file_name) + 10);
@@ -224,7 +222,7 @@ uint256 append_user_info_log_record_for_mini_transaction_engine(mini_transaction
 
 	// serialize it, and compress it, compression can be costly so it is done without any locks held
 	uint32_t serialized_lr_size = 0;
-	const void* serialized_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &lr, &serialized_lr_size);
+	const void* serialized_lr = serialize_and_compress_log_record(&(mte->stats), &lr, &serialized_lr_size);
 	if(serialized_lr == NULL)
 		return INVALID_LOG_SEQUENCE_NUMBER;
 
@@ -422,8 +420,6 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 
 	remove_all_from_hashmap(&(mte->dirty_page_table), AND_DELETE_DIRTY_PAGE_TABLE_ENTRIES_NOTIFIER);
 	deinitialize_hashmap(&(mte->dirty_page_table));
-
-	deinitialize_log_record_tuple_defs(&(mte->lrtd));
 
 	pthread_mutex_destroy(&(mte->database_expansion_lock));
 

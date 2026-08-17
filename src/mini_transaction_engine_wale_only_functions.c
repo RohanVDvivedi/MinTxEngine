@@ -95,7 +95,7 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 
 	// serialize log record object, and compress it, compression can be costly, so it is done outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");
@@ -171,7 +171,7 @@ void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction*
 
 	// serialize log record object, and compress it, compression can be costly, so it is done outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");
@@ -241,7 +241,7 @@ int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 
 	// serialize log record object, and compress it, compression can be costly, so it is done outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");
@@ -312,7 +312,7 @@ int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 
 	// serialize log record object, and compress it, compression can be costly, so it is done outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");
@@ -384,7 +384,7 @@ int update_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 
 	// serialize log record object, and compress it, compression can be costly, so it is done outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");
@@ -455,7 +455,7 @@ int discard_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transac
 
 	// serialize log record object, and compress it, compression can be costly, so it is done outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");
@@ -525,7 +525,7 @@ void discard_all_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_t
 
 	// serialize log record object, and compress it, compression can be costly, so it is done outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");
@@ -595,7 +595,7 @@ uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engin
 
 	// serialize log record object, and compress it, compression can be costly, so it is done outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");
@@ -666,7 +666,7 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 
 	// serialize log record object, and compress it, compression can be costly, so it is done outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");
@@ -747,7 +747,7 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 
 	// serialize log record object, and compress it, compression can be costly, so it is done outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");
@@ -818,7 +818,7 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 
 	// serialize log record object, and compress it, compression can be costly, so it is done outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");
@@ -887,7 +887,7 @@ int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 
 	// serialize log record object, and compress it, compression can be costly, so it is done outside global lock
 	uint32_t serialized_act_lr_size = 0;
-	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->lrtd), &(mte->stats), &act_lr, &serialized_act_lr_size);
+	const void* serialized_act_lr = serialize_and_compress_log_record(&(mte->stats), &act_lr, &serialized_act_lr_size);
 	if(serialized_act_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");

@@ -79,9 +79,6 @@ struct mini_transaction_engine
 	// database_page_count, refers to in-memory copy of the page count in the database_block_file
 	// as you guessed we need a exclusive lock on the manager_lock to extend/truncate the file
 
-	// tuple definitions for the log records handled by this engine
-	log_record_tuple_defs lrtd;
-
 	// below two are the parts of mini_transaction table
 	hashmap writer_mini_transactions; // mini_transaction_id != 0, state = IN_PROGRESS or UNDOING_FOR_ABORT else if state = ABORTED or COMMITTED then waiters_count > 0
 	linkedlist reader_mini_transactions; // mini_transaction_id == 0, state = IN_PROGRESS

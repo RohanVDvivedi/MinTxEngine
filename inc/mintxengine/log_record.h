@@ -391,61 +391,12 @@ struct log_record
 	// destroyed and freed once it is no longer in use
 };
 
-typedef struct log_record_tuple_defs log_record_tuple_defs;
-struct log_record_tuple_defs
-{
-	data_type_info page_id_type; // type for page_id
-	data_type_info LSN_type; // type for log sequence number
-	data_type_info page_offset_type; // type used for page size, page offsets, tuple and element_indices on the page
-	data_type_info tuple_positional_accessor_type; // to store positional_accessor, a variable sized array of page_offset_type
-	data_type_info data_in_bytes_type; // BINARY type atmost as big as max_size = page_size, for tuples and elements
-	data_type_info size_def_in_bytes_type; // BINARY type atmost as big as 13 bytes -> dictated by tuplestore
-	data_type_info type_info_in_bytes_type; // for data_type_info of type_info for tuple types atmost page size bytes
-	data_type_info info_in_bytes_type; // BINARY type atmost as big as max_size = 6 * page_size, for user info that gets posted in cmtlr and uilr
-
-	data_type_info* mini_transaction_type; // tuple type that consists of mini_transaction_id, lastLSN and state
-	data_type_info* dirty_page_table_entry_type; // tuple type that consists of page_id and recLSN
-
-	// first byte of the log record decides its type
-
-	tuple_def palr_def;
-	tuple_def pilr_def;
-	tuple_def pshlr_def;
-	tuple_def talr_def;
-	tuple_def tilr_def;
-	tuple_def tulr_def;
-	tuple_def tdlr_def;
-	tuple_def tdalr_def;
-	tuple_def tdttlr_def;
-	tuple_def tslr_def;
-	tuple_def tueiplr_def;
-	tuple_def pclr_def;
-	tuple_def pcptlr_def;
-	tuple_def fpwlr_def;
-	tuple_def clr_def;
-	tuple_def amtlr_def;
-	tuple_def cmtlr_def;
-
-	tuple_def ckptmttelr_def;
-	tuple_def ckptdptelr_def;
-	tuple_def ckptelr_def;
-
-	tuple_def uilr_def;
-};
-
-// this function is crucial in succeeding the creation of mini_transaction_engine
-// it won't fail, it any malloc calls fail, we do an exit(-1)
-void initialize_log_record_tuple_defs(log_record_tuple_defs* lrtd, const mini_transaction_engine_stats* stats);
-
-// destroys all memeory allocated by the above function
-void deinitialize_log_record_tuple_defs(log_record_tuple_defs* lrtd);
-
-log_record uncompress_and_parse_log_record(const log_record_tuple_defs* lrtd_p, const void* serialized_log_record, uint32_t serialized_log_record_size);
+log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* stats, const void* serialized_log_record, uint32_t serialized_log_record_size);
 
 // to be called only on parsed log record, it will also free the memory of the parsed log record
 void destroy_and_free_parsed_log_record(log_record* lr);
 
-const void* serialize_and_compress_log_record(const log_record_tuple_defs* lrtd_p, const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size);
+const void* serialize_and_compress_log_record(const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size);
 
 void print_log_record(const log_record* lr, const mini_transaction_engine_stats* stats);
 
