@@ -1073,35 +1073,37 @@ void main0()
 	char tuple[SYSTEM_PAGE_SIZE];
 
 	{
+		int abort_error = 0;
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
-		page = get_new_page_with_write_latch_for_mini_tx(&mte, mt, &page_id);
+		page = get_new_page_with_write_latch_for_mini_tx(&mte, mt, &page_id, &abort_error);
 
-		init_page_for_mini_tx(&mte, mt, page, 5, &(record_def.size_def));
+		init_page_for_mini_tx(&mte, mt, page, 5, &(record_def.size_def), &abort_error);
 
 		construct_tuple(tuple, &record_def, "Rohan Vipulkumar Dvivedi", 1996);
-		append_tuple_on_page_for_mini_tx(&mte, mt, page, &(record_def.size_def), tuple);
+		append_tuple_on_page_for_mini_tx(&mte, mt, page, &(record_def.size_def), tuple, &abort_error);
 
 		construct_tuple(tuple, &record_def, "Rupa Vipulkumar Dvivedi", 1966);
-		append_tuple_on_page_for_mini_tx(&mte, mt, page, &(record_def.size_def), tuple);
+		append_tuple_on_page_for_mini_tx(&mte, mt, page, &(record_def.size_def), tuple, &abort_error);
 
 		printf("intialization\n");
 		print_page(page, mte.user_stats.page_size, &record_def);
 
-		release_writer_latch_on_page_for_mini_tx(&mte, mt, page, 0);
+		release_writer_latch_on_page_for_mini_tx(&mte, mt, page, 0, &abort_error);
 		uint64_t latches_to_borrow = 0;
 		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0, &latches_to_borrow);
 	}
 	printf("-x-x-x-x- tx1 complete\n");
 
 	{
+		int abort_error = 0;
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
-		page = acquire_page_with_writer_latch_for_mini_tx(&mte, mt, page_id);
+		page = acquire_page_with_writer_latch_for_mini_tx(&mte, mt, page_id, &abort_error);
 
-		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 0, STATIC_POSITION(0), &(datum){.string_value = "Rohan Dvivedi", .string_size = strlen("Rohan Dvivedi")});
-		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 0, STATIC_POSITION(1), &(datum){.uint_value = (2024 - 1996)});
-		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 1, STATIC_POSITION(0), &(datum){.string_value = "Rupa Dvivedi", .string_size = strlen("Rupa Dvivedi")});
-		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 1, STATIC_POSITION(1), &(datum){.uint_value = (2024 - 1966)});
+		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 0, STATIC_POSITION(0), &(datum){.string_value = "Rohan Dvivedi", .string_size = strlen("Rohan Dvivedi")}, &abort_error);
+		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 0, STATIC_POSITION(1), &(datum){.uint_value = (2024 - 1996)}, &abort_error);
+		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 1, STATIC_POSITION(0), &(datum){.string_value = "Rupa Dvivedi", .string_size = strlen("Rupa Dvivedi")}, &abort_error);
+		set_element_in_tuple_in_place_on_page_for_mini_tx(&mte, mt, page, &record_def, 1, STATIC_POSITION(1), &(datum){.uint_value = (2024 - 1966)}, &abort_error);
 
 		printf("printing after update\n");
 		print_page(page, mte.user_stats.page_size, &record_def);
@@ -1109,19 +1111,20 @@ void main0()
 
 		printf("aborting\n");
 		mark_aborted_for_mini_tx(&mte, mt, -55);
-		release_writer_latch_on_page_for_mini_tx(&mte, mt, page, 0);
+		release_writer_latch_on_page_for_mini_tx(&mte, mt, page, 0, &abort_error);
 		uint64_t latches_to_borrow = 0;
 		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0, &latches_to_borrow);
 	}
 	printf("-x-x-x-x- tx2 complete\n");
 
 	{
+		int abort_error = 0;
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
-		page = acquire_page_with_reader_latch_for_mini_tx(&mte, mt, page_id);
+		page = acquire_page_with_reader_latch_for_mini_tx(&mte, mt, page_id, &abort_error);
 
 		print_page(page, mte.user_stats.page_size, &record_def);
 
-		release_reader_latch_on_page_for_mini_tx(&mte, mt, page, 0);
+		release_reader_latch_on_page_for_mini_tx(&mte, mt, page, 0, &abort_error);
 		uint64_t latches_to_borrow = 0;
 		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0, &latches_to_borrow);
 	}
@@ -1149,18 +1152,19 @@ void main_1()
 	uint64_t page_id[ACTIVE_MINI_TRANSACTIONS_TO_TEST] = {};
 
 	{
+		int abort_error = 0;
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 		void* page[ACTIVE_MINI_TRANSACTIONS_TO_TEST] = {};
 
 		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
-			page[i] = get_new_page_with_write_latch_for_mini_tx(&mte, mt, &(page_id[i]));
+			page[i] = get_new_page_with_write_latch_for_mini_tx(&mte, mt, &(page_id[i]), &abort_error);
 
 		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
-			init_page_for_mini_tx(&mte, mt, page[i], 5, &(record_def.size_def));
+			init_page_for_mini_tx(&mte, mt, page[i], 5, &(record_def.size_def), &abort_error);
 
 		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
 		{
-			release_writer_latch_on_page_for_mini_tx(&mte, mt, page[i], 0);
+			release_writer_latch_on_page_for_mini_tx(&mte, mt, page[i], 0, &abort_error);
 			page[i] = NULL;
 		}
 
@@ -1173,19 +1177,23 @@ void main_1()
 	char tuple[SYSTEM_PAGE_SIZE];
 
 	{
+		int abort_error[ACTIVE_MINI_TRANSACTIONS_TO_TEST] = {};
 		mini_transaction* mt[ACTIVE_MINI_TRANSACTIONS_TO_TEST] = {};
 		void* page[ACTIVE_MINI_TRANSACTIONS_TO_TEST] = {};
 
 		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
+		{
+			abort_error[i] = 0;
 			mt[i] = mte_allot_mini_tx(&mte, 0);
+		}
 
 		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
-			page[i] = acquire_page_with_writer_latch_for_mini_tx(&mte, mt[i], page_id[i]);
+			page[i] = acquire_page_with_writer_latch_for_mini_tx(&mte, mt[i], page_id[i], &(abort_error[i]));
 
 		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
 		{
 			construct_tuple(tuple, &record_def, "Rohan Vipulkumar Dvivedi", 1996 + i);
-			append_tuple_on_page_for_mini_tx(&mte, mt[i], page[i], &(record_def.size_def), tuple);
+			append_tuple_on_page_for_mini_tx(&mte, mt[i], page[i], &(record_def.size_def), tuple, &(abort_error[i]));
 		}
 
 		// sleep for a checkpoint to pass by
@@ -1200,7 +1208,7 @@ void main_1()
 
 		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
 		{
-			release_writer_latch_on_page_for_mini_tx(&mte, mt[i], page[i], 0);
+			release_writer_latch_on_page_for_mini_tx(&mte, mt[i], page[i], 0, &(abort_error[i]));
 			page[i] = NULL;
 		}
 
@@ -1217,17 +1225,18 @@ void main_1()
 	printf("-x-x-x-x- writes completed\n");
 
 	{
+		int abort_error = 0;
 		mini_transaction* mt = mte_allot_mini_tx(&mte, 0);
 
 		for(int i = 0; i < ACTIVE_MINI_TRANSACTIONS_TO_TEST; i++)
 		{
-			void* page = acquire_page_with_reader_latch_for_mini_tx(&mte, mt, page_id[i]);
+			void* page = acquire_page_with_reader_latch_for_mini_tx(&mte, mt, page_id[i], &abort_error);
 
 			printf("page_id = %"PRIu64"\n", page_id[i]);
 			print_page(page, mte.user_stats.page_size, &record_def);
 			printf("\n");
 
-			release_reader_latch_on_page_for_mini_tx(&mte, mt, page, 0);
+			release_reader_latch_on_page_for_mini_tx(&mte, mt, page, 0, &abort_error);
 			page = NULL;
 		}
 
