@@ -3,7 +3,7 @@
 #include<mintxengine/mini_transaction_engine_util.h>
 #include<mintxengine/system_page_header_util.h>
 
-static void* acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mini_transaction_engine* mte, uint64_t page_id)
+static void* acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mini_transaction_engine* mte, uint64_t page_id, int* abort_error)
 {
 	pthread_mutex_lock(&(mte->global_lock));
 		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
@@ -11,6 +11,7 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mini_transaction
 		// if you are attempting to lock a free space mapper page, then abort and quit
 		if(is_free_space_mapper_page(page_id, &(mte->stats)))
 		{
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL; // failed because ILLEGAL_PAGE_ID
@@ -19,6 +20,7 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mini_transaction
 		// you must not cross max page count, else abort and quit
 		if(page_id >= mte->user_stats.max_page_count)
 		{
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL; // failed because ILLEGAL_PAGE_ID
@@ -27,6 +29,7 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mini_transaction
 		// check to ensure that you are not attempting to latch a page that is out of bounds for the current page count
 		if(page_id >= mte->database_page_count) // this check must be done with manager_lock held
 		{
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL; // failed because ILLEGAL_PAGE_ID
@@ -40,6 +43,7 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mini_transaction
 			latched_page = acquire_page_with_reader_latch_N_flush_wal_if_necessary_UNSAFE(mte, page_id, 1); // evict_dirty_if_necessary
 			if(latched_page == NULL)
 			{
+				(*abort_error) = OUT_OF_BUFFERPOOL_MEMORY;
 				break; // failed because OUT_OF_BUFFERPOOL_MEMORY
 			}
 
@@ -54,12 +58,14 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mini_transaction
 
 			if(write_lock_wait_timeout_in_microseconds_LEFT == 0) // no wait attempts left
 			{
+				(*abort_error) = PLAUSIBLE_DEADLOCK;
 				break; // failed because PLAUSIBLE_DEADLOCK
 			}
 
 			// wait for completion of a mt_locked_by mini transaction
 			if(!wait_for_mini_transaction_completion_UNSAFE(mte, mt_locked_by, &write_lock_wait_timeout_in_microseconds_LEFT))
 			{
+				(*abort_error) = PLAUSIBLE_DEADLOCK;
 				// comes here when we time out, this could be because of a PLAUSIBLE_DEADLOCK
 				break; // failed because PLAUSIBLE_DEADLOCK
 			}
@@ -76,7 +82,7 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mini_transaction
 	return latched_page + get_system_header_size_for_data_pages(&(mte->stats));
 }
 
-static void* acquire_page_with_reader_latch_for_mini_tx_MT_NON_NULL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id)
+static void* acquire_page_with_reader_latch_for_mini_tx_MT_NON_NULL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id, int* abort_error)
 {
 	pthread_mutex_lock(&(mte->global_lock));
 		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
@@ -94,6 +100,7 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NON_NULL(mini_transac
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;
@@ -104,6 +111,7 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NON_NULL(mini_transac
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;
@@ -114,6 +122,7 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NON_NULL(mini_transac
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;
@@ -129,6 +138,7 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NON_NULL(mini_transac
 			{
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+				(*abort_error) = OUT_OF_BUFFERPOOL_MEMORY;
 				break;
 			}
 
@@ -145,6 +155,7 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NON_NULL(mini_transac
 			{
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = PLAUSIBLE_DEADLOCK;
+				(*abort_error) = PLAUSIBLE_DEADLOCK;
 				break;
 			}
 
@@ -154,6 +165,7 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NON_NULL(mini_transac
 				// comes here when we time out, this could be because of a PLAUSIBLE_DEADLOCK
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = PLAUSIBLE_DEADLOCK;
+				(*abort_error) = PLAUSIBLE_DEADLOCK;
 				break;
 			}
 
@@ -173,15 +185,15 @@ static void* acquire_page_with_reader_latch_for_mini_tx_MT_NON_NULL(mini_transac
 	return latched_page + get_system_header_size_for_data_pages(&(mte->stats));
 }
 
-void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id)
+void* acquire_page_with_reader_latch_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id, int* abort_error)
 {
 	if(mt == NULL)
-		return acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mte, page_id);
+		return acquire_page_with_reader_latch_for_mini_tx_MT_NULL(mte, page_id, abort_error);
 	else
-		return acquire_page_with_reader_latch_for_mini_tx_MT_NON_NULL(mte, mt, page_id);
+		return acquire_page_with_reader_latch_for_mini_tx_MT_NON_NULL(mte, mt, page_id, abort_error);
 }
 
-void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id)
+void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, uint64_t page_id, int* abort_error)
 {
 	pthread_mutex_lock(&(mte->global_lock));
 		shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
@@ -199,6 +211,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;
@@ -209,6 +222,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;
@@ -219,6 +233,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;
@@ -234,6 +249,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 			{
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+				(*abort_error) = OUT_OF_BUFFERPOOL_MEMORY;
 				break;
 			}
 
@@ -250,6 +266,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 			{
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = PLAUSIBLE_DEADLOCK;
+				(*abort_error) = PLAUSIBLE_DEADLOCK;
 				break;
 			}
 
@@ -259,6 +276,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 				// comes here when we time out, this could be because of a PLAUSIBLE_DEADLOCK
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = PLAUSIBLE_DEADLOCK;
+				(*abort_error) = PLAUSIBLE_DEADLOCK;
 				break;
 			}
 
@@ -278,7 +296,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 	return latched_page + get_system_header_size_for_data_pages(&(mte->stats));
 }
 
-int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents)
+int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, int* abort_error)
 {
 	int result = 0;
 
@@ -299,6 +317,7 @@ int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
@@ -310,6 +329,7 @@ int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = UNABLE_TO_TRANSITION_LATCH;
+			(*abort_error) = UNABLE_TO_TRANSITION_LATCH;
 		}
 
 		shared_unlock(&(mte->manager_lock));
@@ -318,7 +338,7 @@ int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_
 	return result;
 }
 
-int upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents)
+int upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, int* abort_error)
 {
 	int result = 0;
 
@@ -339,6 +359,7 @@ int upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(mini_transaction_en
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
@@ -350,6 +371,7 @@ int upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(mini_transaction_en
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = UNABLE_TO_TRANSITION_LATCH;
+			(*abort_error) = UNABLE_TO_TRANSITION_LATCH;
 		}
 
 		shared_unlock(&(mte->manager_lock));
@@ -360,7 +382,7 @@ int upgrade_reader_latch_to_writer_latch_on_page_for_mini_tx(mini_transaction_en
 
 #include<mintxengine/mini_transaction_engine_page_alloc_util.h>
 
-int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, int free_page)
+int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, int free_page, int* abort_error)
 {
 	if(!free_page) // simple release latch
 	{
@@ -381,6 +403,7 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 					mt->state = MIN_TX_ABORTED;
 					mt->abort_error = ILLEGAL_PAGE_ID;
 				}
+				(*abort_error) = ILLEGAL_PAGE_ID;
 				shared_unlock(&(mte->manager_lock));
 				pthread_mutex_unlock(&(mte->global_lock));
 				return 0;
@@ -398,6 +421,9 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 				else // latch release was a success so decrement the latch counter for this mini transaction
 					mt->page_latches_held_counter--;
 			}
+			if(!result)
+				(*abort_error) = UNABLE_TO_TRANSITION_LATCH;
+
 
 			shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
@@ -425,6 +451,7 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 			{
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = ILLEGAL_PAGE_ID;
+				(*abort_error) = ILLEGAL_PAGE_ID;
 				shared_unlock(&(mte->manager_lock));
 				pthread_mutex_unlock(&(mte->global_lock));
 				return 0;
@@ -435,6 +462,7 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 			{
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = UNABLE_TO_TRANSITION_LATCH;
+				(*abort_error) = UNABLE_TO_TRANSITION_LATCH;
 				shared_unlock(&(mte->manager_lock));
 				pthread_mutex_unlock(&(mte->global_lock));
 				return 0;
@@ -443,7 +471,7 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 			pthread_mutex_unlock(&(mte->global_lock));
 
 			// perform the actual free here
-			result = free_write_latched_page_INTERNAL(mte, mt, page, page_id);
+			result = free_write_latched_page_INTERNAL(mte, mt, page, page_id, abort_error);
 
 			pthread_mutex_lock(&(mte->global_lock));
 
@@ -462,7 +490,7 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 	}
 }
 
-int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, int free_page)
+int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, int free_page, int* abort_error)
 {
 	if(!free_page) // simple release latch
 	{
@@ -483,6 +511,7 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 					mt->state = MIN_TX_ABORTED;
 					mt->abort_error = ILLEGAL_PAGE_ID;
 				}
+				(*abort_error) = ILLEGAL_PAGE_ID;
 				shared_unlock(&(mte->manager_lock));
 				pthread_mutex_unlock(&(mte->global_lock));
 				return 0;
@@ -500,6 +529,8 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 				else // latch release was a success so decrement the latch counter for this mini transaction
 					mt->page_latches_held_counter--;
 			}
+			if(!result)
+				(*abort_error) = UNABLE_TO_TRANSITION_LATCH;
 
 			shared_unlock(&(mte->manager_lock));
 		pthread_mutex_unlock(&(mte->global_lock));
@@ -527,6 +558,7 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 			{
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = ILLEGAL_PAGE_ID;
+				(*abort_error) = ILLEGAL_PAGE_ID;
 				shared_unlock(&(mte->manager_lock));
 				pthread_mutex_unlock(&(mte->global_lock));
 				return 0;
@@ -534,7 +566,7 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 
 			pthread_mutex_unlock(&(mte->global_lock));
 
-			result = free_write_latched_page_INTERNAL(mte, mt, page, page_id);
+			result = free_write_latched_page_INTERNAL(mte, mt, page, page_id, abort_error);
 
 			pthread_mutex_lock(&(mte->global_lock));
 

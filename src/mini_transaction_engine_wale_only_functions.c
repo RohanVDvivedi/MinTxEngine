@@ -53,7 +53,7 @@ static uint256 log_the_already_applied_log_record_for_mini_transaction_and_manag
 	return log_record_LSN;
 }
 
-int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, uint32_t page_header_size, const tuple_size_def* tpl_sz_d)
+int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, uint32_t page_header_size, const tuple_size_def* tpl_sz_d, int* abort_error)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
@@ -71,6 +71,7 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
@@ -126,7 +127,7 @@ int init_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, vo
 	return result;
 }
 
-void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const void* hdr)
+void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const void* hdr, int* abort_error)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
@@ -144,6 +145,7 @@ void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction*
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return ;
@@ -200,7 +202,7 @@ void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction*
 	return ;
 }
 
-int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, const void* external_tuple)
+int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, const void* external_tuple, int* abort_error)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
@@ -218,6 +220,7 @@ int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
@@ -270,7 +273,7 @@ int append_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	return result;
 }
 
-int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple)
+int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple, int* abort_error)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
@@ -288,6 +291,7 @@ int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
@@ -341,7 +345,7 @@ int insert_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	return result;
 }
 
-int update_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple)
+int update_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, uint32_t index, const void* external_tuple, int* abort_error)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
@@ -359,6 +363,7 @@ int update_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
@@ -413,7 +418,7 @@ int update_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transact
 	return result;
 }
 
-int discard_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, uint32_t index)
+int discard_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, uint32_t index, int* abort_error)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
@@ -431,6 +436,7 @@ int discard_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transac
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
@@ -484,7 +490,7 @@ int discard_tuple_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transac
 	return result;
 }
 
-void discard_all_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d)
+void discard_all_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, int* abort_error)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
@@ -502,6 +508,7 @@ void discard_all_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_t
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return ;
@@ -554,7 +561,7 @@ void discard_all_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_t
 	return;
 }
 
-uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d)
+uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, int* abort_error)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
@@ -572,6 +579,7 @@ uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engin
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
@@ -624,7 +632,7 @@ uint32_t discard_trailing_tomb_stones_on_page_for_mini_tx(mini_transaction_engin
 	return result;
 }
 
-int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, uint32_t i1, uint32_t i2)
+int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, uint32_t i1, uint32_t i2, int* abort_error)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
@@ -642,6 +650,7 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
@@ -695,7 +704,7 @@ int swap_tuples_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 	return result;
 }
 
-int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const datum* value)
+int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_def* tpl_d, uint32_t tuple_index, positional_accessor element_index, const datum* value, int* abort_error)
 {
 	// if the tuple to be updated in place is NULL, fail
 	const void* tuple_to_update_in_place = get_nth_tuple_on_page(page_contents, mte->user_stats.page_size, &(tpl_d->size_def), tuple_index);
@@ -721,6 +730,7 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;
@@ -776,7 +786,7 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 	return result;
 }
 
-void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, const void* page_contents_src)
+void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, const void* page_contents_src, int* abort_error)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
@@ -794,6 +804,7 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return ;
@@ -847,7 +858,7 @@ void clone_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, 
 	return ;
 }
 
-int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d)
+int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, void* page_contents, const tuple_size_def* tpl_sz_d, int* abort_error)
 {
 	// grab manager_lock so manager threads do not enter while we are working
 	// this must be a data page (as it is given by the user), so grab the page_id and actual page pointer
@@ -865,6 +876,7 @@ int run_page_compaction_for_mini_tx(mini_transaction_engine* mte, mini_transacti
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = ILLEGAL_PAGE_ID;
+			(*abort_error) = ILLEGAL_PAGE_ID;
 			shared_unlock(&(mte->manager_lock));
 			pthread_mutex_unlock(&(mte->global_lock));
 			return 0;

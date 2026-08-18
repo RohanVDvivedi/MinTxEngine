@@ -5,13 +5,14 @@
 
 #include<cutlery/bitmap.h>
 
-int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id)
+int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id, int* abort_error)
 {
 	pthread_mutex_lock(&(mte->global_lock));
 	if(is_free_space_mapper_page(page_id, &(mte->stats)))
 	{
 		mt->state = MIN_TX_ABORTED;
 		mt->abort_error = ILLEGAL_PAGE_ID;
+		(*abort_error) = ILLEGAL_PAGE_ID;
 		pthread_mutex_unlock(&(mte->global_lock));
 		return 0;
 	}
@@ -26,6 +27,7 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 	{
 		mt->state = MIN_TX_ABORTED;
 		mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+		(*abort_error) = OUT_OF_BUFFERPOOL_MEMORY;
 		pthread_mutex_unlock(&(mte->global_lock));
 		return 0;
 	}
@@ -122,7 +124,7 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 // this function does not check if the given page is free or not
 // we also do not check if the page is write locked by self or none
 // you must do the above two checks in your calling code
-static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* free_space_mapper_page, uint64_t free_space_mapper_page_id, void* page, uint64_t page_id)
+static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* free_space_mapper_page, uint64_t free_space_mapper_page_id, void* page, uint64_t page_id, int* abort_error)
 {
 	// ensure correctness of the parameters
 	if(!is_free_space_mapper_page(free_space_mapper_page_id, &(mte->stats)))
@@ -226,7 +228,7 @@ static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine*
 	return page;
 }
 
-void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
+void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id, int* abort_error)
 {
 	// first extract the hints
 	uint64_t hinted_extent_ids[128];
@@ -254,6 +256,7 @@ void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transact
 			{
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+				(*abort_error) = OUT_OF_BUFFERPOOL_MEMORY;
 				pthread_mutex_unlock(&(mte->global_lock));
 				return NULL;
 			}
@@ -300,6 +303,7 @@ void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transact
 						release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
 						mt->state = MIN_TX_ABORTED;
 						mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+						(*abort_error) = OUT_OF_BUFFERPOOL_MEMORY;
 						pthread_mutex_unlock(&(mte->global_lock));
 						return NULL;
 					}
@@ -310,7 +314,7 @@ void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transact
 					{
 						pthread_mutex_unlock(&(mte->global_lock));
 						// allocate page and quit
-						return allocate_page_holding_write_latch_INTERNAL(mte, mt, free_space_mapper_page, free_space_mapper_page_id, page, (*page_id));
+						return allocate_page_holding_write_latch_INTERNAL(mte, mt, free_space_mapper_page, free_space_mapper_page_id, page, (*page_id), abort_error);
 					}
 
 					// unlatch page at page_id
@@ -337,7 +341,7 @@ void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transact
 	return NULL;
 }
 
-void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
+void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id, int* abort_error)
 {
 	// we are calling a free spacemapper page and group of pages following it an extent for the context of this function
 	const uint64_t data_pages_per_extent = is_valid_bits_count_on_free_space_mapper_page(&(mte->stats));
@@ -358,6 +362,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 			{
 				mt->state = MIN_TX_ABORTED;
 				mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+				(*abort_error) = OUT_OF_BUFFERPOOL_MEMORY;
 				pthread_mutex_unlock(&(mte->global_lock));
 				return NULL;
 			}
@@ -404,6 +409,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 						release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
 						mt->state = MIN_TX_ABORTED;
 						mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+						(*abort_error) = OUT_OF_BUFFERPOOL_MEMORY;
 						pthread_mutex_unlock(&(mte->global_lock));
 						return NULL;
 					}
@@ -414,7 +420,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 					{
 						pthread_mutex_unlock(&(mte->global_lock));
 						// allocate page and quit
-						return allocate_page_holding_write_latch_INTERNAL(mte, mt, free_space_mapper_page, free_space_mapper_page_id, page, (*page_id));
+						return allocate_page_holding_write_latch_INTERNAL(mte, mt, free_space_mapper_page, free_space_mapper_page_id, page, (*page_id), abort_error);
 					}
 
 					// unlatch page at page_id
@@ -451,13 +457,14 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 // it primarily appends a zero page to the database and appends a FULL_PAGE_WRITE log record for that page
 // the initial contents of the page are set to content_template, if the content_template is NULL, we reset all bits on the page
 // this function also fails if you have reached max_page_count available to the user
-static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, const void* content_template)
+static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, const void* content_template, int* abort_error)
 {
 	// if the max_page_count has been reached fail this call
 	if(mte->database_page_count == mte->user_stats.max_page_count)
 	{
 		mt->state = MIN_TX_ABORTED;
 		mt->abort_error = OUT_OF_AVAILABLE_PAGE_IDS;
+		(*abort_error) = OUT_OF_AVAILABLE_PAGE_IDS;
 		return NULL;
 	}
 
@@ -469,6 +476,7 @@ static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_
 	{
 		mt->state = MIN_TX_ABORTED;
 		mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+		(*abort_error) = OUT_OF_BUFFERPOOL_MEMORY;
 		return NULL;
 	}
 	// now this function can not fail, so we can safely increment the database_page_count
@@ -547,7 +555,7 @@ static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_
 	return new_page;
 }
 
-void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id)
+void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, uint64_t* page_id, int* abort_error)
 {
 	pthread_mutex_lock(&(mte->global_lock));
 
@@ -556,6 +564,7 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 	{
 		mt->state = MIN_TX_ABORTED;
 		mt->abort_error = OUT_OF_AVAILABLE_PAGE_IDS;
+		(*abort_error) = OUT_OF_AVAILABLE_PAGE_IDS;
 		pthread_mutex_unlock(&(mte->global_lock));
 		return 0;
 	}
@@ -576,11 +585,12 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
+			(*abort_error) = OUT_OF_BUFFERPOOL_MEMORY;
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;
 		}
 
-		page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
+		page = add_new_page_to_database_UNSAFE(mte, mt, NULL, abort_error);
 		if(page == NULL) // abort error is already set, so nothing to be done
 		{
 			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
@@ -595,12 +605,13 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		{
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = OUT_OF_AVAILABLE_PAGE_IDS;
+			(*abort_error) = OUT_OF_AVAILABLE_PAGE_IDS;
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;
 		}
 
 		free_space_mapper_page_id = mte->database_page_count;
-		free_space_mapper_page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
+		free_space_mapper_page = add_new_page_to_database_UNSAFE(mte, mt, NULL, abort_error);
 		if(free_space_mapper_page == NULL)
 		{
 			pthread_mutex_unlock(&(mte->global_lock));
@@ -608,7 +619,7 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		}
 
 		(*page_id) = mte->database_page_count;
-		page = add_new_page_to_database_UNSAFE(mte, mt, NULL);
+		page = add_new_page_to_database_UNSAFE(mte, mt, NULL, abort_error);
 		if(page == NULL) // abort error is already set, so nothing to be done
 		{
 			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
@@ -619,5 +630,5 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 
 	pthread_mutex_unlock(&(mte->global_lock));
 
-	return allocate_page_holding_write_latch_INTERNAL(mte, mt, free_space_mapper_page, free_space_mapper_page_id, page, (*page_id));
+	return allocate_page_holding_write_latch_INTERNAL(mte, mt, free_space_mapper_page, free_space_mapper_page_id, page, (*page_id), abort_error);
 }
