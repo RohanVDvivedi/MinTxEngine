@@ -206,7 +206,7 @@ log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* 
 			int new_tuple_is_NOT_NULL = (((const unsigned char*)c)[0] != 0);	c += 1;
 			if(new_tuple_is_NOT_NULL)
 			{
-				uint32_t new_tuple_size = deserialize_uint32(c, 4);		c += 4;
+				uint32_t new_tuple_size = get_tuple_size_using_tuple_size_def(&(lr.talr.size_def), c);
 				lr.talr.new_tuple = c;									c += new_tuple_size;
 			}
 			else
@@ -233,7 +233,7 @@ log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* 
 			int new_tuple_is_NOT_NULL = (((const unsigned char*)c)[0] != 0);	c += 1;
 			if(new_tuple_is_NOT_NULL)
 			{
-				uint32_t new_tuple_size = deserialize_uint32(c, 4);		c += 4;
+				uint32_t new_tuple_size = get_tuple_size_using_tuple_size_def(&(lr.tilr.size_def), c);
 				lr.tilr.new_tuple = c;									c += new_tuple_size;
 			}
 			else
@@ -260,7 +260,7 @@ log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* 
 			int old_tuple_is_NOT_NULL = (((const unsigned char*)c)[0] != 0);	c += 1;
 			if(old_tuple_is_NOT_NULL)
 			{
-				uint32_t old_tuple_size = deserialize_uint32(c, 4);		c += 4;
+				uint32_t old_tuple_size = get_tuple_size_using_tuple_size_def(&(lr.tulr.size_def), c);
 				lr.tulr.old_tuple = c;									c += old_tuple_size;
 			}
 			else
@@ -269,7 +269,7 @@ log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* 
 			int new_tuple_is_NOT_NULL = (((const unsigned char*)c)[0] != 0);	c += 1;
 			if(new_tuple_is_NOT_NULL)
 			{
-				uint32_t new_tuple_size = deserialize_uint32(c, 4);		c += 4;
+				uint32_t new_tuple_size = get_tuple_size_using_tuple_size_def(&(lr.tulr.size_def), c);
 				lr.tulr.new_tuple = c;									c += new_tuple_size;
 			}
 			else
@@ -296,7 +296,7 @@ log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* 
 			int old_tuple_is_NOT_NULL = (((const unsigned char*)c)[0] != 0);	c += 1;
 			if(old_tuple_is_NOT_NULL)
 			{
-				uint32_t old_tuple_size = deserialize_uint32(c, 4);		c += 4;
+				uint32_t old_tuple_size = get_tuple_size_using_tuple_size_def(&(lr.tdlr.size_def), c);
 				lr.tdlr.old_tuple = c;									c += old_tuple_size;
 			}
 			else
@@ -374,6 +374,8 @@ log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* 
 			uint32_t type_info_size = deserialize_uint32(c, 4);			c += 4;
 			int type_info_allocation_error = 0;
 			data_type_info* dti = deserialize_type_info(c, type_info_size, &type_info_allocation_error);
+			if(type_info_allocation_error)
+				exit(-1);
 			c += type_info_size;
 			if(dti != NULL)
 				finalize_type_info(dti);
@@ -393,28 +395,28 @@ log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* 
 
 			int old_element_is_NOT_NULL = (((const unsigned char*)c)[0] != 0);	c += 1;
 			if(!old_element_is_NOT_NULL)
-				lr.tueiplr.old_element = (datum){.is_NULL = 1};
+				lr.tueiplr.old_element = (*NULL_DATUM);
+			else if(element_def->type == BIT_FIELD)
+			{
+				get_datum_for_type_info(&(lr.tueiplr.old_element), UINT_NULLABLE[8], c); c += 8;
+				lr.tueiplr.old_element.bit_field_value = lr.tueiplr.old_element.uint_value;
+			}
 			else
 			{
-				uint32_t old_element_size = deserialize_uint32(c, 4);	c += 4;
-				if(element_def != NULL && is_variable_sized_type_info(element_def))
-					lr.tueiplr.old_element = (datum){.string_or_binary_value = c, .string_or_binary_size = old_element_size};
-				else if(element_def != NULL)
-					get_datum_for_type_info(&(lr.tueiplr.old_element), element_def, c);
-				c += old_element_size;
+				get_datum_for_type_info(&(lr.tueiplr.old_element), element_def, c); c += get_size_for_type_info(element_def, c);
 			}
 
 			int new_element_is_NOT_NULL = (((const unsigned char*)c)[0] != 0);	c += 1;
 			if(!new_element_is_NOT_NULL)
-				lr.tueiplr.new_element = (datum){.is_NULL = 1};
+				lr.tueiplr.new_element = (*NULL_DATUM);
+			else if(element_def->type == BIT_FIELD)
+			{
+				get_datum_for_type_info(&(lr.tueiplr.new_element), UINT_NULLABLE[8], c); c += 8;
+				lr.tueiplr.new_element.bit_field_value = lr.tueiplr.new_element.uint_value;
+			}
 			else
 			{
-				uint32_t new_element_size = deserialize_uint32(c, 4);	c += 4;
-				if(element_def != NULL && is_variable_sized_type_info(element_def))
-					lr.tueiplr.new_element = (datum){.string_or_binary_value = c, .string_or_binary_size = new_element_size};
-				else if(element_def != NULL)
-					get_datum_for_type_info(&(lr.tueiplr.new_element), element_def, c);
-				c += new_element_size;
+				get_datum_for_type_info(&(lr.tueiplr.new_element), element_def, c);  c += get_size_for_type_info(element_def, c);
 			}
 
 			lr.parsed_from = serialized_log_record;
@@ -731,20 +733,20 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			capacity += 2 * LW + PW + 4 + 2 * lr->pshlr.page_header_size;
 			break;
 		case TUPLE_APPEND :
-			capacity += 2 * LW + PW + 4 + SIZE_DEF_MAX_BYTES + 1 + 4
+			capacity += 2 * LW + PW + 4 + SIZE_DEF_MAX_BYTES + 1
 				+ ((lr->talr.new_tuple == NULL) ? 0 : get_tuple_size_using_tuple_size_def(&(lr->talr.size_def), lr->talr.new_tuple));
 			break;
 		case TUPLE_INSERT :
-			capacity += 2 * LW + PW + 4 + SIZE_DEF_MAX_BYTES + 4 + 1 + 4
+			capacity += 2 * LW + PW + 4 + SIZE_DEF_MAX_BYTES + 4 + 1
 				+ ((lr->tilr.new_tuple == NULL) ? 0 : get_tuple_size_using_tuple_size_def(&(lr->tilr.size_def), lr->tilr.new_tuple));
 			break;
 		case TUPLE_UPDATE :
-			capacity += 2 * LW + PW + 4 + SIZE_DEF_MAX_BYTES + 4 + 2 * (1 + 4)
+			capacity += 2 * LW + PW + 4 + SIZE_DEF_MAX_BYTES + 4 + 2 * (1)
 				+ ((lr->tulr.old_tuple == NULL) ? 0 : get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.old_tuple))
 				+ ((lr->tulr.new_tuple == NULL) ? 0 : get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.new_tuple));
 			break;
 		case TUPLE_DISCARD :
-			capacity += 2 * LW + PW + 4 + SIZE_DEF_MAX_BYTES + 4 + 1 + 4
+			capacity += 2 * LW + PW + 4 + SIZE_DEF_MAX_BYTES + 4 + 1
 				+ ((lr->tdlr.old_tuple == NULL) ? 0 : get_tuple_size_using_tuple_size_def(&(lr->tdlr.size_def), lr->tdlr.old_tuple));
 			break;
 		case TUPLE_DISCARD_ALL :
@@ -763,8 +765,8 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 				+ 4 + get_byte_count_for_serialized_type_info(lr->tueiplr.tpl_def.type_info)
 				+ 4
 				+ 4 + 4 * lr->tueiplr.element_index.positions_length
-				+ 1 + 4 + (is_datum_NULL(&(lr->tueiplr.old_element)) ? 0 : (is_variable_sized_type_info(element_def) ? lr->tueiplr.old_element.string_or_binary_size : element_def->size))
-				+ 1 + 4 + (is_datum_NULL(&(lr->tueiplr.new_element)) ? 0 : (is_variable_sized_type_info(element_def) ? lr->tueiplr.new_element.string_or_binary_size : element_def->size));
+				+ 1 + (is_datum_NULL(&(lr->tueiplr.old_element)) ? 0 : (is_variable_sized_type_info(element_def) ? stats->page_size : max(element_def->size, 8)))
+				+ 1 + (is_datum_NULL(&(lr->tueiplr.new_element)) ? 0 : (is_variable_sized_type_info(element_def) ? stats->page_size : max(element_def->size, 8)));
 			break;
 		}
 		case PAGE_CLONE :
@@ -774,7 +776,7 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			capacity += 2 * LW + PW + 4 + SIZE_DEF_MAX_BYTES;
 			break;
 		case FULL_PAGE_WRITE :
-			capacity += 3 * LW + PW + get_page_content_size_for_page(lr->fpwlr.page_id, stats);
+			capacity += 2 * LW + PW + LW + get_page_content_size_for_page(lr->fpwlr.page_id, stats);
 			break;
 		case COMPENSATION_LOG :
 			capacity += 3 * LW;
@@ -795,7 +797,7 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			capacity += 2 * LW;
 			break;
 		case USER_INFO :
-			capacity += 1 + 4 + lr->uilr.info_size;
+			capacity += 1 + ((lr->uilr.info != NULL) ?  (4 + lr->uilr.info_size) : 0);
 			break;
 	}
 
@@ -863,7 +865,6 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			if(lr->talr.new_tuple != NULL)
 			{
 				uint32_t new_tuple_size = get_tuple_size_using_tuple_size_def(&(lr->talr.size_def), lr->talr.new_tuple);
-				serialize_uint32(c, 4, new_tuple_size);				c += 4;
 				memory_move(c, lr->talr.new_tuple, new_tuple_size);	c += new_tuple_size;
 			}
 			break;
@@ -883,7 +884,6 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			if(lr->tilr.new_tuple != NULL)
 			{
 				uint32_t new_tuple_size = get_tuple_size_using_tuple_size_def(&(lr->tilr.size_def), lr->tilr.new_tuple);
-				serialize_uint32(c, 4, new_tuple_size);				c += 4;
 				memory_move(c, lr->tilr.new_tuple, new_tuple_size);	c += new_tuple_size;
 			}
 			break;
@@ -903,7 +903,6 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			if(lr->tulr.old_tuple != NULL)
 			{
 				uint32_t old_tuple_size = get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.old_tuple);
-				serialize_uint32(c, 4, old_tuple_size);				c += 4;
 				memory_move(c, lr->tulr.old_tuple, old_tuple_size);	c += old_tuple_size;
 			}
 
@@ -911,7 +910,6 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			if(lr->tulr.new_tuple != NULL)
 			{
 				uint32_t new_tuple_size = get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.new_tuple);
-				serialize_uint32(c, 4, new_tuple_size);				c += 4;
 				memory_move(c, lr->tulr.new_tuple, new_tuple_size);	c += new_tuple_size;
 			}
 			break;
@@ -931,7 +929,6 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			if(lr->tdlr.old_tuple != NULL)
 			{
 				uint32_t old_tuple_size = get_tuple_size_using_tuple_size_def(&(lr->tdlr.size_def), lr->tdlr.old_tuple);
-				serialize_uint32(c, 4, old_tuple_size);				c += 4;
 				memory_move(c, lr->tdlr.old_tuple, old_tuple_size);	c += old_tuple_size;
 			}
 			break;
@@ -980,9 +977,8 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			serialize_uint256(c, LW, lr->tueiplr.prev_log_record_LSN);	c += LW;
 			serialize_uint64(c, PW, lr->tueiplr.page_id);				c += PW;
 
-			uint32_t type_info_size = get_byte_count_for_serialized_type_info(lr->tueiplr.tpl_def.type_info);
-			serialize_uint32(c, 4, type_info_size);						c += 4;
-			serialize_type_info(lr->tueiplr.tpl_def.type_info, c);		c += type_info_size;
+			uint32_t type_info_size = serialize_type_info(lr->tueiplr.tpl_def.type_info, c + 4);
+			serialize_uint32(c, 4, type_info_size);						c += 4 + type_info_size;
 
 			serialize_uint32(c, 4, lr->tueiplr.tuple_index);			c += 4;
 
@@ -997,34 +993,34 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			((unsigned char*)c)[0] = (is_datum_NULL(&(lr->tueiplr.old_element)) ? 0 : 1);	c += 1;
 			if(!is_datum_NULL(&(lr->tueiplr.old_element)))
 			{
-				if(is_variable_sized_type_info(element_def))
+				if(element_def->type == BIT_FIELD)
 				{
-					serialize_uint32(c, 4, lr->tueiplr.old_element.string_or_binary_size);	c += 4;
-					memory_move(c, lr->tueiplr.old_element.string_or_binary_value, lr->tueiplr.old_element.string_or_binary_size);
-					c += lr->tueiplr.old_element.string_or_binary_size;
+					if(!set_datum_for_type_info(UINT_NULLABLE[8], c, 0, UINT32_MAX, &(datum){.uint_value = lr->tueiplr.old_element.bit_field_value}))
+						exit(-1);
+					c += 8;
 				}
 				else
 				{
-					serialize_uint32(c, 4, element_def->size);			c += 4;
-					set_datum_for_type_info(element_def, c, 1, element_def->size, &(lr->tueiplr.old_element));
-					c += element_def->size;
+					if(!set_datum_for_type_info(element_def, c, 0, UINT32_MAX, &(lr->tueiplr.old_element)))
+						exit(-1);
+					c += get_size_for_type_info(element_def, c);
 				}
 			}
 
 			((unsigned char*)c)[0] = (is_datum_NULL(&(lr->tueiplr.new_element)) ? 0 : 1);	c += 1;
 			if(!is_datum_NULL(&(lr->tueiplr.new_element)))
 			{
-				if(is_variable_sized_type_info(element_def))
+				if(element_def->type == BIT_FIELD)
 				{
-					serialize_uint32(c, 4, lr->tueiplr.new_element.string_or_binary_size);	c += 4;
-					memory_move(c, lr->tueiplr.new_element.string_or_binary_value, lr->tueiplr.new_element.string_or_binary_size);
-					c += lr->tueiplr.new_element.string_or_binary_size;
+					if(!set_datum_for_type_info(UINT_NULLABLE[8], c, 0, UINT32_MAX, &(datum){.uint_value = lr->tueiplr.new_element.bit_field_value}))
+						exit(-1);
+					c += 8;
 				}
 				else
 				{
-					serialize_uint32(c, 4, element_def->size);			c += 4;
-					set_datum_for_type_info(element_def, c, 1, element_def->size, &(lr->tueiplr.new_element));
-					c += element_def->size;
+					if(!set_datum_for_type_info(element_def, c, 0, UINT32_MAX, &(lr->tueiplr.new_element)))
+						exit(-1);
+					c += get_size_for_type_info(element_def, c);
 				}
 			}
 			break;
