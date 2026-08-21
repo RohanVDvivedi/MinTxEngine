@@ -301,8 +301,6 @@ struct page_init_creation_log_record
 	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transaction
 	uint64_t page_id;
 
-	uint256 writerLSN; // writerLSN of the page (if it is not a free space mapper page) at the time of writing this log record
-
 	page_init_type init_type;
 	const void* page_contents; // valid only if init_type == PAGE_INIT_CONTENT_DATA
 };

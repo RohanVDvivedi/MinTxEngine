@@ -485,7 +485,6 @@ log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* 
 			lr.piclr.mini_transaction_id = deserialize_uint256(c, LW);	c += LW;
 			lr.piclr.prev_log_record_LSN = deserialize_uint256(c, LW);	c += LW;
 			lr.piclr.page_id = deserialize_uint64(c, PW);				c += PW;
-			lr.piclr.writerLSN = deserialize_uint256(c, LW);			c += LW;
 
 			lr.piclr.init_type = ((unsigned char*)c)[0];				c += 1;
 
@@ -804,7 +803,7 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			capacity += 2 * LW + PW + LW + get_page_content_size_for_page(lr->fpwlr.page_id, stats);
 			break;
 		case PAGE_INIT_CREATION :
-			capacity += 2 * LW + PW + LW + 1 + get_page_content_size_for_page(lr->piclr.page_id, stats);
+			capacity += 2 * LW + PW + 1 + get_page_content_size_for_page(lr->piclr.page_id, stats);
 			break;
 		case COMPENSATION_LOG :
 			capacity += 3 * LW;
@@ -1093,7 +1092,6 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			serialize_uint256(c, LW, lr->piclr.mini_transaction_id);	c += LW;
 			serialize_uint256(c, LW, lr->piclr.prev_log_record_LSN);	c += LW;
 			serialize_uint64(c, PW, lr->piclr.page_id);					c += PW;
-			serialize_uint256(c, LW, lr->piclr.writerLSN);				c += LW;
 
 			((char*)c)[0] = lr->piclr.init_type; c += 1;
 
@@ -1356,7 +1354,6 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 			printf("mini_transaction_id : "); print_uint256(lr->piclr.mini_transaction_id); printf("\n");
 			printf("prev_log_record_LSN : "); print_uint256(lr->piclr.prev_log_record_LSN); printf("\n");
 			printf("page_id : %"PRIu64"\n", lr->piclr.page_id);
-			printf("writerLSN : "); print_uint256(lr->piclr.writerLSN); printf("\n");
 			printf("init_type : ");
 				if(lr->piclr.init_type == PAGE_INIT_GARBAGE_DATA) printf("GARBAGE");
 				else if(lr->piclr.init_type == PAGE_INIT_ZERO_DATA) printf("ZERO");

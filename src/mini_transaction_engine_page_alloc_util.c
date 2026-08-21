@@ -456,10 +456,10 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 
 // either succeeds or aborts
 // must be called with shared lock on manager lock held and the global lock
-// it primarily appends a zero page to the database and appends a FULL_PAGE_WRITE log record for that page
-// the initial contents of the page are set to content_template, if the content_template is NULL, we reset all bits on the page
+// it primarily appends a page to the database and appends a PAGE_INIT_CREATION log record for that page
+// the initial contents of the page are set to content_template as suggested by init_type
 // this function also fails if you have reached max_page_count available to the user
-static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, const void* content_template, int* abort_error)
+static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt, page_init_type init_type, const void* content_template, int* abort_error)
 {
 	// if the max_page_count has been reached fail this call
 	if(mte->database_page_count == mte->user_stats.max_page_count)
@@ -486,34 +486,45 @@ static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_
 
 	// below piece of code does not need to be done with global lock held
 	pthread_mutex_unlock(&(mte->global_lock));
-		// this only time we will modify the page first and then perform a FULL_PAGE_WRITE, as this is a new page to the database, untracked until now
+		// this only time we will modify the page first and then perform a PAGE_INIT_CREATION, as this is a new page to the database, untracked until now
 		{
 			void* page_content = get_page_contents_for_page(new_page, new_page_id, &(mte->stats));
 			uint32_t page_content_size = get_page_content_size_for_page(new_page_id, &(mte->stats));
-			if(content_template == NULL)
-				memory_set(page_content, 0, page_content_size);
-			else
-				memory_move(page_content, content_template, page_content_size);
+			switch(init_type)
+			{
+				case PAGE_INIT_GARBAGE_DATA:
+					break;
+				case PAGE_INIT_ZERO_DATA :
+					memory_set(page_content, 0, page_content_size);
+					break;
+				case PAGE_INIT_CONTENT_DATA :
+					memory_move(page_content, content_template, page_content_size);
+					break;
+			}
 		}
 
-		// construct full page write log record, with writerLSN = INVALID_LOG_SEQUENCE_NUMBER as we are just creating the page
-		log_record fpw_lr = {
+		// construct page init creation log record, with writerLSN = INVALID_LOG_SEQUENCE_NUMBER as we are just creating the page
+		log_record pic_lr = {
 			.type = FULL_PAGE_WRITE,
-			.fpwlr = {
+			.piclr = {
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,
 				.page_id = new_page_id,
-				.writerLSN = INVALID_LOG_SEQUENCE_NUMBER, // even here we can not give mt->mini_transaction_id as writerLSN as we may just be a reader transaction until we append this log record
-				.page_contents = get_page_contents_for_page(new_page, new_page_id, &(mte->stats)),
+				.init_type = init_type,
+				.page_contents = (init_type == PAGE_INIT_CONTENT_DATA) ? get_page_contents_for_page(new_page, new_page_id, &(mte->stats)) : NULL,
 			}
 		};
 
-		// serialize full page write log record and compress it, compression can be costly so we do it outside global lock
-		uint32_t serialized_fpw_lr_size = 0;
-		const void* serialized_fpw_lr = serialize_and_compress_log_record(&(mte->stats), &fpw_lr, &serialized_fpw_lr_size);
-		if(serialized_fpw_lr == NULL)
+		// if not a free space mapper page set it's writerLSN to INVALID_LOG_SEQUENCE_NUMBER
+		if(!is_free_space_mapper_page(new_page_id, &(mte->stats)))
+			set_writerLSN_for_page(new_page, INVALID_LOG_SEQUENCE_NUMBER, &(mte->stats));
+
+		// serialize page init creation log record and compress it, compression can be costly so we do it outside global lock
+		uint32_t serialized_pic_lr_size = 0;
+		const void* serialized_pic_lr = serialize_and_compress_log_record(&(mte->stats), &pic_lr, &serialized_pic_lr_size);
+		if(serialized_pic_lr == NULL)
 		{
-			printf("ISSUE :: unable to serialize full page write log record\n");
+			printf("ISSUE :: unable to serialize page init creation log record\n");
 			exit(-1);
 		}
 	pthread_mutex_lock(&(mte->global_lock));
@@ -522,10 +533,10 @@ static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_
 		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
 
 		int wal_error = 0;
-		uint256 log_record_LSN = append_log_record(wale_p, serialized_fpw_lr, serialized_fpw_lr_size, 0, &wal_error);
+		uint256 log_record_LSN = append_log_record(wale_p, serialized_pic_lr, serialized_pic_lr_size, 0, &wal_error);
 		if(are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER)) // exit with failure if you fail to append log record
 		{
-			printf("ISSUE :: unable to append full page write log record\n");
+			printf("ISSUE :: unable to append page init creation log record\n");
 			exit(-1);
 		}
 
@@ -551,8 +562,8 @@ static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, new_page, new_page_id);
 	}
 
-	// free full page write log record
-	free((void*)serialized_fpw_lr);
+	// free page init creation log record
+	free((void*)serialized_pic_lr);
 
 	return new_page;
 }
@@ -592,7 +603,7 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 			return NULL;
 		}
 
-		page = add_new_page_to_database_UNSAFE(mte, mt, NULL, abort_error);
+		page = add_new_page_to_database_UNSAFE(mte, mt, PAGE_INIT_GARBAGE_DATA, NULL, abort_error);
 		if(page == NULL) // abort error is already set, so nothing to be done
 		{
 			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
@@ -613,7 +624,7 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		}
 
 		free_space_mapper_page_id = mte->database_page_count;
-		free_space_mapper_page = add_new_page_to_database_UNSAFE(mte, mt, NULL, abort_error);
+		free_space_mapper_page = add_new_page_to_database_UNSAFE(mte, mt, PAGE_INIT_ZERO_DATA, NULL, abort_error);
 		if(free_space_mapper_page == NULL)
 		{
 			pthread_mutex_unlock(&(mte->global_lock));
@@ -621,7 +632,7 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		}
 
 		(*page_id) = mte->database_page_count;
-		page = add_new_page_to_database_UNSAFE(mte, mt, NULL, abort_error);
+		page = add_new_page_to_database_UNSAFE(mte, mt, PAGE_INIT_GARBAGE_DATA, NULL, abort_error);
 		if(page == NULL) // abort error is already set, so nothing to be done
 		{
 			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
