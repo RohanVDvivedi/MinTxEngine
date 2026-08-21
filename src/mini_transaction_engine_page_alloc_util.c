@@ -34,7 +34,8 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 	pthread_mutex_unlock(&(mte->global_lock));
 
 	// perform full page writes for both the pages, if necessary
-	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
+	// for optimization we can skip full page write for data page as it's contents are not modified
+	//perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, free_space_mapper_page, free_space_mapper_page_id);
 
 	// construct page_deallocation log record
@@ -144,7 +145,8 @@ static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine*
 	}
 
 	// perform full page writes if necessary
-	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
+	// for optimization we can skip full page write for data page as it's contents are not modified
+	//perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, page, page_id);
 	perform_full_page_write_for_page_if_necessary_and_manage_state_INTERNAL(mte, mt, free_space_mapper_page, free_space_mapper_page_id);
 
 	// construct page_allocation log record
