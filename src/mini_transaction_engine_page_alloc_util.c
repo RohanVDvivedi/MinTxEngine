@@ -505,7 +505,7 @@ static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_
 
 		// construct page init creation log record, with writerLSN = INVALID_LOG_SEQUENCE_NUMBER as we are just creating the page
 		log_record pic_lr = {
-			.type = FULL_PAGE_WRITE,
+			.type = PAGE_INIT_CREATION,
 			.piclr = {
 				.mini_transaction_id = mt->mini_transaction_id,
 				.prev_log_record_LSN = mt->lastLSN,

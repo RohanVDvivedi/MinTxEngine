@@ -289,9 +289,9 @@ struct full_page_write_log_record
 typedef enum page_init_type page_init_type;
 enum page_init_type
 {
-	PAGE_INIT_GARBAGE_DATA,
-	PAGE_INIT_ZERO_DATA,
-	PAGE_INIT_CONTENT_DATA,
+	PAGE_INIT_GARBAGE_DATA = 0,
+	PAGE_INIT_ZERO_DATA = 1,
+	PAGE_INIT_CONTENT_DATA = 2,
 };
 
 typedef struct page_init_creation_log_record page_init_creation_log_record;
