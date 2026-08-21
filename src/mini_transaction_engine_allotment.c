@@ -269,9 +269,10 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 			break;
 		}
 
-		// the undo of the below 2 types of lof records is just NOP so return early
+		// the undo of the below 3 types of log records is just NOP so return early
 		case PAGE_COMPACTION :
 		case FULL_PAGE_WRITE :
+		case PAGE_INIT_CREATION :
 		{
 			return;
 		}

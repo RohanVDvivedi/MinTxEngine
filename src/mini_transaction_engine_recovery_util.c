@@ -95,6 +95,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 			case PAGE_CLONE :
 			case PAGE_COMPACTION :
 			case FULL_PAGE_WRITE :
+			case PAGE_INIT_CREATION :
 			{
 				uint64_t page_id = get_page_id_for_log_record(&lr);
 
@@ -220,6 +221,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 			case TUPLE_UPDATE_ELEMENT_IN_PLACE :
 			case PAGE_CLONE :
 			case PAGE_COMPACTION :
+			case PAGE_INIT_CREATION :
 			{
 				uint256 mini_transaction_id = get_mini_transaction_id_for_log_record(&lr);
 
@@ -355,8 +357,8 @@ static checkpoint analyze(mini_transaction_engine* mte)
 // page_id of only the page involved with the changes on this page for the given log record lr at LSN must be provided
 static void* acquire_writer_latch_only_if_redo_required_UNSAFE(mini_transaction_engine* mte, const checkpoint* ckpt, uint256 LSN, const log_record* lr, uint64_t page_id)
 {
-	// a FULL_PAGE_WRITE log record has to be always redone
-	if(lr->type == FULL_PAGE_WRITE)
+	// a FULL_PAGE_WRITE and PAGE_INIT_CREATION log record has to be always redone and overwritten
+	if(lr->type == FULL_PAGE_WRITE || lr->type == PAGE_INIT_CREATION)
 	{
 		void* page = NULL;
 		while(page == NULL)
@@ -646,6 +648,44 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 					// if it is not a free space mapper page, then set writerLSN from the log record
 					if(!is_free_space_mapper_page(page_id, &(mte->stats)))
 						set_writerLSN_for_page(page, lr.fpwlr.writerLSN, &(mte->stats));
+
+					// set pageLSN on the page
+					set_pageLSN_for_page(page, redo_at, &(mte->stats));
+
+					// release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
+					mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
+					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+				}}
+
+				break;
+			}
+
+			case PAGE_INIT_CREATION :
+			{
+				uint64_t page_id = get_page_id_for_log_record(&lr);
+
+				{void* page = acquire_writer_latch_only_if_redo_required_UNSAFE(mte, ckpt, redo_at, &lr, page_id);
+				if(page != NULL)
+				{
+					// actual redo
+					{void* page_contents = get_page_contents_for_page(page, page_id, &(mte->stats));
+					uint32_t page_content_size = get_page_content_size_for_page(page_id, &(mte->stats));
+						switch(lr.piclr.init_type)
+						{
+							case PAGE_INIT_CONTENT_DATA :
+								memory_move(page_contents, lr.piclr.page_contents, page_content_size);
+								break;
+							case PAGE_INIT_ZERO_DATA :
+								memory_set(page_contents, 0, page_content_size);
+								break;
+							case PAGE_INIT_GARBAGE_DATA :
+								break;
+						}
+					}
+
+					// if it is not a free space mapper page, then set writerLSN from the log record
+					if(!is_free_space_mapper_page(page_id, &(mte->stats)))
+						set_writerLSN_for_page(page, INVALID_LOG_SEQUENCE_NUMBER, &(mte->stats));
 
 					// set pageLSN on the page
 					set_pageLSN_for_page(page, redo_at, &(mte->stats));
