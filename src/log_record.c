@@ -24,6 +24,7 @@ char const * const log_record_type_strings[] = {
 	[PAGE_CLONE]                              = "PAGE_CLONE",
 	[PAGE_COMPACTION]                         = "PAGE_COMPACTION",
 	[FULL_PAGE_WRITE]                         = "FULL_PAGE_WRITE",
+	[PAGE_INIT_CREATION]                      = "PAGE_INIT_CREATION",
 	[COMPENSATION_LOG]                        = "COMPENSATION_LOG",
 	[ABORT_MINI_TX]                           = "ABORT_MINI_TX",
 	[COMPLETE_MINI_TX]                        = "COMPLETE_MINI_TX",
@@ -476,6 +477,30 @@ log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* 
 			lr.parsed_from_size = serialized_log_record_size;
 			return lr;
 		}
+		case PAGE_INIT_CREATION :
+		{
+			log_record lr;
+			lr.type = PAGE_INIT_CREATION;
+
+			lr.piclr.mini_transaction_id = deserialize_uint256(c, LW);	c += LW;
+			lr.piclr.prev_log_record_LSN = deserialize_uint256(c, LW);	c += LW;
+			lr.piclr.page_id = deserialize_uint64(c, PW);				c += PW;
+			lr.piclr.writerLSN = deserialize_uint256(c, LW);			c += LW;
+
+			lr.piclr.init_type = ((unsigned char*)c)[0];				c += 1;
+
+			if(lr.piclr.init_type == PAGE_INIT_CONTENT_DATA)
+			{
+				uint32_t page_content_size = get_page_content_size_for_page(lr.piclr.page_id, stats);
+				lr.piclr.page_contents = c;									c += page_content_size;
+			}
+			else
+				lr.piclr.page_contents = NULL;
+
+			lr.parsed_from = serialized_log_record;
+			lr.parsed_from_size = serialized_log_record_size;
+			return lr;
+		}
 		case COMPENSATION_LOG :
 		{
 			log_record lr;
@@ -778,6 +803,9 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 		case FULL_PAGE_WRITE :
 			capacity += 2 * LW + PW + LW + get_page_content_size_for_page(lr->fpwlr.page_id, stats);
 			break;
+		case PAGE_INIT_CREATION :
+			capacity += 2 * LW + PW + LW + 1 + get_page_content_size_for_page(lr->piclr.page_id, stats);
+			break;
 		case COMPENSATION_LOG :
 			capacity += 3 * LW;
 			break;
@@ -1060,6 +1088,22 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			memory_move(c, lr->fpwlr.page_contents, page_content_size);	c += page_content_size;
 			break;
 		}
+		case PAGE_INIT_CREATION :
+		{
+			serialize_uint256(c, LW, lr->piclr.mini_transaction_id);	c += LW;
+			serialize_uint256(c, LW, lr->piclr.prev_log_record_LSN);	c += LW;
+			serialize_uint64(c, PW, lr->piclr.page_id);					c += PW;
+			serialize_uint256(c, LW, lr->piclr.writerLSN);				c += LW;
+
+			((char*)c)[0] = lr->piclr.init_type; c += 1;
+
+			if(lr->piclr.init_type == PAGE_INIT_CONTENT_DATA)
+			{
+				uint32_t page_content_size = get_page_content_size_for_page(lr->piclr.page_id, stats);
+				memory_move(c, lr->piclr.page_contents, page_content_size);	c += page_content_size;
+			}
+			break;
+		}
 		case COMPENSATION_LOG :
 		{
 			serialize_uint256(c, LW, lr->clr.mini_transaction_id);	c += LW;
@@ -1307,6 +1351,24 @@ void print_log_record(const log_record* lr, const mini_transaction_engine_stats*
 			printf("page_contents : "); print_binary(lr->fpwlr.page_contents, get_page_content_size_for_page(lr->fpwlr.page_id, stats)); printf("\n");
 			return;
 		}
+		case PAGE_INIT_CREATION :
+		{
+			printf("mini_transaction_id : "); print_uint256(lr->piclr.mini_transaction_id); printf("\n");
+			printf("prev_log_record_LSN : "); print_uint256(lr->piclr.prev_log_record_LSN); printf("\n");
+			printf("page_id : %"PRIu64"\n", lr->piclr.page_id);
+			printf("writerLSN : "); print_uint256(lr->piclr.writerLSN); printf("\n");
+			printf("init_type : ");
+				if(lr->piclr.init_type == PAGE_INIT_GARBAGE_DATA) printf("GARBAGE");
+				else if(lr->piclr.init_type == PAGE_INIT_ZERO_DATA) printf("ZERO");
+				else if(lr->piclr.init_type == PAGE_INIT_CONTENT_DATA) printf("CONTENT");
+				else printf("%d", lr->piclr.init_type);
+			printf("\n");
+			if(lr->piclr.init_type == PAGE_INIT_CONTENT_DATA)
+			{
+				printf("page_contents : "); print_binary(lr->piclr.page_contents, get_page_content_size_for_page(lr->piclr.page_id, stats)); printf("\n");
+			}
+			return;
+		}
 		case COMPENSATION_LOG :
 		{
 			printf("mini_transaction_id : "); print_uint256(lr->clr.mini_transaction_id); printf("\n");
@@ -1398,6 +1460,8 @@ uint256 get_mini_transaction_id_for_log_record(const log_record* lr)
 			return lr->pcptlr.mini_transaction_id;
 		case FULL_PAGE_WRITE :
 			return lr->fpwlr.mini_transaction_id;
+		case PAGE_INIT_CREATION :
+			return lr->piclr.mini_transaction_id;
 		case COMPENSATION_LOG :
 			return lr->clr.mini_transaction_id;
 		case ABORT_MINI_TX :
@@ -1484,6 +1548,11 @@ int set_mini_transaction_id_for_log_record(log_record* lr, uint256 mini_transact
 			lr->fpwlr.mini_transaction_id = mini_transaction_id;
 			return 1;
 		}
+		case PAGE_INIT_CREATION :
+		{
+			lr->piclr.mini_transaction_id = mini_transaction_id;
+			return 1;
+		}
 		case COMPENSATION_LOG :
 		{
 			lr->clr.mini_transaction_id = mini_transaction_id;
@@ -1537,6 +1606,8 @@ uint256 get_prev_log_record_LSN_for_log_record(const log_record* lr)
 			return lr->pcptlr.prev_log_record_LSN;
 		case FULL_PAGE_WRITE :
 			return lr->fpwlr.prev_log_record_LSN;
+		case PAGE_INIT_CREATION :
+			return lr->piclr.prev_log_record_LSN;
 		case COMPENSATION_LOG :
 			return lr->clr.prev_log_record_LSN;
 		case ABORT_MINI_TX :
@@ -1629,6 +1700,11 @@ int set_prev_log_record_LSN_for_log_record(log_record* lr, uint256 prev_log_reco
 			lr->fpwlr.prev_log_record_LSN = prev_log_record_LSN;
 			return 1;
 		}
+		case PAGE_INIT_CREATION :
+		{
+			lr->piclr.prev_log_record_LSN = prev_log_record_LSN;
+			return 1;
+		}
 		case COMPENSATION_LOG :
 		{
 			lr->clr.prev_log_record_LSN = prev_log_record_LSN;
@@ -1697,5 +1773,7 @@ uint64_t get_page_id_for_log_record(const log_record* lr)
 			return lr->pcptlr.page_id;
 		case FULL_PAGE_WRITE :
 			return lr->fpwlr.page_id;
+		case PAGE_INIT_CREATION :
+			return lr->piclr.page_id;
 	}
 }

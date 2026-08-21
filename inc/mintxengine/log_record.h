@@ -45,27 +45,28 @@ enum log_record_type
 	PAGE_COMPACTION = 14,
 
 	FULL_PAGE_WRITE = 15,
-	// this log record is first written for any page type, the first time it becomes dirty after a checkpoint
+	PAGE_INIT_CREATION = 16,
+	// this log records are first written for any page type, the first time it becomes dirty after a checkpoint or when it is created newly by allocation along with database file expansion
 
-	COMPENSATION_LOG = 16,
+	COMPENSATION_LOG = 17,
 	// this is the log record type to be used it points to any of the above log types and performs their undo on tha page
 
-	ABORT_MINI_TX = 17,
+	ABORT_MINI_TX = 18,
 	// informational suggesting abort of the mini transaction
 
-	COMPLETE_MINI_TX = 18,
+	COMPLETE_MINI_TX = 19,
 	// informational suggesting no more log records will be or should be generated for this mini transaction
 
 // below are log records that can exist only in checkpoints one ofter another in consecutive fashion
 
-	CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY = 19,
-	CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY = 20,
+	CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY = 20,
+	CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY = 21,
 
-	CHECKPOINT_END = 21,
+	CHECKPOINT_END = 22,
 
 // below are log records that are used for the user to log begin, abort and end log records of the higher level transactions
 
-	USER_INFO = 22,
+	USER_INFO = 23,
 };
 
 /*
@@ -285,6 +286,27 @@ struct full_page_write_log_record
 	const void* page_contents; // there is no size def here, because a just allocated page may not have a valid size_def
 };
 
+typedef enum page_init_type page_init_type;
+enum page_init_type
+{
+	PAGE_INIT_GARBAGE_DATA,
+	PAGE_INIT_ZERO_DATA,
+	PAGE_INIT_CONTENT_DATA,
+};
+
+typedef struct page_init_creation_log_record page_init_creation_log_record;
+struct page_init_creation_log_record
+{
+	uint256 mini_transaction_id; // mini_transaction that this log record belongs to
+	uint256 prev_log_record_LSN; // LSN of the previous log record in the WALe for this very same mini transaction
+	uint64_t page_id;
+
+	uint256 writerLSN; // writerLSN of the page (if it is not a free space mapper page) at the time of writing this log record
+
+	page_init_type init_type;
+	const void* page_contents; // valid only if init_type == PAGE_INIT_CONTENT_DATA
+};
+
 // this type of log record can be redone but never undone
 // the redo infomation is acquired from the log record at undo_of
 typedef struct compensation_log_record compensation_log_record;
@@ -374,6 +396,7 @@ struct log_record
 		page_clone_log_record pclr;
 		page_compaction_log_record pcptlr;
 		full_page_write_log_record fpwlr;
+		page_init_creation_log_record piclr;
 		compensation_log_record clr;
 		abort_mini_tx_log_record amtlr;
 		complete_mini_tx_log_record cmtlr;
