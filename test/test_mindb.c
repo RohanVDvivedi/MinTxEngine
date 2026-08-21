@@ -1302,6 +1302,12 @@ void main5(uint64_t _root_page_id)
 		mte_complete_mini_tx(&mte, mt, FLUSH_ON_COMPLETION, NULL, 0, &latches_to_borrow);
 	}
 
+	{
+		mini_transaction* mt = NULL; // a read only access does not need a mini-transaction
+		uint64_t count = 0;
+		int validated = validate_records_uint_bplus_tree(mt, &count);
+		printf("VALIDATION_RESULTS :: count = %"PRIu64", valid = %d\n", count, validated);
+	}
 
 	printf("PRINTING LOGS\n");
 	debug_print_wal_logs_for_mini_transaction_engine(&mte);
