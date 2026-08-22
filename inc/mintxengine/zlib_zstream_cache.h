@@ -9,8 +9,8 @@
 
 #include<pthread.h>
 
-#define ZSTREAM_CACHE_COUNT               300ULL
-#define ZSTREAM_LIFE_IN_MICROSECONDS  1000000ULL
+#define ZSTREAM_CACHE_COUNT                80ULL
+#define ZSTREAM_LIFE_IN_MICROSECONDS   600000ULL
 
 #define MINTXENGINE_ZLIB_COMPRESSION_LEVEL  3  // Z_DEFAULT_COMPRESSION can also be used gives good compression but very slow, so we choose level 3
 
