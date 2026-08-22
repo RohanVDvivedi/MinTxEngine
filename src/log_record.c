@@ -664,26 +664,17 @@ static void* compress_serialized_log_record_idempotently(zstream_cache* zstrms, 
 		// consume first byte
 		((char*)output)[0] = ((char*)input)[0] | (1<<7);
 
-		z_stream zstrm;
-		zstrm.zalloc = Z_NULL;
-		zstrm.zfree = Z_NULL;
-		zstrm.opaque = Z_NULL;
+		zstream_wrapper* zstrm_wrap = get_deflate_zstream_object(zstrms);
 
-		zstrm.next_in = input + 1;
-		zstrm.avail_in = input_size - 1;
+		zstrm_wrap->zstrm.next_in = input + 1;
+		zstrm_wrap->zstrm.avail_in = input_size - 1;
 
-		zstrm.next_out = output + 1;
-		zstrm.avail_out = output_capacity - 1;
-
-		if(Z_OK != deflateInit(&zstrm, 3)) // Z_DEFAULT_COMPRESSION can also be used gives good compression but very slow, so we choose level 3
-		{
-			printf("ISSUE :: failure to initialize zlib compression stream for compressing log record\n");
-			exit(-1);
-		}
+		zstrm_wrap->zstrm.next_out = output + 1;
+		zstrm_wrap->zstrm.avail_out = output_capacity - 1;
 
 		while(1)
 		{
-			int res = deflate(&zstrm, Z_FINISH);
+			int res = deflate(&(zstrm_wrap->zstrm), Z_FINISH);
 
 			if(res == Z_OK || res == Z_BUF_ERROR)
 			{
@@ -695,8 +686,8 @@ static void* compress_serialized_log_record_idempotently(zstream_cache* zstrms, 
 					exit(-1);
 				}
 
-				zstrm.next_out = output + output_capacity;
-				zstrm.avail_out = new_output_capacity - output_capacity;
+				zstrm_wrap->zstrm.next_out = output + output_capacity;
+				zstrm_wrap->zstrm.avail_out = new_output_capacity - output_capacity;
 
 				output_capacity = new_output_capacity;
 			}
@@ -709,9 +700,9 @@ static void* compress_serialized_log_record_idempotently(zstream_cache* zstrms, 
 			}
 		}
 
-		(*output_size) = zstrm.total_out + 1;
+		(*output_size) = zstrm_wrap->zstrm.total_out + 1;
 
-		deflateEnd(&zstrm);
+		give_back_deflate_zstream_object(zstrms, zstrm_wrap);
 
 		if((*output_size) >= input_size) // if for some reason data expanded instead then return input as is, freeing the allocated output buffer
 		{
