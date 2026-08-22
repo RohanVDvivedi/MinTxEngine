@@ -30,7 +30,10 @@ zstream_wrapper* get_inflate_zstream_object(zstream_cache* zstrm_cash)
 
 	// if cache had one return it
 	if(zstrm_wrap != NULL)
+	{
+		inflateReset(&(zstrm_wrap->zstrm));
 		return zstrm_wrap;
+	}
 
 	// else create one and return it instead
 	zstrm_wrap = malloc(sizeof(zstream_wrapper));
@@ -66,7 +69,10 @@ zstream_wrapper* get_deflate_zstream_object(zstream_cache* zstrm_cash)
 
 	// if cache had one return it
 	if(zstrm_wrap != NULL)
+	{
+		deflateReset(&(zstrm_wrap->zstrm));
 		return zstrm_wrap;
+	}
 
 	// else create one and return it instead
 	zstrm_wrap = malloc(sizeof(zstream_wrapper));
@@ -100,14 +106,16 @@ void give_back_inflate_zstream_object(zstream_cache* zstrm_cash, zstream_wrapper
 	pthread_mutex_lock(&(zstrm_cash->zstream_cache_lock));
 
 	insert_head_in_linkedlist(&(zstrm_cash->inflate_zstreams.zstreams_list), zstrm_wrap);
+	zstrm_cash->inflate_zstreams.zstreams_count++;
 
-	while(!is_empty_linkedlist(&(zstrm_cash->inflate_zstreams.zstreams_list)))
+	while(zstrm_cash->inflate_zstreams.zstreams_count > ZSTREAM_CACHE_COUNT)
 	{
 		zstream_wrapper* zstrm_wrap = (zstream_wrapper*) get_tail_of_linkedlist(&(zstrm_cash->inflate_zstreams.zstreams_list));
 		if(curr_time_in_microseconds - zstrm_wrap->last_used_in_microseconds < ZSTREAM_LIFE_IN_MICROSECONDS)
 			break;
 
 		remove_tail_from_linkedlist(&(zstrm_cash->inflate_zstreams.zstreams_list));
+		zstrm_cash->inflate_zstreams.zstreams_count--;
 
 		inflateEnd(&(zstrm_wrap->zstrm));
 		free(zstrm_wrap);
@@ -131,14 +139,16 @@ void give_back_deflate_zstream_object(zstream_cache* zstrm_cash, zstream_wrapper
 	pthread_mutex_lock(&(zstrm_cash->zstream_cache_lock));
 
 	insert_head_in_linkedlist(&(zstrm_cash->deflate_zstreams.zstreams_list), zstrm_wrap);
+	zstrm_cash->deflate_zstreams.zstreams_count++;
 
-	while(!is_empty_linkedlist(&(zstrm_cash->deflate_zstreams.zstreams_list)))
+	while(zstrm_cash->deflate_zstreams.zstreams_count > ZSTREAM_CACHE_COUNT)
 	{
 		zstream_wrapper* zstrm_wrap = (zstream_wrapper*) get_tail_of_linkedlist(&(zstrm_cash->deflate_zstreams.zstreams_list));
 		if(curr_time_in_microseconds - zstrm_wrap->last_used_in_microseconds < ZSTREAM_LIFE_IN_MICROSECONDS)
 			break;
 
 		remove_tail_from_linkedlist(&(zstrm_cash->deflate_zstreams.zstreams_list));
+		zstrm_cash->deflate_zstreams.zstreams_count--;
 
 		deflateEnd(&(zstrm_wrap->zstrm));
 		free(zstrm_wrap);
