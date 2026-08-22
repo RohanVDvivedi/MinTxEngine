@@ -409,12 +409,12 @@ struct log_record
 	// destroyed and freed once it is no longer in use
 };
 
-log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* stats, const void* serialized_log_record, uint32_t serialized_log_record_size);
+log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* stats, zstream_cache* zlib_strms, const void* serialized_log_record, uint32_t serialized_log_record_size);
 
 // to be called only on parsed log record, it will also free the memory of the parsed log record
 void destroy_and_free_parsed_log_record(log_record* lr);
 
-const void* serialize_and_compress_log_record(const mini_transaction_engine_stats* stats, const log_record* lr, uint32_t* result_size);
+const void* serialize_and_compress_log_record(const mini_transaction_engine_stats* stats, zstream_cache* zlib_strms, const log_record* lr, uint32_t* result_size);
 
 void print_log_record(const log_record* lr, const mini_transaction_engine_stats* stats);
 
