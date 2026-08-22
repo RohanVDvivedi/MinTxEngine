@@ -132,6 +132,9 @@ struct mini_transaction_engine
 	int is_in_recovery_mode;
 	pthread_mutex_t recovery_mode_lock;
 
+	// preinitializes zstream and it's compression state to speed up compression and decompression of wal logs
+	zstream_cache zlib_strms;
+
 	// this module suggests set of extent_id-s that need to be checked first for the next page_allocation
 	page_allocation_hints* page_allocation_suggester;
 };

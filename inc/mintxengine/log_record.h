@@ -3,6 +3,8 @@
 
 #include<stdint.h>
 
+#include<mintxengine/zlib_zstream_cache.h>
+
 #include<mintxengine/mini_transaction_engine_stats.h>
 
 #include<tuplestore/tuple.h>

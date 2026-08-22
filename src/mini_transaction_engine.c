@@ -163,6 +163,11 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 	}
 	initialize_linkedlist(&(mte->free_dirty_page_entries_list), offsetof(dirty_page_table_entry, enode));
 
+	// initialize wal zlib compression zstream cache as recovery might need this, so do this right away
+	{
+		init_zstream_cache(&(mte->zlib_strms));
+	}
+
 	// recovery redo and undo will need to fix/change hints if there is anything related to allocation/deallocation in the wal
 	{
 		char* hints_file_name = malloc(strlen(database_file_name) + 10);
@@ -424,6 +429,8 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 	pthread_mutex_destroy(&(mte->database_expansion_lock));
 
 	pthread_mutex_destroy(&(mte->recovery_mode_lock));
+
+	deinit_zstream_cache(&(mte->zlib_strms));
 
 	flush_and_delete_page_allocation_hints(mte->page_allocation_suggester);
 }
