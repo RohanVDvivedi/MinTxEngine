@@ -31,7 +31,11 @@ zstream_wrapper* get_inflate_zstream_object(zstream_cache* zstrm_cash)
 	// if cache had one return it
 	if(zstrm_wrap != NULL)
 	{
-		inflateReset(&(zstrm_wrap->zstrm));
+		if(Z_OK != inflateReset(&(zstrm_wrap->zstrm)))
+		{
+			printf("ISSUE :: failure to reset zlib uncompression stream for uncompressing log record\n");
+			exit(-1);
+		}
 		return zstrm_wrap;
 	}
 
@@ -70,7 +74,11 @@ zstream_wrapper* get_deflate_zstream_object(zstream_cache* zstrm_cash)
 	// if cache had one return it
 	if(zstrm_wrap != NULL)
 	{
-		deflateReset(&(zstrm_wrap->zstrm));
+		if(Z_OK != deflateReset(&(zstrm_wrap->zstrm)))
+		{
+			printf("ISSUE :: failure to reset zlib compression stream for compressing log record\n");
+			exit(-1);
+		}
 		return zstrm_wrap;
 	}
 
