@@ -70,7 +70,7 @@ static uint256 append_abortion_log_record_and_scroll_INTERNAL(mini_transaction_e
 
 		// serialize log record, and compress it, compression can be costly so we do it outside global lock
 		uint32_t serialized_lr_size = 0;
-		const void* serialized_lr = serialize_and_compress_log_record(&(mte->stats), &lr, &serialized_lr_size);
+		const void* serialized_lr = serialize_and_compress_log_record(&(mte->stats), &(mte->zstrms), &lr, &serialized_lr_size);
 		if(serialized_lr == NULL)
 		{
 			printf("ISSUE :: unable to serialize log record\n");
@@ -134,7 +134,7 @@ static uint256 append_completion_log_record_and_flush_INTERNAL(mini_transaction_
 
 		// serialize log record, and compress it, compression can be costly so we do it outside global lock
 		uint32_t serialized_lr_size = 0;
-		const void* serialized_lr = serialize_and_compress_log_record(&(mte->stats), &lr, &serialized_lr_size);
+		const void* serialized_lr = serialize_and_compress_log_record(&(mte->stats), &(mte->zstrms), &lr, &serialized_lr_size);
 		if(serialized_lr == NULL)
 		{
 			printf("ISSUE :: unable to serialize log record\n");
@@ -190,7 +190,7 @@ static void append_compensation_log_record_INTERNAL(mini_transaction_engine* mte
 
 	// serialize compensation log record, and compress it, compression can be costly, so it is done outside global lock
 	uint32_t serialized_lr_size = 0;
-	const void* serialized_lr = serialize_and_compress_log_record(&(mte->stats), &lr, &serialized_lr_size);
+	const void* serialized_lr = serialize_and_compress_log_record(&(mte->stats), &(mte->zstrms), &lr, &serialized_lr_size);
 	if(serialized_lr == NULL)
 	{
 		printf("ISSUE :: unable to serialize log record\n");

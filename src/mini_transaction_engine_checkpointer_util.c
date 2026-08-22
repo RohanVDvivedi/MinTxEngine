@@ -171,7 +171,7 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 
 		// serialize and compress log record, this can be costly, but this is checkpoint, so not need to release global lock
 		uint32_t serialized_log_record_size = 0;
-		const void* serialized_log_record = serialize_and_compress_log_record(&(mte->stats), &lr, &serialized_log_record_size);
+		const void* serialized_log_record = serialize_and_compress_log_record(&(mte->stats), &(mte->zstrms), &lr, &serialized_log_record_size);
 		if(serialized_log_record == NULL)
 		{
 			printf("ISSUE :: unable to serialize log record for CHECKPOINT_MINI_TRANSACTION_TABLE_ENTRY\n");
@@ -205,7 +205,7 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 
 		// serialize and compress log record, this can be costly, but this is checkpoint, so not need to release global lock
 		uint32_t serialized_log_record_size = 0;
-		const void* serialized_log_record = serialize_and_compress_log_record(&(mte->stats), &lr, &serialized_log_record_size);
+		const void* serialized_log_record = serialize_and_compress_log_record(&(mte->stats), &(mte->zstrms), &lr, &serialized_log_record_size);
 		if(serialized_log_record == NULL)
 		{
 			printf("ISSUE :: unable to serialize log record for CHECKPOINT_DIRTY_PAGE_TABLE_ENTRY\n");
@@ -239,7 +239,7 @@ static uint256 append_checkpoint_to_wal_UNSAFE(mini_transaction_engine* mte, con
 
 		// serialize and compress log record, this can be costly, but this is checkpoint, so not need to release global lock
 		uint32_t serialized_log_record_size = 0;
-		const void* serialized_log_record = serialize_and_compress_log_record(&(mte->stats), &lr, &serialized_log_record_size);
+		const void* serialized_log_record = serialize_and_compress_log_record(&(mte->stats), &(mte->zstrms), &lr, &serialized_log_record_size);
 		if(serialized_log_record == NULL)
 		{
 			printf("ISSUE :: unable to serialize log record for CHECKPOINT_END\n");

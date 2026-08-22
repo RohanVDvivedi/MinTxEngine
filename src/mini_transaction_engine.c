@@ -165,7 +165,7 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 
 	// initialize wal zlib compression zstream cache as recovery might need this, so do this right away
 	{
-		init_zstream_cache(&(mte->zlib_strms));
+		init_zstream_cache(&(mte->zstrms));
 	}
 
 	// recovery redo and undo will need to fix/change hints if there is anything related to allocation/deallocation in the wal
@@ -227,7 +227,7 @@ uint256 append_user_info_log_record_for_mini_transaction_engine(mini_transaction
 
 	// serialize it, and compress it, compression can be costly so it is done without any locks held
 	uint32_t serialized_lr_size = 0;
-	const void* serialized_lr = serialize_and_compress_log_record(&(mte->stats), &lr, &serialized_lr_size);
+	const void* serialized_lr = serialize_and_compress_log_record(&(mte->stats), &(mte->zstrms), &lr, &serialized_lr_size);
 	if(serialized_lr == NULL)
 		return INVALID_LOG_SEQUENCE_NUMBER;
 
@@ -430,7 +430,7 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 
 	pthread_mutex_destroy(&(mte->recovery_mode_lock));
 
-	deinit_zstream_cache(&(mte->zlib_strms));
+	deinit_zstream_cache(&(mte->zstrms));
 
 	flush_and_delete_page_allocation_hints(mte->page_allocation_suggester);
 }

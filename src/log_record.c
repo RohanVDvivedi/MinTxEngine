@@ -35,7 +35,7 @@ char const * const log_record_type_strings[] = {
 };
 
 // input is always consumed and freed
-static void* uncompress_serialized_log_record_idempotently(zstream_cache* zlib_strms, void* input, uint32_t input_size, uint32_t* output_size)
+static void* uncompress_serialized_log_record_idempotently(zstream_cache* zstrms, void* input, uint32_t input_size, uint32_t* output_size)
 {
 	if(input_size == 0)
 	{
@@ -122,13 +122,13 @@ static void* uncompress_serialized_log_record_idempotently(zstream_cache* zlib_s
 // serialize_tuple_size_def never writes more than this many bytes
 #define SIZE_DEF_MAX_BYTES 16
 
-log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* stats, zstream_cache* zlib_strms, const void* serialized_log_record, uint32_t serialized_log_record_size)
+log_record uncompress_and_parse_log_record(const mini_transaction_engine_stats* stats, zstream_cache* zstrms, const void* serialized_log_record, uint32_t serialized_log_record_size)
 {
 	if(serialized_log_record_size <= 1)
 		return (log_record){};
 
 	// uncompress it before parsing
-	serialized_log_record = uncompress_serialized_log_record_idempotently(zlib_strms, (void*)serialized_log_record, serialized_log_record_size, &serialized_log_record_size);
+	serialized_log_record = uncompress_serialized_log_record_idempotently(zstrms, (void*)serialized_log_record, serialized_log_record_size, &serialized_log_record_size);
 
 	unsigned char log_record_type = ((const unsigned char*)serialized_log_record)[0];
 	const void* c = serialized_log_record + 1;	// cursor into the contents, advanced as we read
@@ -639,7 +639,7 @@ void destroy_and_free_parsed_log_record(log_record* lr)
 #define COMPRESSION_LIMIT 400 // all log records with size greater than COMPRESSION_LIMIT will be compressed
 
 // input is always consumed and freed
-static void* compress_serialized_log_record_idempotently(zstream_cache* zlib_strms, void* input, uint32_t input_size, uint32_t* output_size)
+static void* compress_serialized_log_record_idempotently(zstream_cache* zstrms, void* input, uint32_t input_size, uint32_t* output_size)
 {
 	if(input_size == 0)
 	{
@@ -734,7 +734,7 @@ static void* compress_serialized_log_record_idempotently(zstream_cache* zlib_str
 	}
 }
 
-const void* serialize_and_compress_log_record(const mini_transaction_engine_stats* stats, zstream_cache* zlib_strms, const log_record* lr, uint32_t* result_size)
+const void* serialize_and_compress_log_record(const mini_transaction_engine_stats* stats, zstream_cache* zstrms, const log_record* lr, uint32_t* result_size)
 {
 	const uint32_t LW = stats->log_sequence_number_width;
 	const uint32_t PW = stats->page_id_width;
@@ -1167,7 +1167,7 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 	(*result_size) = c - result;
 
 	// compress it, if it is big enough to be worth it
-	return compress_serialized_log_record_idempotently(zlib_strms, result, (*result_size), result_size);
+	return compress_serialized_log_record_idempotently(zstrms, result, (*result_size), result_size);
 }
 
 static void print_binary(const void* data, uint32_t data_size)
