@@ -190,7 +190,8 @@ int initialize_wal_list(mini_transaction_engine* mte)
 
 	// sort wal_list by their wale_LSNs_from
 	index_accessed_interface iai = get_index_accessed_interface_for_front_of_arraylist(&(mte->wa_list));
-	quick_sort_iai(&iai, 0, get_element_count_arraylist(&(mte->wa_list)) - 1, &simple_comparator(compare_wal_accessor));
+	if(!quick_sort_iai(&iai, 0, get_element_count_arraylist(&(mte->wa_list)) - 1, &simple_comparator(compare_wal_accessor))) // does not fail, unless swap call fails, which will never happen
+		exit(-1);
 
 	// make sure that after sorting the wale-s cover the complete range and do not have gaps
 	pthread_mutex_lock(&(mte->global_lock));
