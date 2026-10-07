@@ -1,0 +1,9 @@
+ * fine grained locking
+  * need more locks
+    * mini_transaction_table_lock (for reader/writer minitransactions and to wait for 1 to complete)
+    * dirty_page_table_lock for inserting removing dirty_page_table_entries
+    * manager_lock stays as is without external_lock
+    * wale and bufferpool stay as is but without external lock
+    * global lock is discarded completely and not act as external lock for any of the modules
+    * lock ordering mini_transaction_table_lock -> buffer_pool (only release no flush) for waiting on the mini_transaction to complete
+    * lock ordering buffer_pool -> wale (acquire only) to flush some of the pages, we may need to compare pageLSN with flushedLSN
