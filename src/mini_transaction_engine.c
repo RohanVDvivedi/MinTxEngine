@@ -20,6 +20,12 @@
 
 void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint64_t bufferpool_frame_count, uint64_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds, uint64_t checkpointing_LSN_diff_in_bytes, uint64_t max_wal_file_size_in_bytes)
 {
+	if(!is_valid_page_size(page_size))
+	{
+		printf("ISSUE :: page_size invalidated by tuplestore\n");
+		exit(-1);
+	}
+
 	// initialize everything that does not need resource allocation first
 	mte->database_file_name = database_file_name;
 	pthread_mutex_init(&(mte->global_lock), NULL);
