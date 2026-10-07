@@ -710,8 +710,9 @@ int set_element_in_tuple_in_place_on_page_for_mini_tx(mini_transaction_engine* m
 	const void* tuple_to_update_in_place = get_nth_tuple_on_page(page_contents, mte->user_stats.page_size, &(tpl_d->size_def), tuple_index);
 	if(tuple_to_update_in_place == NULL)
 		return 0;
+	const data_type_info* dti_temp;
 	datum old_element;
-	if(!get_value_from_element_from_tuple(&old_element, tpl_d, element_index, tuple_to_update_in_place))
+	if(!get_value_from_element_from_tuple(&old_element, &dti_temp, tpl_d, element_index, tuple_to_update_in_place))
 		return 0;
 
 	// grab manager_lock so manager threads do not enter while we are working

@@ -149,19 +149,20 @@ int validate_record(const void* buffer)
 {
 	int reason = 0;
 
+	const data_type_info* dti;
 	datum uval;
 
-	get_value_from_element_from_tuple(&uval, &record_def, STATIC_POSITION(0), buffer);
+	get_value_from_element_from_tuple(&uval, &dti, &record_def, STATIC_POSITION(0), buffer);
 	uint64_t num = uval.uint_value;
 
-	get_value_from_element_from_tuple(&uval, &record_def, STATIC_POSITION(1), buffer);
+	get_value_from_element_from_tuple(&uval, &dti, &record_def, STATIC_POSITION(1), buffer);
 	int order = uval.int_value;
 
 	uint16_t o = find_order(num, order);
 	{
 		char t1[1000];
 		num_in_words(t1, o);
-		get_value_from_element_from_tuple(&uval, &record_def, STATIC_POSITION(2), buffer);
+		get_value_from_element_from_tuple(&uval, &dti, &record_def, STATIC_POSITION(2), buffer);
 		const char* t2 = uval.string_value;
 		if(strlen(t1) != uval.string_size) {
 			reason = -1;
@@ -182,7 +183,7 @@ int validate_record(const void* buffer)
 			reason = -3;
 			goto INVALID;
 		}
-		get_value_from_element_from_tuple(&uval, &record_def, STATIC_POSITION(3,index), buffer);
+		get_value_from_element_from_tuple(&uval, &dti, &record_def, STATIC_POSITION(3,index), buffer);
 		if(d != uval.uint_value) {
 			reason = -4;
 			goto INVALID;
