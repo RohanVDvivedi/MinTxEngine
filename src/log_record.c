@@ -841,7 +841,7 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 
 			// the page content size is implied by the page_id, so it is never stored
 			uint32_t page_content_size = get_page_content_size_for_page(lr->pilr.page_id, stats);
-			memory_move(c, lr->pilr.old_page_contents, page_content_size);	c += page_content_size;
+			memmove(c, lr->pilr.old_page_contents, page_content_size);	c += page_content_size;
 
 			serialize_uint32(c, 4, lr->pilr.new_page_header_size);	c += 4;
 
@@ -857,8 +857,8 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 
 			// one size in front covers BOTH headers
 			serialize_uint32(c, 4, lr->pshlr.page_header_size);			c += 4;
-			memory_move(c, lr->pshlr.old_page_header_contents, lr->pshlr.page_header_size);	c += lr->pshlr.page_header_size;
-			memory_move(c, lr->pshlr.new_page_header_contents, lr->pshlr.page_header_size);	c += lr->pshlr.page_header_size;
+			memmove(c, lr->pshlr.old_page_header_contents, lr->pshlr.page_header_size);	c += lr->pshlr.page_header_size;
+			memmove(c, lr->pshlr.new_page_header_contents, lr->pshlr.page_header_size);	c += lr->pshlr.page_header_size;
 			break;
 		}
 		case TUPLE_APPEND :
@@ -874,7 +874,7 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			if(lr->talr.new_tuple != NULL)
 			{
 				uint32_t new_tuple_size = get_tuple_size_using_tuple_size_def(&(lr->talr.size_def), lr->talr.new_tuple);
-				memory_move(c, lr->talr.new_tuple, new_tuple_size);	c += new_tuple_size;
+				memmove(c, lr->talr.new_tuple, new_tuple_size);	c += new_tuple_size;
 			}
 			break;
 		}
@@ -893,7 +893,7 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			if(lr->tilr.new_tuple != NULL)
 			{
 				uint32_t new_tuple_size = get_tuple_size_using_tuple_size_def(&(lr->tilr.size_def), lr->tilr.new_tuple);
-				memory_move(c, lr->tilr.new_tuple, new_tuple_size);	c += new_tuple_size;
+				memmove(c, lr->tilr.new_tuple, new_tuple_size);	c += new_tuple_size;
 			}
 			break;
 		}
@@ -912,14 +912,14 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			if(lr->tulr.old_tuple != NULL)
 			{
 				uint32_t old_tuple_size = get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.old_tuple);
-				memory_move(c, lr->tulr.old_tuple, old_tuple_size);	c += old_tuple_size;
+				memmove(c, lr->tulr.old_tuple, old_tuple_size);	c += old_tuple_size;
 			}
 
 			((unsigned char*)c)[0] = ((lr->tulr.new_tuple == NULL) ? 0 : 1);	c += 1;
 			if(lr->tulr.new_tuple != NULL)
 			{
 				uint32_t new_tuple_size = get_tuple_size_using_tuple_size_def(&(lr->tulr.size_def), lr->tulr.new_tuple);
-				memory_move(c, lr->tulr.new_tuple, new_tuple_size);	c += new_tuple_size;
+				memmove(c, lr->tulr.new_tuple, new_tuple_size);	c += new_tuple_size;
 			}
 			break;
 		}
@@ -938,7 +938,7 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			if(lr->tdlr.old_tuple != NULL)
 			{
 				uint32_t old_tuple_size = get_tuple_size_using_tuple_size_def(&(lr->tdlr.size_def), lr->tdlr.old_tuple);
-				memory_move(c, lr->tdlr.old_tuple, old_tuple_size);	c += old_tuple_size;
+				memmove(c, lr->tdlr.old_tuple, old_tuple_size);	c += old_tuple_size;
 			}
 			break;
 		}
@@ -952,7 +952,7 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			serialize_uint32(c, 4, size_def_size);						c += 4 + size_def_size;
 
 			uint32_t page_content_size = get_page_content_size_for_page(lr->tdalr.page_id, stats);
-			memory_move(c, lr->tdalr.old_page_contents, page_content_size);	c += page_content_size;
+			memmove(c, lr->tdalr.old_page_contents, page_content_size);	c += page_content_size;
 			break;
 		}
 		case TUPLE_DISCARD_TRAILING_TOMB_STONES :
@@ -1044,8 +1044,8 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			serialize_uint32(c, 4, size_def_size);					c += 4 + size_def_size;
 
 			uint32_t page_content_size = get_page_content_size_for_page(lr->pclr.page_id, stats);
-			memory_move(c, lr->pclr.old_page_contents, page_content_size);	c += page_content_size;
-			memory_move(c, lr->pclr.new_page_contents, page_content_size);	c += page_content_size;
+			memmove(c, lr->pclr.old_page_contents, page_content_size);	c += page_content_size;
+			memmove(c, lr->pclr.new_page_contents, page_content_size);	c += page_content_size;
 			break;
 		}
 		case PAGE_COMPACTION :
@@ -1066,7 +1066,7 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			serialize_uint256(c, LW, lr->fpwlr.writerLSN);				c += LW;
 
 			uint32_t page_content_size = get_page_content_size_for_page(lr->fpwlr.page_id, stats);
-			memory_move(c, lr->fpwlr.page_contents, page_content_size);	c += page_content_size;
+			memmove(c, lr->fpwlr.page_contents, page_content_size);	c += page_content_size;
 			break;
 		}
 		case PAGE_INIT_CREATION :
@@ -1080,7 +1080,7 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			if(lr->piclr.init_type == PAGE_INIT_CONTENT_DATA)
 			{
 				uint32_t page_content_size = get_page_content_size_for_page(lr->piclr.page_id, stats);
-				memory_move(c, lr->piclr.page_contents, page_content_size);	c += page_content_size;
+				memmove(c, lr->piclr.page_contents, page_content_size);	c += page_content_size;
 			}
 			break;
 		}
@@ -1108,7 +1108,7 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			if(lr->cmtlr.info != NULL)
 			{
 				serialize_uint32(c, 4, lr->cmtlr.info_size);				c += 4;
-				memory_move(c, lr->cmtlr.info, lr->cmtlr.info_size);		c += lr->cmtlr.info_size;
+				memmove(c, lr->cmtlr.info, lr->cmtlr.info_size);		c += lr->cmtlr.info_size;
 			}
 			break;
 		}
@@ -1140,7 +1140,7 @@ const void* serialize_and_compress_log_record(const mini_transaction_engine_stat
 			if(lr->uilr.info != NULL)
 			{
 				serialize_uint32(c, 4, lr->uilr.info_size);			c += 4;
-				memory_move(c, lr->uilr.info, lr->uilr.info_size);	c += lr->uilr.info_size;
+				memmove(c, lr->uilr.info, lr->uilr.info_size);	c += lr->uilr.info_size;
 			}
 			break;
 		}

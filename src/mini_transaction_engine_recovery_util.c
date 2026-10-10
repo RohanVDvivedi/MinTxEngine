@@ -4,6 +4,8 @@
 #include<mintxengine/mini_transaction_engine_util.h>
 #include<mintxengine/system_page_header_util.h>
 
+#include<string.h>
+
 static checkpoint analyze(mini_transaction_engine* mte)
 {
 	// this lock is customary to be taken only to access bufferpool and wale
@@ -528,7 +530,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 								printf("ISSUE :: unable to redo page set header, header size of the page and that of the log record does not match\n");
 								exit(-1);
 							}}
-							memory_move(page_header_contents, lr.pshlr.new_page_header_contents, lr.pshlr.page_header_size);
+							memmove(page_header_contents, lr.pshlr.new_page_header_contents, lr.pshlr.page_header_size);
 							break;
 						}
 						case TUPLE_APPEND :
@@ -643,7 +645,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 					// actual redo
 					{void* page_contents = get_page_contents_for_page(page, page_id, &(mte->stats));
 					uint32_t page_content_size = get_page_content_size_for_page(page_id, &(mte->stats));
-					memory_move(page_contents, lr.fpwlr.page_contents, page_content_size);}
+					memmove(page_contents, lr.fpwlr.page_contents, page_content_size);}
 
 					// if it is not a free space mapper page, then set writerLSN from the log record
 					if(!is_free_space_mapper_page(page_id, &(mte->stats)))
@@ -673,7 +675,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 						switch(lr.piclr.init_type)
 						{
 							case PAGE_INIT_CONTENT_DATA :
-								memory_move(page_contents, lr.piclr.page_contents, page_content_size);
+								memmove(page_contents, lr.piclr.page_contents, page_content_size);
 								break;
 							case PAGE_INIT_ZERO_DATA :
 								memory_set(page_contents, 0, page_content_size);
@@ -786,7 +788,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 								{
 									case PAGE_INIT :
 									{
-										memory_move(page_contents, undo_lr.pilr.old_page_contents, mte->user_stats.page_size);
+										memmove(page_contents, undo_lr.pilr.old_page_contents, mte->user_stats.page_size);
 										break;
 									}
 									case PAGE_SET_HEADER :
@@ -798,7 +800,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 											printf("ISSUE :: unable to redo the undo of page set header, header size of the page and that of the log record does not match\n");
 											exit(-1);
 										}
-										memory_move(page_header, undo_lr.pshlr.old_page_header_contents, page_header_size);
+										memmove(page_header, undo_lr.pshlr.old_page_header_contents, page_header_size);
 										break;
 									}
 									case TUPLE_APPEND :
@@ -874,7 +876,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 									}
 									case TUPLE_DISCARD_ALL :
 									{
-										memory_move(page_contents, undo_lr.tdalr.old_page_contents, mte->user_stats.page_size);
+										memmove(page_contents, undo_lr.tdalr.old_page_contents, mte->user_stats.page_size);
 										break;
 									}
 									case TUPLE_DISCARD_TRAILING_TOMB_STONES :
@@ -931,7 +933,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 													printf("ISSUE :: unable to redo the undo of tuple update element in place, memory allocation for new tuple failed\n");
 													exit(-1);
 												}
-												memory_move(new_tuple, on_page_tuple, get_tuple_size(&(undo_lr.tueiplr.tpl_def), on_page_tuple));
+												memmove(new_tuple, on_page_tuple, get_tuple_size(&(undo_lr.tueiplr.tpl_def), on_page_tuple));
 											}
 
 											// perform set element on the new tuple, this must succeed
@@ -971,7 +973,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 									}
 									case PAGE_CLONE :
 									{
-										memory_move(page_contents, undo_lr.pclr.old_page_contents, mte->user_stats.page_size);
+										memmove(page_contents, undo_lr.pclr.old_page_contents, mte->user_stats.page_size);
 										break;
 									}
 									default : // if you reach here it is a bug

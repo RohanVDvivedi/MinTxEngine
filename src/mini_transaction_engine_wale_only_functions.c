@@ -5,6 +5,8 @@
 
 #include<tuplestore/page_layout.h>
 
+#include<string.h>
+
 // the below function does the following for only a data page modification log record
 /*
 	1. logs log record to latest wale, gets the log_record_LSN for this record
@@ -181,7 +183,7 @@ void set_page_header_for_mini_tx(mini_transaction_engine* mte, mini_transaction*
 	}
 
 	// apply the actual operation
-	memory_move(old_page_header_contents, hdr, page_header_size);
+	memmove(old_page_header_contents, hdr, page_header_size);
 
 	if(1)
 	{

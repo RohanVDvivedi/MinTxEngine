@@ -5,6 +5,8 @@
 
 #include<posixutils/pthread_cond_utils.h>
 
+#include<string.h>
+
 mini_transaction* mte_allot_mini_tx(mini_transaction_engine* mte, uint64_t page_latches_to_be_borrowed)
 {
 	// allocate a new mini_transaction
@@ -359,7 +361,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 			{
 				case PAGE_INIT :
 				{
-					memory_move(page_contents, undo_lr->pilr.old_page_contents, mte->user_stats.page_size);
+					memmove(page_contents, undo_lr->pilr.old_page_contents, mte->user_stats.page_size);
 					break;
 				}
 				case PAGE_SET_HEADER :
@@ -371,7 +373,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 						printf("ISSUE :: unable to undo page set header, header size of the page and that of the log record does not match\n");
 						exit(-1);
 					}
-					memory_move(page_header, undo_lr->pshlr.old_page_header_contents, page_header_size);
+					memmove(page_header, undo_lr->pshlr.old_page_header_contents, page_header_size);
 					break;
 				}
 				case TUPLE_APPEND :
@@ -447,7 +449,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				}
 				case TUPLE_DISCARD_ALL :
 				{
-					memory_move(page_contents, undo_lr->tdalr.old_page_contents, mte->user_stats.page_size);
+					memmove(page_contents, undo_lr->tdalr.old_page_contents, mte->user_stats.page_size);
 					break;
 				}
 				case TUPLE_DISCARD_TRAILING_TOMB_STONES :
@@ -504,7 +506,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 								printf("ISSUE :: unable to undo tuple update element in place, memory allocation for new tuple failed\n");
 								exit(-1);
 							}
-							memory_move(new_tuple, on_page_tuple, get_tuple_size(&(undo_lr->tueiplr.tpl_def), on_page_tuple));
+							memmove(new_tuple, on_page_tuple, get_tuple_size(&(undo_lr->tueiplr.tpl_def), on_page_tuple));
 						}
 
 						// perform set element on the new tuple, this must succeed
@@ -544,7 +546,7 @@ static void undo_log_record_and_append_clr_and_manage_state_INTERNAL(mini_transa
 				}
 				case PAGE_CLONE :
 				{
-					memory_move(page_contents, undo_lr->pclr.old_page_contents, mte->user_stats.page_size);
+					memmove(page_contents, undo_lr->pclr.old_page_contents, mte->user_stats.page_size);
 					break;
 				}
 				default : // if you reach here it is a bug

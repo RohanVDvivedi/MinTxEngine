@@ -5,6 +5,8 @@
 
 #include<cutlery/bitmap.h>
 
+#include<string.h>
+
 int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transaction* mt, void* page, uint64_t page_id, int* abort_error)
 {
 	pthread_mutex_lock(&(mte->global_lock));
@@ -498,7 +500,7 @@ static void* add_new_page_to_database_UNSAFE(mini_transaction_engine* mte, mini_
 					memory_set(page_content, 0, page_content_size);
 					break;
 				case PAGE_INIT_CONTENT_DATA :
-					memory_move(page_content, content_template, page_content_size);
+					memmove(page_content, content_template, page_content_size);
 					break;
 			}
 		}
