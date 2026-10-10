@@ -21,6 +21,7 @@ dirty_page_table_entry* get_new_dirty_page_table_entry()
 		exit(-1);
 	}
 	initialize_llnode(&(dpte->enode));
+	initialize_llnode(&(dpte->fenode));
 	return dpte;
 }
 

@@ -65,7 +65,7 @@ int free_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, ui
 		mini_transaction* mt_locked_by = get_mini_transaction_that_last_persistent_write_locked_this_page_UNSAFE(mte, page_to_free);
 		if(mt_locked_by != NULL && mt_locked_by != mt) // if locked by an active transaction, we abort and quit
 		{
-			release_writer_lock_on_page(&(mte->bufferpool_handle), page_to_free, 0, 0); // was_modified = 0, force_flush = 0
+			release_writer_lock_on_page(&(mte->bufferpool_handle), page_to_free, 0); // was_modified = 0
 			mt->state = MIN_TX_ABORTED;
 			mt->abort_error = PAGE_TO_BE_FREED_IS_LOCKED;
 			(*abort_error) = PAGE_TO_BE_FREED_IS_LOCKED;
@@ -80,7 +80,7 @@ int free_page_for_mini_tx(mini_transaction_engine* mte, mini_transaction* mt, ui
 
 		// if free was unsuccessfull, release latch on the page_to_free
 		if(!result)
-			release_writer_lock_on_page(&(mte->bufferpool_handle), page_to_free, 0, 0); // was_modified = 0, force_flush = 0
+			release_writer_lock_on_page(&(mte->bufferpool_handle), page_to_free, 0); // was_modified = 0
 
 		shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));

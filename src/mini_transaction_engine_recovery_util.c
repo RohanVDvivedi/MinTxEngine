@@ -386,7 +386,7 @@ static void* acquire_writer_latch_only_if_redo_required_UNSAFE(mini_transaction_
 	// if the page on disk is upto date, release latch and return
 	if(compare_uint256(LSN, get_pageLSN_for_page(page, &(mte->stats))) <= 0)
 	{
-		release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+		release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0); // marking was_modified to 0, as all updates are already marking it dirty
 		return NULL;
 	}
 
@@ -442,7 +442,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 
 					// release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
 					mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
-					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0); // marking was_modified to 0, as all updates are already marking it dirty
 				}}
 
 				{void* free_space_mapper_page = acquire_writer_latch_only_if_redo_required_UNSAFE(mte, ckpt, redo_at, &lr, free_space_mapper_page_id);
@@ -483,7 +483,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 
 					// release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
 					mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, free_space_mapper_page, free_space_mapper_page_id);
-					release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+					release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0); // marking was_modified to 0, as all updates are already marking it dirty
 				}}
 
 				break;
@@ -629,7 +629,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 
 					// release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
 					mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
-					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0); // marking was_modified to 0, as all updates are already marking it dirty
 				}}
 
 				break;
@@ -656,7 +656,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 
 					// release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
 					mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
-					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0); // marking was_modified to 0, as all updates are already marking it dirty
 				}}
 
 				break;
@@ -694,7 +694,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 
 					// release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
 					mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
-					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0); // marking was_modified to 0, as all updates are already marking it dirty
 				}}
 
 				break;
@@ -758,7 +758,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 
 							// release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
 							mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, free_space_mapper_page, free_space_mapper_page_id);
-							release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+							release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0); // marking was_modified to 0, as all updates are already marking it dirty
 						}}
 
 						break;
@@ -991,7 +991,7 @@ static void redo(mini_transaction_engine* mte, checkpoint* ckpt)
 
 							// release latch, while marking the page as dirty in mini transaction engine -> this reconstructs the dirty page table
 							mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, page, page_id);
-							release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+							release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0); // marking was_modified to 0, as all updates are already marking it dirty
 						}}
 
 						break;

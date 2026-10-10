@@ -59,7 +59,7 @@ int can_be_flushed_to_disk_for_bufferpool(void* flush_callback_handle, uint64_t 
 	return compare_uint256(mte->flushedLSN, pageLSN) >= 0; // ARIES suggests that flushedLSN should be greater than or equal to pageLSN to allow the page to reach to the disk
 }
 
-void was_flushed_to_disk_for_bufferpool(void* flush_callback_handle, uint64_t page_id, const void* frame)
+void was_written_to_disk_for_bufferpool(void* flush_callback_handle, uint64_t page_id, const void* frame)
 {
 	mini_transaction_engine* mte = flush_callback_handle;
 
@@ -70,10 +70,30 @@ void was_flushed_to_disk_for_bufferpool(void* flush_callback_handle, uint64_t pa
 	if(entry == NULL)
 		return;
 
-	// else remove it from the dirty_page_table and insert it to the free_dirty_page_entries_list
-	// be mindful and reset the attributes of the entry
-	remove_from_hashmap(&(mte->dirty_page_table), entry);
-	entry->page_id = mte->user_stats.NULL_PAGE_ID;
-	entry->recLSN = INVALID_LOG_SEQUENCE_NUMBER;
-	insert_tail_in_linkedlist(&(mte->free_dirty_page_entries_list), entry);
+	// now there has been a write but no flush/fsync to make it permanent
+	entry->write_has_pending_flush = 1;
+}
+
+void was_everything_flushed_to_disk_for_bufferpool(void* flush_callback_handle)
+{
+	mini_transaction_engine* mte = flush_callback_handle;
+
+	linkedlist entries_to_be_removed;
+	initialize_linkedlist(&entries_to_be_removed, offsetof(dirty_page_table_entry, fenode));
+
+	for(dirty_page_table_entry* entry = (dirty_page_table_entry*) get_first_of_in_hashmap(&(mte->dirty_page_table), FIRST_OF_HASHMAP); entry != NULL; entry = (dirty_page_table_entry*) get_next_of_in_hashmap(&(mte->dirty_page_table), entry, ANY_IN_HASHMAP))
+		if(entry->write_has_pending_flush)
+			insert_tail_in_linkedlist(&entries_to_be_removed, entry);
+
+	while(!is_empty_linkedlist(&entries_to_be_removed))
+	{
+		dirty_page_table_entry* entry = (dirty_page_table_entry*) get_head_of_linkedlist(&entries_to_be_removed);
+		remove_head_from_linkedlist(&entries_to_be_removed);
+
+		remove_from_hashmap(&(mte->dirty_page_table), entry);
+		entry->page_id = mte->user_stats.NULL_PAGE_ID;
+		entry->recLSN = INVALID_LOG_SEQUENCE_NUMBER;
+		entry->write_has_pending_flush = 0;
+		insert_tail_in_linkedlist(&(mte->free_dirty_page_entries_list), entry);
+	}
 }

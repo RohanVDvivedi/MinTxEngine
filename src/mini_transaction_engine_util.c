@@ -12,9 +12,13 @@ void mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mini_transacti
 
 	dirty_page_table_entry* dpte = (dirty_page_table_entry*)find_equals_in_hashmap(&(mte->dirty_page_table), &((dirty_page_table_entry){.page_id = page_id}));
 	
-	// if it is already present in dirty page table then nothing needs to be done
+	// if it is already present in dirty page table
+	// then all we need to do is set it in yet to be written state, by setting write_has_pending_flush = 0
 	if(dpte != NULL)
+	{
+		dpte->write_has_pending_flush = 0;
 		return ;
+	}
 
 	// else create or get one from free list
 	dpte = (dirty_page_table_entry*)get_head_of_linkedlist(&(mte->free_dirty_page_entries_list));
@@ -26,6 +30,7 @@ void mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mini_transacti
 	// set appropriate parameters and insert it to dirty page table
 	dpte->page_id = page_id;
 	dpte->recLSN = get_pageLSN_for_page(page, &(mte->stats));
+	dpte->write_has_pending_flush = 0;
 	insert_in_hashmap(&(mte->dirty_page_table), dpte);
 }
 

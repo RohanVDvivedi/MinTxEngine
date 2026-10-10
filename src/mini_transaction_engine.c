@@ -93,7 +93,7 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 		}
 
 		// initialize bufferpool
-		if(!initialize_bufferpool(&(mte->bufferpool_handle), mte->bufferpool_frame_count, &(mte->global_lock), get_page_io_ops_for_bufferpool(mte), can_be_flushed_to_disk_for_bufferpool, was_flushed_to_disk_for_bufferpool, mte, (checkpointing_period_in_microseconds * 0.3), (mte->bufferpool_frame_count * 0.3)))
+		if(!initialize_bufferpool(&(mte->bufferpool_handle), mte->bufferpool_frame_count, &(mte->global_lock), get_page_io_ops_for_bufferpool(mte), can_be_flushed_to_disk_for_bufferpool, was_written_to_disk_for_bufferpool, was_everything_flushed_to_disk_for_bufferpool, mte, (checkpointing_period_in_microseconds * 0.3), (mte->bufferpool_frame_count * 0.3)))
 		{
 			printf("ISSUE :: could not start bufferpool for the database\n");
 			exit(-1);
@@ -136,7 +136,7 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 		mte->user_stats = get_mini_transaction_engine_user_stats(&(mte->stats), get_block_size_for_block_file(&(mte->database_block_file)));
 
 		// initialize bufferpool
-		if(!initialize_bufferpool(&(mte->bufferpool_handle), mte->bufferpool_frame_count, &(mte->global_lock), get_page_io_ops_for_bufferpool(mte), can_be_flushed_to_disk_for_bufferpool, was_flushed_to_disk_for_bufferpool, mte, (checkpointing_period_in_microseconds * 0.3), (mte->bufferpool_frame_count * 0.3)))
+		if(!initialize_bufferpool(&(mte->bufferpool_handle), mte->bufferpool_frame_count, &(mte->global_lock), get_page_io_ops_for_bufferpool(mte), can_be_flushed_to_disk_for_bufferpool, was_written_to_disk_for_bufferpool, was_everything_flushed_to_disk_for_bufferpool, mte, (checkpointing_period_in_microseconds * 0.3), (mte->bufferpool_frame_count * 0.3)))
 		{
 			printf("ISSUE :: could not start bufferpool for the new database file\n");
 			exit(-1);

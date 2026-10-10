@@ -36,6 +36,7 @@ int flush_all_pages_for_bufferpool(const void* page_io_ops_handle);
 int can_be_flushed_to_disk_for_bufferpool(void* flush_callback_handle, uint64_t page_id, const void* frame);
 
 // remove the dirty page entry for the corresponding page_id from the mini_transaction_engine and move it to the free list
-void was_flushed_to_disk_for_bufferpool(void* flush_callback_handle, uint64_t page_id, const void* frame);
+void was_written_to_disk_for_bufferpool(void* flush_callback_handle, uint64_t page_id, const void* frame);
+void was_everything_flushed_to_disk_for_bufferpool(void* flush_callback_handle);
 
 #endif

@@ -292,8 +292,14 @@ static int can_hint_page_be_flushed_to_disk(void* flush_callback_handle, uint64_
 	return 1;
 }
 
-// nothing to be done if a page was flushed
-static void hint_page_was_flushed_to_disk(void* flush_callback_handle, uint64_t page_id, const void* frame)
+// nothing to be done if a page was written
+static void hint_page_was_written_to_disk(void* flush_callback_handle, uint64_t page_id, const void* frame)
+{
+	return;
+}
+
+// nothing to be done if a disk was flushed
+static void hint_pages_were_flushed_to_disk(void* flush_callback_handle)
 {
 	return;
 }
@@ -524,7 +530,7 @@ static int fix_hint_bits_recursive(bufferpool* bf, hint_node_id node_id, extents
 	else
 		parent_bit = get_parent_hint_bit_for_page(page);
 
-	release_writer_lock_on_page(bf, page, was_modified, 0);
+	release_writer_lock_on_page(bf, page, was_modified);
 
 	return parent_bit;
 }
@@ -617,7 +623,7 @@ page_allocation_hints* get_new_page_allocation_hints(uint64_t max_pages_to_buffe
 	}
 
 	// create a bufferpool
-	if(!initialize_bufferpool(&(pah_p->bf), max_pages_to_buffer, NULL, get_page_io_ops((&(pah_p->extent_allocation_hints_file))), can_hint_page_be_flushed_to_disk, hint_page_was_flushed_to_disk, NULL, 60 * 1000000, max_pages_to_buffer)) // flush all frames every minute, unless there is overload
+	if(!initialize_bufferpool(&(pah_p->bf), max_pages_to_buffer, NULL, get_page_io_ops((&(pah_p->extent_allocation_hints_file))), can_hint_page_be_flushed_to_disk, hint_page_was_written_to_disk, hint_pages_were_flushed_to_disk, NULL, 60 * 1000000, max_pages_to_buffer)) // flush all frames every minute, unless there is overload
 	{
 		close_block_file(&(pah_p->extent_allocation_hints_file));
 		free(pah_p);

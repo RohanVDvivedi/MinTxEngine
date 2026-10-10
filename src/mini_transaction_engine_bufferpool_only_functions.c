@@ -259,7 +259,7 @@ void* acquire_page_with_writer_latch_for_mini_tx(mini_transaction_engine* mte, m
 				break;
 
 			// release latch on the latched page, this must succeed
-			release_writer_lock_on_page(&(mte->bufferpool_handle), latched_page, 0, 0); // was_modified = 0, force_flush = 0 -> so that global lock is not released while we are working
+			release_writer_lock_on_page(&(mte->bufferpool_handle), latched_page, 0); // was_modified = 0 -> so that global lock is not released while we are working
 			latched_page = NULL;
 
 			if(write_lock_wait_timeout_in_microseconds_LEFT == 0) // no wait attempts left
@@ -323,7 +323,7 @@ int downgrade_writer_latch_to_reader_latch_on_page_for_mini_tx(mini_transaction_
 			return 0;
 		}
 
-		result = downgrade_writer_lock_to_reader_lock(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+		result = downgrade_writer_lock_to_reader_lock(&(mte->bufferpool_handle), page, 0); // marking was_modified to 0, as all updates are already marking it dirty
 
 		if(!result)
 		{
@@ -478,7 +478,7 @@ int release_reader_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 			// on failure do downgrade the lock back
 			if(!result)
 				// this must succeed if the prior upgrade call succeeded
-				downgrade_writer_lock_to_reader_lock(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+				downgrade_writer_lock_to_reader_lock(&(mte->bufferpool_handle), page, 0); // marking was_modified to 0, as all updates are already marking it dirty
 			else
 				// page was freed, so latch release was a success so decrement the latch counter for this mini transaction
 				mt->page_latches_held_counter--;
@@ -517,7 +517,7 @@ int release_writer_latch_on_page_for_mini_tx(mini_transaction_engine* mte, mini_
 				return 0;
 			}
 
-			result = release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // marking was_modified to 0, as all updates are already marking it dirty, and force_flush = 0
+			result = release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0); // marking was_modified to 0, as all updates are already marking it dirty
 
 			if(mt != NULL) // you can only possibly abort a non-null mini transaction
 			{

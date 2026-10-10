@@ -109,8 +109,8 @@ int free_write_latched_page_INTERNAL(mini_transaction_engine* mte, mini_transact
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, free_space_mapper_page, free_space_mapper_page_id);
 
 		// this has to succeed, we already marked it dirty, so was_modified can be set to 0
-		release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
-		release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // was_modified = 0, force_flush = 0
+		release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0); // was_modified = 0
+		release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0); // was_modified = 0
 	}
 	pthread_mutex_unlock(&(mte->global_lock));
 
@@ -222,7 +222,7 @@ static void* allocate_page_holding_write_latch_INTERNAL(mini_transaction_engine*
 		mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mte, free_space_mapper_page, free_space_mapper_page_id);
 
 		// this has to succeed, we already marked it dirty, so was_modified can be set to 0
-		release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+		release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0); // was_modified = 0
 	}
 	pthread_mutex_unlock(&(mte->global_lock));
 
@@ -304,7 +304,7 @@ void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transact
 					void* page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, (*page_id), 1, 0); // evict_dirty_if_necessary -> not to be overwritten
 					if(page == NULL) // could not lock page at page_id, so abort
 					{
-						release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+						release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0); // was_modified = 0
 						mt->state = MIN_TX_ABORTED;
 						mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
 						(*abort_error) = OUT_OF_BUFFERPOOL_MEMORY;
@@ -322,7 +322,7 @@ void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transact
 					}
 
 					// unlatch page at page_id
-					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // was_modified = 0, force_flush = 0
+					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0); // was_modified = 0
 					pthread_mutex_unlock(&(mte->global_lock));
 				}
 
@@ -335,7 +335,7 @@ void* allocate_page_from_hints_without_database_expansion_INTERNAL(mini_transact
 
 			// unlatch free space mapper page
 			pthread_mutex_lock(&(mte->global_lock));
-			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0); // was_modified = 0
 			pthread_mutex_unlock(&(mte->global_lock));
 		}
 
@@ -410,7 +410,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 					void* page = acquire_page_with_writer_latch_N_flush_wal_if_necessary_UNSAFE(mte, (*page_id), 1, 0); // evict_dirty_if_necessary -> not to be overwritten
 					if(page == NULL) // could not lock page at page_id, so abort
 					{
-						release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+						release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0); // was_modified = 0
 						mt->state = MIN_TX_ABORTED;
 						mt->abort_error = OUT_OF_BUFFERPOOL_MEMORY;
 						(*abort_error) = OUT_OF_BUFFERPOOL_MEMORY;
@@ -428,7 +428,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 					}
 
 					// unlatch page at page_id
-					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0, 0); // was_modified = 0, force_flush = 0
+					release_writer_lock_on_page(&(mte->bufferpool_handle), page, 0); // was_modified = 0
 					pthread_mutex_unlock(&(mte->global_lock));
 				}
 
@@ -442,7 +442,7 @@ void* allocate_page_without_database_expansion_INTERNAL(mini_transaction_engine*
 
 			// unlatch free space mapper page
 			pthread_mutex_lock(&(mte->global_lock));
-			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0); // was_modified = 0
 			pthread_mutex_unlock(&(mte->global_lock));
 		}
 
@@ -608,7 +608,7 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		page = add_new_page_to_database_UNSAFE(mte, mt, PAGE_INIT_GARBAGE_DATA, NULL, abort_error);
 		if(page == NULL) // abort error is already set, so nothing to be done
 		{
-			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0); // was_modified = 0
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;
 		}
@@ -637,7 +637,7 @@ void* allocate_page_with_database_expansion_INTERNAL(mini_transaction_engine* mt
 		page = add_new_page_to_database_UNSAFE(mte, mt, PAGE_INIT_GARBAGE_DATA, NULL, abort_error);
 		if(page == NULL) // abort error is already set, so nothing to be done
 		{
-			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0, 0); // was_modified = 0, force_flush = 0
+			release_writer_lock_on_page(&(mte->bufferpool_handle), free_space_mapper_page, 0); // was_modified = 0
 			pthread_mutex_unlock(&(mte->global_lock));
 			return NULL;
 		}

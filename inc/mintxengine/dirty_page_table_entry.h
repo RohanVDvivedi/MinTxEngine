@@ -12,9 +12,12 @@ struct dirty_page_table_entry
 	uint64_t page_id; // page_id of the page that is dirty
 	uint256 recLSN; // the oldest LSN that made this page dirty, also called recoveryLSN -> you need to start redoing from this LSN to reach latest state of this page
 
+	unsigned int write_has_pending_flush:1; // this bit is set implies there is pending flush/fsync for this dirty page write
+
 	// embedded node to manage the entry
 	// this entry resides in either dirty_page_table or in free_dirty_page_entries_list
 	llnode enode;
+	llnode fenode;
 };
 
 // only page_id is the key for the following two functions
