@@ -27,7 +27,7 @@ mini_transaction* get_mini_transaction_that_last_persistent_write_locked_this_pa
 void decrement_mini_transaction_reference_counter_UNSAFE(mini_transaction_engine* mte, mini_transaction* mt);
 
 // never wait on your self for completion
-// if you are waiting here in order to subsequently acquire lock/latch on a page, then you must first release latch on that page (with force_flush = 0) before you go ahead with waiting here
+// if you are waiting here in order to subsequently acquire lock/latch on a page, then you must first release latch on that page before you go ahead with waiting here
 // if you hold latch on the page and go to wait then the other mini transaction will never have a chance to complete, (as it may need the locked page in future to make other changes or to undo changes if it aborts)
 // returns 1 if min_tx was completed, else returns 0
 // a return value of 0, may be due to a dead lock, so you may need to abort if this function returns 0
