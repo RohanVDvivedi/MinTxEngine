@@ -626,8 +626,9 @@ void destroy_and_free_parsed_log_record(log_record* lr)
 }
 
 // compression limit should be set in some 100s of bytes
-// set it to UINT32_MAX to completely disable compression, this would save a lot on the compute, but will blow up your log sizes, you can try and see if you want it
-#define COMPRESSION_LIMIT 400 // all log records with size greater than COMPRESSION_LIMIT will be compressed
+// set it to UINT32_MAX to completely disable compression
+// set it to 100s (400 ideal) to turn on compression
+#define COMPRESSION_LIMIT UINT32_MAX // all log records with size greater than COMPRESSION_LIMIT will be compressed
 
 // input is always consumed and freed
 static void* compress_serialized_log_record_idempotently(zstream_cache* zstrms, void* input, uint32_t input_size, uint32_t* output_size)
