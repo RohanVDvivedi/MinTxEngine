@@ -18,8 +18,8 @@ mini_transaction_engine mte;
 #define BUFFERPOOL_BUFFERS 100
 #define WALE_BUFFERS 30
 
-#define LATCH_WAIT_TIMEOUT_US     1000 // 1 millisecond
-#define LOCK_WAIT_TIMEOUT_US   500000 // 0.5 second
+#define LATCH_WAIT_TIMEOUT_US     3000 // 3 milliseconds
+#define LOCK_WAIT_TIMEOUT_US      3000 // 3 milliseconds
 #define CHECKPOINT_PERIOD_US (20 * 1000000) // 20 seconds
 #define CHECKPOINT_PERIOD_SIZE (1000000) // 1 MB
 #define MAX_WAL_FILE_SIZE (2 * 1000000) // 2 MB

@@ -88,10 +88,10 @@ struct mini_transaction_engine
 
 	linkedlist free_dirty_page_entries_list; // list of free dirty page entries, new dirty page entrues are assigned from this lists or are allocated
 
-	// wait for these many microseconds for acquiring a latch
+	// wait for these many microseconds for acquiring a read/write latch, else aborts as this is bufferpool exhaustion
 	uint64_t latch_wait_timeout_in_microseconds;
 
-	// timeout to wait for completion of a mini transaction
+	// timeout to wait for completion of a mini transaction so as to further acquire lock on a page
 	// if you hit the timeout, you must abort the waiting transaction as there could be a deadlock
 	uint64_t write_lock_wait_timeout_in_microseconds;
 
