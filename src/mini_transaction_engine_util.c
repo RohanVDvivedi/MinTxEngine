@@ -20,12 +20,8 @@ void mark_page_as_dirty_in_bufferpool_and_dirty_page_table_UNSAFE(mini_transacti
 		return ;
 	}
 
-	// else create or get one from free list
-	dpte = (dirty_page_table_entry*)get_head_of_linkedlist(&(mte->free_dirty_page_entries_list));
-	if(dpte != NULL)
-		remove_head_from_linkedlist(&(mte->free_dirty_page_entries_list));
-	else
-		dpte = get_new_dirty_page_table_entry();
+	// else create one
+	dpte = get_new_dirty_page_table_entry();
 
 	// set appropriate parameters and insert it to dirty page table
 	dpte->page_id = page_id;

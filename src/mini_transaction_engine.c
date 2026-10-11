@@ -169,7 +169,6 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 		printf("ISSUE :: unable to initialize an internal hashmap\n");
 		exit(-1);
 	}
-	initialize_linkedlist(&(mte->free_dirty_page_entries_list), offsetof(dirty_page_table_entry, enode));
 
 	// initialize wal zlib compression zstream cache as recovery might need this, so do this right away
 	{
@@ -425,8 +424,6 @@ void deinitialize_mini_transaction_engine(mini_transaction_engine* mte)
 	pthread_mutex_destroy(&(mte->global_lock));
 
 	remove_all_from_linkedlist(&(mte->reader_mini_transactions), AND_DELETE_MINI_TRANSACTIONS_NOTIFIER);
-
-	remove_all_from_linkedlist(&(mte->free_dirty_page_entries_list), AND_DELETE_DIRTY_PAGE_TABLE_ENTRIES_NOTIFIER);
 
 	remove_all_from_hashmap(&(mte->writer_mini_transactions), AND_DELETE_MINI_TRANSACTIONS_NOTIFIER);
 	deinitialize_hashmap(&(mte->writer_mini_transactions));

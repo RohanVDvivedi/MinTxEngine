@@ -83,10 +83,8 @@ struct mini_transaction_engine
 	hashmap writer_mini_transactions; // mini_transaction_id != 0, state = IN_PROGRESS or UNDOING_FOR_ABORT else if state = ABORTED or COMMITTED then waiters_count > 0
 	linkedlist reader_mini_transactions; // mini_transaction_id == 0, state = IN_PROGRESS
 
-	// below two are the parts of dirty page table
+	// below is the dirty page table, keyed by page_id
 	hashmap dirty_page_table;
-
-	linkedlist free_dirty_page_entries_list; // list of free dirty page entries, new dirty page entrues are assigned from this lists or are allocated
 
 	// wait for these many microseconds for acquiring a read/write latch, else aborts as this is bufferpool exhaustion
 	uint64_t latch_wait_timeout_in_microseconds;

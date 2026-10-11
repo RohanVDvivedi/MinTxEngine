@@ -91,9 +91,6 @@ void was_everything_flushed_to_disk_for_bufferpool(void* flush_callback_handle)
 		remove_head_from_linkedlist(&entries_to_be_removed);
 
 		remove_from_hashmap(&(mte->dirty_page_table), entry);
-		entry->page_id = mte->user_stats.NULL_PAGE_ID;
-		entry->recLSN = INVALID_LOG_SEQUENCE_NUMBER;
-		entry->write_has_pending_flush = 0;
-		insert_tail_in_linkedlist(&(mte->free_dirty_page_entries_list), entry);
+		free(entry);
 	}
 }
