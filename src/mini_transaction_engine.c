@@ -18,6 +18,8 @@
 
 #define MAXIMUM_WAL_FILE_SIZE UINT64_C(1000000000) // maximum wale file size is 1 GB
 
+#define MINIMUM_BUFFERPOOL_FLUSH_PERIOD UINT64_C(4000000) // db file must be flushed and fsync-ed atleast every 4 seconds
+
 void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint64_t bufferpool_frame_count, uint64_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds, uint64_t checkpointing_LSN_diff_in_bytes, uint64_t max_wal_file_size_in_bytes)
 {
 	if(!is_valid_page_size(page_size))
@@ -93,7 +95,7 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 		}
 
 		// initialize bufferpool
-		if(!initialize_bufferpool(&(mte->bufferpool_handle), mte->bufferpool_frame_count, &(mte->global_lock), get_page_io_ops_for_bufferpool(mte), can_be_flushed_to_disk_for_bufferpool, was_written_to_disk_for_bufferpool, was_everything_flushed_to_disk_for_bufferpool, mte, (checkpointing_period_in_microseconds * 0.3), (mte->bufferpool_frame_count * 0.3)))
+		if(!initialize_bufferpool(&(mte->bufferpool_handle), mte->bufferpool_frame_count, &(mte->global_lock), get_page_io_ops_for_bufferpool(mte), can_be_flushed_to_disk_for_bufferpool, was_written_to_disk_for_bufferpool, was_everything_flushed_to_disk_for_bufferpool, mte, min(checkpointing_period_in_microseconds * 0.3, MINIMUM_BUFFERPOOL_FLUSH_PERIOD), (mte->bufferpool_frame_count * 0.3)))
 		{
 			printf("ISSUE :: could not start bufferpool for the database\n");
 			exit(-1);
@@ -136,7 +138,7 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 		mte->user_stats = get_mini_transaction_engine_user_stats(&(mte->stats), get_block_size_for_block_file(&(mte->database_block_file)));
 
 		// initialize bufferpool
-		if(!initialize_bufferpool(&(mte->bufferpool_handle), mte->bufferpool_frame_count, &(mte->global_lock), get_page_io_ops_for_bufferpool(mte), can_be_flushed_to_disk_for_bufferpool, was_written_to_disk_for_bufferpool, was_everything_flushed_to_disk_for_bufferpool, mte, (checkpointing_period_in_microseconds * 0.3), (mte->bufferpool_frame_count * 0.3)))
+		if(!initialize_bufferpool(&(mte->bufferpool_handle), mte->bufferpool_frame_count, &(mte->global_lock), get_page_io_ops_for_bufferpool(mte), can_be_flushed_to_disk_for_bufferpool, was_written_to_disk_for_bufferpool, was_everything_flushed_to_disk_for_bufferpool, mte, min(checkpointing_period_in_microseconds * 0.3, MINIMUM_BUFFERPOOL_FLUSH_PERIOD), (mte->bufferpool_frame_count * 0.3)))
 		{
 			printf("ISSUE :: could not start bufferpool for the new database file\n");
 			exit(-1);
@@ -355,7 +357,7 @@ int update_checkpointer_period_for_mini_transaction_engine(mini_transaction_engi
 	shared_lock(&(mte->manager_lock), READ_PREFERRING, BLOCKING);
 
 	// if you want checkpointer period less intervening, then you probably also want the periodic flush to less intervening
-	modify_periodic_flush_job_period(&(mte->bufferpool_handle), checkpointing_period_in_microseconds * 0.3);
+	modify_periodic_flush_job_period(&(mte->bufferpool_handle), min(checkpointing_period_in_microseconds * 0.3, MINIMUM_BUFFERPOOL_FLUSH_PERIOD));
 	update_period_for_periodic_job(mte->periodic_checkpointer_job, checkpointing_period_in_microseconds);
 
 	shared_unlock(&(mte->manager_lock));
