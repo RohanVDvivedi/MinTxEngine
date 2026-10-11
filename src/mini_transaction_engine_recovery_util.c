@@ -66,6 +66,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 						dpte = get_new_dirty_page_table_entry();
 						dpte->page_id = page_id;
 						dpte->recLSN = analyze_at;
+						dpte->write_has_pending_flush = 0;
 						insert_in_hashmap(&(ckpt.dirty_page_table), dpte);
 					}
 				}
@@ -77,6 +78,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 						dpte = get_new_dirty_page_table_entry();
 						dpte->page_id = free_space_mapper_page_id;
 						dpte->recLSN = analyze_at;
+						dpte->write_has_pending_flush = 0;
 						insert_in_hashmap(&(ckpt.dirty_page_table), dpte);
 					}
 				}
@@ -108,6 +110,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 						dpte = get_new_dirty_page_table_entry();
 						dpte->page_id = page_id;
 						dpte->recLSN = analyze_at;
+						dpte->write_has_pending_flush = 0;
 						insert_in_hashmap(&(ckpt.dirty_page_table), dpte);
 					}
 				}
@@ -141,6 +144,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 								dpte = get_new_dirty_page_table_entry();
 								dpte->page_id = free_space_mapper_page_id;
 								dpte->recLSN = analyze_at;
+								dpte->write_has_pending_flush = 0;
 								insert_in_hashmap(&(ckpt.dirty_page_table), dpte);
 							}
 						}
@@ -170,6 +174,7 @@ static checkpoint analyze(mini_transaction_engine* mte)
 								dpte = get_new_dirty_page_table_entry();
 								dpte->page_id = page_id;
 								dpte->recLSN = analyze_at;
+								dpte->write_has_pending_flush = 0;
 								insert_in_hashmap(&(ckpt.dirty_page_table), dpte);
 							}
 						}

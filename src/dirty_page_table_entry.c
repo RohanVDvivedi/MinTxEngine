@@ -20,6 +20,7 @@ dirty_page_table_entry* get_new_dirty_page_table_entry()
 		printf("ISSUE :: unable to allocate memory for dirty page table entry\n");
 		exit(-1);
 	}
+	dpte->write_has_pending_flush = 0;
 	initialize_llnode(&(dpte->enode));
 	initialize_llnode(&(dpte->fenode));
 	return dpte;

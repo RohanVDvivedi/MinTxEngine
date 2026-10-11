@@ -114,6 +114,7 @@ uint256 read_checkpoint_from_wal_UNSAFE(mini_transaction_engine* mte, uint256 ch
 
 			dpte->page_id = lr.ckptdptelr.dpte.page_id;
 			dpte->recLSN = lr.ckptdptelr.dpte.recLSN;
+			dpte->write_has_pending_flush = 0;
 
 			insert_in_hashmap(&(ckpt->dirty_page_table), dpte);
 
