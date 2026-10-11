@@ -11,7 +11,7 @@
 
 mini_transaction_engine mte;
 
-#define SYSTEM_PAGE_SIZE 1024
+#define SYSTEM_PAGE_SIZE (3*1024)
 #define PAGE_ID_WIDTH 4
 #define LSN_WIDTH 4
 
