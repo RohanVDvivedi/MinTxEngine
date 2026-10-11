@@ -18,7 +18,7 @@ int flush_all_pages_for_bufferpool(const void* page_io_ops_handle);
 #define get_page_io_ops_for_bufferpool(mte) (page_io_ops){ \
 					.page_io_ops_handle = (mte), \
 					.page_size = (mte)->stats.page_size, \
-					.page_frame_alignment = (mte)->stats.page_size, \
+					.page_frame_alignment = 1, \
 					.read_page = read_page_for_bufferpool, \
 					.write_page = write_page_for_bufferpool, \
 					.flush_all_writes = flush_all_pages_for_bufferpool, \
