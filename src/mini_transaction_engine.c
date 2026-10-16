@@ -260,7 +260,7 @@ uint256 append_user_info_log_record_for_mini_transaction_engine(mini_transaction
 
 		// if log_record_LSN != INVALID and flush_after_append is set then return
 		if(!are_equal_uint256(log_record_LSN, INVALID_LOG_SEQUENCE_NUMBER) && flush_after_append)
-			flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
+			flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte); // user info log records do not get group commit advantage
 
 	shared_unlock(&(mte->manager_lock));
 	pthread_mutex_unlock(&(mte->global_lock));

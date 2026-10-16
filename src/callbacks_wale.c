@@ -50,5 +50,7 @@ void were_logs_flushed_to_disk_for_wale(void* flush_callback_handle, uint256 flu
 	mini_transaction_engine* mte = flush_callback_handle;
 
 	mte->flushedLSN = flushedLSN;
-	pthread_cond_broadcast(&(mte->wait_for_flushedLSN_advancement));
+
+	if(mte->waiting_for_wal_flush_counter)
+		pthread_cond_broadcast(&(mte->wait_for_flushedLSN_advancement));
 }

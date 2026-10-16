@@ -170,7 +170,25 @@ static uint256 append_completion_log_record_and_flush_INTERNAL(mini_transaction_
 	if(flush_on_completion)
 	{
 		pthread_mutex_lock(&(mte->global_lock));
-		flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
+
+		// wait only while enough flushing (up to log_record_LSN) has not happenned, and while we have not timed out
+		uint64_t wal_flush_timeout_in_microseconds = mte->wal_flush_timeout_in_microseconds;
+		int wait_error = 0;
+		while(compare_uint256(mte->flushedLSN, log_record_LSN) < 0  && !wait_error)
+		{
+			// if there are no other active mini transactions (no readers and no other writers) we may flush immediately, so break out of this loop
+			if(is_empty_linkedlist(&(mte->reader_mini_transactions)) && 1 == get_element_count_hashmap(&(mte->writer_mini_transactions)))
+				break;
+
+			// we are maintaining the numbers of readers and writers, so this increment/decrement is necessary
+			mte->waiting_for_wal_flush_counter++;
+			wait_error = pthread_cond_timedwait_for_microseconds(&(mte->wait_for_flushedLSN_advancement), &(mte->global_lock), &wal_flush_timeout_in_microseconds);
+			mte->waiting_for_wal_flush_counter--;
+		}
+
+		if(compare_uint256(mte->flushedLSN, log_record_LSN) < 0)
+			flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mte);
+
 		pthread_mutex_unlock(&(mte->global_lock));
 	}
 
