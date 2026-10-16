@@ -42,3 +42,13 @@ int flush_all_writes_for_wale(const void* block_io_ops_handle)
 
 	return res;
 }
+
+#include<mintxengine/mini_transaction_engine.h>
+
+void were_logs_flushed_to_disk_for_wale(void* flush_callback_handle, uint256 flushedLSN)
+{
+	mini_transaction_engine* mte = flush_callback_handle;
+
+	mte->flushedLSN = flushedLSN;
+	pthread_cond_broadcast(&(mte->wait_for_flushedLSN_advancement));
+}

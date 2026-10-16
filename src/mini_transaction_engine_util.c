@@ -196,8 +196,6 @@ void flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mini_transaction_engin
 			exit(-1);
 		}
 
-		mte->flushedLSN = max_uint256(mte->flushedLSN, flushedLSN);
-
 		// since now flushedLSN is incremented, there could be dirty frames that can be flushed to disk so wake up all waiters
 		wake_up_all_waiting_for_frame(&(mte->bufferpool_handle));
 	}

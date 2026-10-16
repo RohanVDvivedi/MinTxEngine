@@ -43,7 +43,7 @@ int create_new_wal_list(mini_transaction_engine* mte)
 		free(wa);
 		goto FAILURE;
 	}
-	if(!initialize_wale(&(wa->wale_handle), mte->stats.log_sequence_number_width, FIRST_LOG_SEQUENCE_NUMBER, &(mte->global_lock), get_block_io_ops_for_wale(&(wa->wale_block_file)), mte->wale_append_only_buffer_block_count, &err))
+	if(!initialize_wale(&(wa->wale_handle), mte->stats.log_sequence_number_width, FIRST_LOG_SEQUENCE_NUMBER, &(mte->global_lock), get_block_io_ops_for_wale(&(wa->wale_block_file)), mte->wale_append_only_buffer_block_count, were_logs_flushed_to_disk_for_wale, mte, &err))
 	{
 		close_block_file(&(wa->wale_block_file));
 		free(wa);
@@ -140,7 +140,7 @@ int initialize_wal_list(mini_transaction_engine* mte)
 			continue;
 		}
 		int err;
-		if(!initialize_wale(&(wa->wale_handle), mte->stats.log_sequence_number_width, INVALID_LOG_SEQUENCE_NUMBER, &(mte->global_lock), get_block_io_ops_for_wale(&(wa->wale_block_file)), 0, &err))
+		if(!initialize_wale(&(wa->wale_handle), mte->stats.log_sequence_number_width, INVALID_LOG_SEQUENCE_NUMBER, &(mte->global_lock), get_block_io_ops_for_wale(&(wa->wale_block_file)), 0, were_logs_flushed_to_disk_for_wale, mte, &err))
 		{
 			close_block_file(&(wa->wale_block_file));
 			free(wa);
@@ -325,7 +325,7 @@ int create_newest_in_wal_list_UNSAFE(mini_transaction_engine* mte)
 		printf("ISSUE :: unable to create a new block file for new wal_accessor\n");
 		exit(-1);
 	}
-	if(!initialize_wale(&(wa->wale_handle), mte->stats.log_sequence_number_width, wa->wale_LSNs_from, &(mte->global_lock), get_block_io_ops_for_wale(&(wa->wale_block_file)), mte->wale_append_only_buffer_block_count, &err))
+	if(!initialize_wale(&(wa->wale_handle), mte->stats.log_sequence_number_width, wa->wale_LSNs_from, &(mte->global_lock), get_block_io_ops_for_wale(&(wa->wale_block_file)), mte->wale_append_only_buffer_block_count, were_logs_flushed_to_disk_for_wale, mte, &err))
 	{
 		printf("ISSUE :: unable to create a new wale for new wal_accessor\n");
 		exit(-1);
