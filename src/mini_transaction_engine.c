@@ -22,7 +22,7 @@
 
 #define MINIMUM_WAL_FLUSH_TIMEOUT_PERIOD UINT64_C(100) // timeout for wal flush in microseconds
 
-void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint64_t bufferpool_frame_count, uint64_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds, uint64_t checkpointing_LSN_diff_in_bytes, uint64_t max_wal_file_size_in_bytes, uint64_t wal_flush_timeout_in_microseconds)
+void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint64_t bufferpool_frame_count, uint64_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds, uint64_t checkpointing_LSN_diff_in_bytes, uint64_t max_wal_file_size_in_bytes)
 {
 	if(!is_valid_page_size(page_size))
 	{
@@ -38,8 +38,8 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 	mte->flushedLSN = INVALID_LOG_SEQUENCE_NUMBER;
 	mte->checkpointLSN = INVALID_LOG_SEQUENCE_NUMBER;
 	pthread_cond_init_with_monotonic_clock(&(mte->wait_for_flushedLSN_advancement));
-	mte->waiting_for_wal_flush_counter = 0;
-	mte->wal_flush_timeout_in_microseconds = wal_flush_timeout_in_microseconds;
+	mte->thread_counter_waiting_for_wal_flush = 0;
+	mte->thread_counter_performing_wal_flush = 0;
 	initialize_rwlock(&(mte->manager_lock), &(mte->global_lock));
 	pthread_cond_init_with_monotonic_clock(&(mte->conditional_to_wait_for_execution_completion));
 	mte->latch_wait_timeout_in_microseconds = latch_wait_timeout_in_microseconds;
@@ -70,12 +70,6 @@ void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char
 	if(mte->checkpointing_LSN_diff_in_bytes < MINIMUM_WAL_FILE_SIZE || mte->max_wal_file_size_in_bytes > MAXIMUM_WAL_FILE_SIZE)
 	{
 		printf("ISSUE :: checkpointing WAL file size and max wal file size do not satisfy the ranges expected\n");
-		exit(-1);
-	}
-
-	if(mte->wal_flush_timeout_in_microseconds < MINIMUM_WAL_FLUSH_TIMEOUT_PERIOD)
-	{
-		printf("ISSUE :: wal flush timeout period do not satisfy the ranges expected\n");
 		exit(-1);
 	}
 

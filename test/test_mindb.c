@@ -24,8 +24,6 @@ mini_transaction_engine mte;
 #define CHECKPOINT_PERIOD_SIZE (1000000) // 1 MB
 #define MAX_WAL_FILE_SIZE (2 * 1000000) // 2 MB
 
-#define WAL_FLUSH_TIMEOUT_US (300) // 0.3 milliseconds
-
 #define FLUSH_ON_COMPLETION 1
 
 const char* db_filename = "test.db";
@@ -1345,7 +1343,7 @@ void main6(uint64_t _root_page_id)
 
 int main()
 {
-	initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US, CHECKPOINT_PERIOD_SIZE, MAX_WAL_FILE_SIZE, WAL_FLUSH_TIMEOUT_US);
+	initialize_mini_transaction_engine(&mte, db_filename, SYSTEM_PAGE_SIZE, PAGE_ID_WIDTH, LSN_WIDTH, BUFFERPOOL_BUFFERS, WALE_BUFFERS, LATCH_WAIT_TIMEOUT_US, LOCK_WAIT_TIMEOUT_US, CHECKPOINT_PERIOD_US, CHECKPOINT_PERIOD_SIZE, MAX_WAL_FILE_SIZE);
 
 	init_pam_for_mini_tx_engine(&mte);
 	init_pmm_for_mini_tx_engine(&mte);

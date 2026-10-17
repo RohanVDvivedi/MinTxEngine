@@ -188,6 +188,9 @@ void flush_wal_logs_and_wake_up_bufferpool_waiters_UNSAFE(mini_transaction_engin
 	{
 		wale* wale_p = &(((wal_accessor*)get_back_of_arraylist(&(mte->wa_list)))->wale_handle);
 
+		// we will be performing a WAL flush, the corresponding decrement will be done by the callback were_logs_flushed_to_disk_for_wale
+		mte->thread_counter_performing_wal_flush++;
+
 		int wal_error = 0;
 		uint256 flushedLSN = flush_all_log_records(wale_p, &wal_error);
 		if(are_equal_uint256(flushedLSN, INVALID_LOG_SEQUENCE_NUMBER) && wal_error) // ensure that there has been an error -> even a empty WAL may result in failed flush

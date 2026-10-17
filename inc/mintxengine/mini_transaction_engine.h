@@ -75,8 +75,8 @@ struct mini_transaction_engine
 
 	// wait on this condition variable for the flushedLSN to advance
 	pthread_cond_t wait_for_flushedLSN_advancement;
-	uint64_t waiting_for_wal_flush_counter; // number of thread waiting on wait_for_flushedLSN_advancement
-	uint64_t wal_flush_timeout_in_microseconds;
+	uint64_t thread_counter_waiting_for_wal_flush;
+	uint64_t thread_counter_performing_wal_flush;
 
 	// this is the number of pages in database that are in use
 	// this must be lesser than or equal to user_stats.max_page_count
@@ -145,7 +145,7 @@ struct mini_transaction_engine
 // page_size, page_id_width and log_sequence_number_width parameter is only used if passed as non-zero
 // else they are either used for a new database OR are ensured to be correct for an existing database if non-zero
 // latch_wait_timeout_in_microseconds and lock_wait_timeout_in_microseconds can not be BLOCKING or NON_BLOCKING
-void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint64_t bufferpool_frame_count, uint64_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds, uint64_t checkpointing_LSN_diff_in_bytes, uint64_t max_wal_file_size_in_bytes, uint64_t wal_flush_timeout_in_microseconds);
+void initialize_mini_transaction_engine(mini_transaction_engine* mte, const char* database_file_name, uint32_t page_size, uint32_t page_id_width, uint32_t log_sequence_number_width, uint64_t bufferpool_frame_count, uint64_t wale_append_only_buffer_block_count, uint64_t latch_wait_timeout_in_microseconds, uint64_t write_lock_wait_timeout_in_microseconds, uint64_t checkpointing_period_in_microseconds, uint64_t checkpointing_LSN_diff_in_bytes, uint64_t max_wal_file_size_in_bytes);
 
 #include<mintxengine/mini_transaction_engine_wale_only_functions.h>
 

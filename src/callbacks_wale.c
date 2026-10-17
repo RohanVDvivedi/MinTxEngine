@@ -51,6 +51,9 @@ void were_logs_flushed_to_disk_for_wale(void* flush_callback_handle, uint256 flu
 
 	mte->flushedLSN = flushedLSN;
 
-	if(mte->waiting_for_wal_flush_counter)
+	// there is one lesser thread performing wal flush
+	mte->thread_counter_performing_wal_flush--;
+
+	if(mte->thread_counter_waiting_for_wal_flush > 0)
 		pthread_cond_broadcast(&(mte->wait_for_flushedLSN_advancement));
 }
